@@ -1,7 +1,7 @@
 {
-    "tag":  "release-v0.1.1.0",
-    "displayTag":  "v0.1.1.0",
-    "manifestChangelog":  "Fixed Manifest building",
-    "releaseTitle":  "Release v0.1.1.0",
-    "generatedAtUtc":  "2026-05-23T19:24:45Z"
+    "tag":  "release-v0.1.1.1",
+    "displayTag":  "v0.1.1.1",
+    "manifestChangelog":  "Updated Build Script \u0026 Main Ruleset",
+    "releaseTitle":  "Release v0.1.1.1",
+    "generatedAtUtc":  "2026-05-23T19:58:55Z"
 }
