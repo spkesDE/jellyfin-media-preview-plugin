@@ -23,6 +23,7 @@ $version = [string]$propertyGroup.Version
 if ([string]::IsNullOrWhiteSpace($version)) {
     throw "Could not determine version from $projectFile"
 }
+$originalVersion = $version
 
 if ([string]::IsNullOrWhiteSpace($ManifestChangelog)) {
     $ManifestChangelog = Read-Host "Please enter the changelog for manifest.json"
@@ -174,6 +175,18 @@ while (Test-TagExists -CandidateTag $Tag) {
 $displayTag = $Tag
 if ($displayTag.StartsWith("release-")) {
     $displayTag = $displayTag.Substring("release-".Length)
+}
+
+Write-Host ""
+Write-Host "Release summary:" -ForegroundColor Cyan
+Write-Host "Changelog: $ManifestChangelog"
+Write-Host "Old Version: $originalVersion"
+Write-Host "Version: $version"
+Write-Host "Tag: $Tag"
+Write-Host ""
+$confirmation = Read-Host "Everything correct? [Y/N]"
+if ($confirmation -notin @('Y', 'y')) {
+    throw "Release cancelled."
 }
 
 $releaseMetadata = [ordered]@{
