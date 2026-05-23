@@ -1,16 +1,49 @@
 # Changelog
 
+## release-v0.1.1.0 - 2026-05-23
+
+
+
+### Build
+
+- build: group git-cliff changelog entries
+
+- build: prompt for next version in push-release script
+
+
+### Documentation
+
+- docs: add manifest-based install steps
+
+- docs: use raw manifest URL in README
+
+
+### Fixes
+
+- fix: write plugin manifest as array
+
+
+### Other
+
+- Update changelog and manifest for release-v0.1.0.0
+
+- Merge branch 'main' of https://github.com/spkesDE/jellyfin-plugin-media-preview
+
+
 ## release-v0.1.0.0 - 2026-05-23
 
 
-### Changes
 
-- Initial release
+### Build
 
 - build: make push-release changelog interactive
 
 - build: fix tag existence checks in push-release script
 
-- Prepare release v0.1.0.0
+
+### Other
+
+- Initial release
+
 
 
