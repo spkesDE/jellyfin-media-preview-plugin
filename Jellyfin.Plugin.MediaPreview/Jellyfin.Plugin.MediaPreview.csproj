@@ -7,17 +7,15 @@
     <RootNamespace>Jellyfin.Plugin.MediaPreview</RootNamespace>
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
-    <Version>0.1.0.0</Version>
+    <Version>0.1.1.0</Version>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Jellyfin.Controller" Version="10.11.9" />
     <PackageReference Include="Jellyfin.Model" Version="10.11.9" />
     <PackageReference Include="Jellyfin.Common" Version="10.11.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="Configuration\configPage.html" />
     <EmbeddedResource Include="Web\Client\mediaPreview.js" />
