@@ -33,6 +33,22 @@ message = "^Prepare release .*"
 skip = true
 
 [[git.commit_parsers]]
+message = "^Update changelog and manifest for release-v.*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^Merge branch .*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^Merge pull request .*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^ci"
+skip = true
+
+[[git.commit_parsers]]
 message = "^feat"
 group = "Features"
 
