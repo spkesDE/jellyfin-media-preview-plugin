@@ -1,6 +1,5 @@
 param(
     [string]$Tag,
-    [Parameter(Mandatory = $true)]
     [string]$ManifestChangelog,
     [switch]$SkipBuild
 )
@@ -26,6 +25,14 @@ if ([string]::IsNullOrWhiteSpace($version)) {
 
 if ([string]::IsNullOrWhiteSpace($Tag)) {
     $Tag = "release-v$version"
+}
+
+if ([string]::IsNullOrWhiteSpace($ManifestChangelog)) {
+    $ManifestChangelog = Read-Host "Please enter the changelog for manifest.json"
+}
+
+if ([string]::IsNullOrWhiteSpace($ManifestChangelog)) {
+    throw "Manifest changelog cannot be empty."
 }
 
 $displayTag = $Tag
