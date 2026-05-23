@@ -18,13 +18,10 @@ if ($status) {
 }
 
 [xml]$projectXml = Get-Content $projectFile
-$version = [string]($projectXml.Project.PropertyGroup | Select-Object -First 1).Version
+$propertyGroup = $projectXml.Project.PropertyGroup | Select-Object -First 1
+$version = [string]$propertyGroup.Version
 if ([string]::IsNullOrWhiteSpace($version)) {
     throw "Could not determine version from $projectFile"
-}
-
-if ([string]::IsNullOrWhiteSpace($Tag)) {
-    $Tag = "release-v$version"
 }
 
 if ([string]::IsNullOrWhiteSpace($ManifestChangelog)) {
@@ -35,24 +32,64 @@ if ([string]::IsNullOrWhiteSpace($ManifestChangelog)) {
     throw "Manifest changelog cannot be empty."
 }
 
-$displayTag = $Tag
-if ($displayTag.StartsWith("release-")) {
-    $displayTag = $displayTag.Substring("release-".Length)
-}
-
 $branch = (git branch --show-current).Trim()
 if ([string]::IsNullOrWhiteSpace($branch)) {
     throw "Could not determine current branch."
 }
 
-$null = git rev-parse --verify --quiet "refs/tags/$Tag" 2>$null
-if ($LASTEXITCODE -eq 0) {
-    throw "Tag '$Tag' already exists locally."
+function Test-TagExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CandidateTag
+    )
+
+    $null = git rev-parse --verify --quiet "refs/tags/$CandidateTag" 2>$null
+    if ($LASTEXITCODE -eq 0) {
+        return $true
+    }
+
+    $null = git ls-remote --exit-code --tags origin $CandidateTag 2>$null
+    return $LASTEXITCODE -eq 0
 }
 
-$null = git ls-remote --exit-code --tags origin $Tag 2>$null
-if ($LASTEXITCODE -eq 0) {
-    throw "Tag '$Tag' already exists on origin."
+function Set-ProjectVersion {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$NewVersion
+    )
+
+    $propertyGroup.Version = $NewVersion
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    $stringWriter = New-Object System.IO.StringWriter
+    $xmlWriter = [System.Xml.XmlWriter]::Create($stringWriter, (New-Object System.Xml.XmlWriterSettings -Property @{ Indent = $true; OmitXmlDeclaration = $true }))
+    $projectXml.Save($xmlWriter)
+    $xmlWriter.Flush()
+    $xmlWriter.Close()
+    [System.IO.File]::WriteAllText($projectFile, $stringWriter.ToString(), $utf8NoBom)
+}
+
+if ([string]::IsNullOrWhiteSpace($Tag)) {
+    $Tag = "release-v$version"
+}
+
+while (Test-TagExists -CandidateTag $Tag) {
+    Write-Host "Tag '$Tag' already exists."
+    $newVersion = Read-Host "Please enter the next plugin version"
+    if ([string]::IsNullOrWhiteSpace($newVersion)) {
+        throw "Version cannot be empty."
+    }
+    $version = $newVersion.Trim()
+    Set-ProjectVersion -NewVersion $version
+    git add $projectFile
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to stage updated project version."
+    }
+    $Tag = "release-v$version"
+}
+
+$displayTag = $Tag
+if ($displayTag.StartsWith("release-")) {
+    $displayTag = $displayTag.Substring("release-".Length)
 }
 
 $releaseMetadata = [ordered]@{
