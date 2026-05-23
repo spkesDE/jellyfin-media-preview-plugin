@@ -67,7 +67,12 @@ $pluginEntry.category = $meta.category
 $existingVersions = @($pluginEntry.versions | Where-Object { $_.version -ne $meta.version })
 $pluginEntry.versions = @($versionEntry) + $existingVersions
 
-$json = $manifest | ConvertTo-Json -Depth 10
+$jsonBody = $manifest | ConvertTo-Json -Depth 10
+$json = if ($manifest.Count -eq 1 -and -not $jsonBody.TrimStart().StartsWith("[")) {
+    "[`n$jsonBody`n]"
+} else {
+    $jsonBody
+}
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($manifestFullPath, $json, $utf8NoBom)
 
