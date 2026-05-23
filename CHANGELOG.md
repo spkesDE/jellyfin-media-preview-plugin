@@ -1,5 +1,27 @@
 # Changelog
 
+## release-v0.1.1.1 - 2026-05-23
+
+
+
+### Build
+
+- build: add interactive version picker to push-release script
+
+- build: add release confirmation to push-release script
+
+
+### Other
+
+- Update changelog and manifest for release-v0.1.1.0
+
+- Merge branch 'main' of https://github.com/spkesDE/jellyfin-plugin-media-preview
+
+- ci: add required build workflow
+
+- ci(release): authenticate releases with GitHub App token
+
+
 ## release-v0.1.1.0 - 2026-05-23
 
 
