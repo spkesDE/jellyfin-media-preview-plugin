@@ -45,12 +45,12 @@ if ([string]::IsNullOrWhiteSpace($branch)) {
     throw "Could not determine current branch."
 }
 
-git rev-parse --verify $Tag *> $null
+$null = git rev-parse --verify --quiet "refs/tags/$Tag" 2>$null
 if ($LASTEXITCODE -eq 0) {
     throw "Tag '$Tag' already exists locally."
 }
 
-git ls-remote --exit-code --tags origin $Tag *> $null
+$null = git ls-remote --exit-code --tags origin $Tag 2>$null
 if ($LASTEXITCODE -eq 0) {
     throw "Tag '$Tag' already exists on origin."
 }
