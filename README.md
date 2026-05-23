@@ -54,7 +54,7 @@ Recommended installation:
 
 1. In Jellyfin, open `Dashboard -> Catalog -> Settings`
 2. Add this plugin repository:
-   `https://github.com/spkesDE/jellyfin-media-preview-plugin/raw/main/manifest.json`
+   `https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/manifest.json`
 3. Save
 4. Open the plugin catalog
 5. Install `Media Preview`
