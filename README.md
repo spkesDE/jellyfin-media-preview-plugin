@@ -50,9 +50,17 @@ To use the plugin you need:
 
 ### Install This Plugin
 
-Install it the same way you normally install Jellyfin plugins.
+Recommended installation:
 
-If you are installing it manually, copy the plugin files into a Jellyfin plugin directory such as:
+1. In Jellyfin, open `Dashboard -> Catalog -> Settings`
+2. Add this plugin repository:
+   `https://github.com/spkesDE/jellyfin-media-preview-plugin/raw/main/manifest.json`
+3. Save
+4. Open the plugin catalog
+5. Install `Media Preview`
+6. Restart Jellyfin
+
+If you prefer to install it manually, copy the plugin files into a Jellyfin plugin directory such as:
 
 - Windows: `%ProgramData%\Jellyfin\Server\plugins\MediaPreview\`
 - Linux: `/var/lib/jellyfin/plugins/MediaPreview/`
