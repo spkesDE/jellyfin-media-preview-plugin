@@ -68,17 +68,101 @@ function Set-ProjectVersion {
     [System.IO.File]::WriteAllText($projectFile, $stringWriter.ToString(), $utf8NoBom)
 }
 
+function Read-VersionInteractively {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$CurrentVersion
+    )
+
+    $parts = [System.Collections.Generic.List[int]]::new()
+    foreach ($part in $CurrentVersion.Split('.')) {
+        $value = 0
+        if (-not [int]::TryParse($part, [ref]$value)) {
+            throw "Version '$CurrentVersion' is not in a supported numeric format."
+        }
+        $parts.Add($value)
+    }
+
+    while ($parts.Count -lt 4) {
+        $parts.Add(0)
+    }
+
+    $selectedIndex = 2
+    $labels = @("major", "minor", "patch", "build")
+
+    while ($true) {
+        Clear-Host
+        Write-Host "Tag already exists for version $CurrentVersion." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "Choose the next plugin version with the arrow keys:" -ForegroundColor Cyan
+        Write-Host "Left/Right = select segment, Up/Down = change value, Enter = accept, C = custom input, Esc = cancel"
+        Write-Host ""
+
+        $renderedParts = for ($i = 0; $i -lt 4; $i++) {
+            if ($i -eq $selectedIndex) {
+                "[$($parts[$i])]"
+            } else {
+                "$($parts[$i])"
+            }
+        }
+
+        Write-Host ("Version: " + ($renderedParts -join '.'))
+        Write-Host ("Selected: " + $labels[$selectedIndex])
+
+        $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        switch ($key.VirtualKeyCode) {
+            37 {
+                if ($selectedIndex -gt 0) {
+                    $selectedIndex--
+                }
+            }
+            39 {
+                if ($selectedIndex -lt 3) {
+                    $selectedIndex++
+                }
+            }
+            38 {
+                $parts[$selectedIndex]++
+                for ($i = $selectedIndex + 1; $i -lt 4; $i++) {
+                    $parts[$i] = 0
+                }
+            }
+            40 {
+                if ($parts[$selectedIndex] -gt 0) {
+                    $parts[$selectedIndex]--
+                }
+                for ($i = $selectedIndex + 1; $i -lt 4; $i++) {
+                    $parts[$i] = 0
+                }
+            }
+            13 {
+                Clear-Host
+                return ($parts -join '.')
+            }
+            27 {
+                Clear-Host
+                throw "Release cancelled."
+            }
+            default {
+                if ($key.Character -in @('c', 'C')) {
+                    Clear-Host
+                    $customVersion = Read-Host "Please enter the next plugin version"
+                    if ([string]::IsNullOrWhiteSpace($customVersion)) {
+                        throw "Version cannot be empty."
+                    }
+                    return $customVersion.Trim()
+                }
+            }
+        }
+    }
+}
+
 if ([string]::IsNullOrWhiteSpace($Tag)) {
     $Tag = "release-v$version"
 }
 
 while (Test-TagExists -CandidateTag $Tag) {
-    Write-Host "Tag '$Tag' already exists."
-    $newVersion = Read-Host "Please enter the next plugin version"
-    if ([string]::IsNullOrWhiteSpace($newVersion)) {
-        throw "Version cannot be empty."
-    }
-    $version = $newVersion.Trim()
+    $version = Read-VersionInteractively -CurrentVersion $version
     Set-ProjectVersion -NewVersion $version
     git add $projectFile
     if ($LASTEXITCODE -ne 0) {
