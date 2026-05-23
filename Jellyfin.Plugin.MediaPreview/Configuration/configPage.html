@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Media Preview</title>
+</head>
+<body>
+    <div id="MediaPreviewConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
+        <div data-role="content">
+            <style>
+                #MediaPreviewConfigPage .jhs-grid {
+                    display: grid;
+                    gap: 1rem;
+                }
+
+                #MediaPreviewConfigPage .jhs-section {
+                    padding: 1rem 1rem 0.25rem;
+                    border-radius: 0.75rem;
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.06);
+                    margin-bottom: 1rem;
+                }
+
+                #MediaPreviewConfigPage .jhs-section h3 {
+                    margin: 0 0 0.25rem;
+                }
+
+                #MediaPreviewConfigPage .jhs-help {
+                    margin: 0 0 1rem;
+                    opacity: 0.8;
+                    font-size: 0.95em;
+                }
+
+                #MediaPreviewConfigPage .jhs-hidden {
+                    display: none !important;
+                }
+
+                #MediaPreviewConfigPage .jhs-note {
+                    margin-top: -0.5rem;
+                    margin-bottom: 1rem;
+                    opacity: 0.75;
+                    font-size: 0.9em;
+                }
+
+                #MediaPreviewConfigPage .jhs-pillRow {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 0.5rem;
+                    margin-top: -0.35rem;
+                    margin-bottom: 1rem;
+                }
+
+                #MediaPreviewConfigPage .jhs-pill {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 0.35rem;
+                    padding: 0.35rem 0.7rem;
+                    border-radius: 999px;
+                    background: rgba(255, 255, 255, 0.06);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    font-size: 0.88em;
+                    line-height: 1;
+                }
+
+                #MediaPreviewConfigPage .jhs-pillKey {
+                    opacity: 0.72;
+                }
+
+                #MediaPreviewConfigPage .jhs-pillValue {
+                    font-weight: 600;
+                }
+
+                #MediaPreviewConfigPage .jhs-modeCard {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 0.75rem;
+                    margin-top: -0.35rem;
+                    margin-bottom: 1rem;
+                    padding: 0.85rem 0.95rem;
+                    border-radius: 0.9rem;
+                    background: rgba(255, 255, 255, 0.04);
+                    border: 1px solid rgba(255, 255, 255, 0.07);
+                }
+
+                #MediaPreviewConfigPage .jhs-modeGlyph {
+                    flex: 0 0 auto;
+                    width: 1.9rem;
+                    height: 1.9rem;
+                    border-radius: 999px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(255, 255, 255, 0.07);
+                    color: rgba(255, 255, 255, 0.92);
+                    font-size: 1rem;
+                    line-height: 1;
+                }
+
+                #MediaPreviewConfigPage .jhs-modeCardBody {
+                    min-width: 0;
+                }
+
+                #MediaPreviewConfigPage .jhs-modeTitle {
+                    margin: 0 0 0.2rem;
+                    font-size: 0.95em;
+                    font-weight: 600;
+                    color: rgba(255, 255, 255, 0.96);
+                }
+
+                #MediaPreviewConfigPage .jhs-modeText {
+                    margin: 0;
+                    opacity: 0.78;
+                    font-size: 0.9em;
+                    line-height: 1.35;
+                }
+            </style>
+
+            <div class="content-primary">
+                <form id="MediaPreviewConfigForm">
+                    <div class="sectionTitleContainer flex align-items-center">
+                        <h2 class="sectionTitle">Media Preview</h2>
+                    </div>
+
+                    <div class="verticalSection verticalSection-extrabottompadding">
+                        <p>
+                            Adds hover previews for movie and episode cards by using Jellyfin's native Trickplay thumbnails.
+                            The File Transformation plugin must be installed, and Trickplay images must already exist for the media item.
+                        </p>
+                    </div>
+
+                    <div class="jhs-grid">
+                        <section class="jhs-section">
+                            <h3>General</h3>
+                            <p class="jhs-help">Core on/off switches and the preview source strategy.</p>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="Enabled" name="Enabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Enable Hover Preview</span>
+                                </label>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="PreviewSource">Preview Source</label>
+                                <select id="PreviewSource" name="PreviewSource" is="emby-select">
+                                    <option value="trickplay">Trickplay / Scrub File</option>
+                                    <option value="trailer">Trailer</option>
+                                    <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
+                                    <option value="prefer-trailer">Prefer Trailer</option>
+                                </select>
+                            </div>
+                            <p id="PreviewSourceNote" class="jhs-note">Choose between native Trickplay scrub files and trailer playback. Trailer mode currently supports local Jellyfin trailers and YouTube remote trailers when available.</p>
+
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="HoverDelayMs">Hover Delay (ms)</label>
+                                <input id="HoverDelayMs" name="HoverDelayMs" type="number" min="0" step="50" is="emby-input" />
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="RestoreOnLeave" name="RestoreOnLeave" type="checkbox" is="emby-checkbox" />
+                                    <span>Restore Poster On Mouse Leave</span>
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="jhs-section">
+                            <h3>Trickplay Motion</h3>
+                            <p class="jhs-help">Control how Trickplay previews move when you hover a card.</p>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="HoverMode">Hover Mode</label>
+                                <select id="HoverMode" name="HoverMode" is="emby-select">
+                                    <option value="scrub">Scrub with mouse position</option>
+                                    <option value="auto">Auto scrub on hover</option>
+                                </select>
+                            </div>
+
+                            <div id="ScrubSettings">
+                                <p class="jhs-note">Scrub pacing is adaptive automatically. Dense Trickplay sets react quickly, while sparse sets hold each frame a bit longer so the preview feels calmer instead of jumpy.</p>
+                            </div>
+
+                            <div id="AutoSettings">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="AutoScrubMode">Auto Motion Style</label>
+                                    <select id="AutoScrubMode" name="AutoScrubMode" is="emby-select">
+                                        <option value="step">Frame by Frame</option>
+                                        <option value="sweep">Continuous</option>
+                                        <option value="ping-pong">Continuous Ping-Pong</option>
+                                    </select>
+                                </div>
+                                <div id="AutoScrubModeNote" class="jhs-modeCard" aria-hidden="true">
+                                    <span id="AutoScrubModeGlyph" class="jhs-modeGlyph" aria-hidden="true">></span>
+                                    <div class="jhs-modeCardBody">
+                                        <p id="AutoScrubModeTitle" class="jhs-modeTitle">Continuous</p>
+                                        <p id="AutoScrubModeText" class="jhs-modeText">Allows frame skips when needed so motion stays fluid.</p>
+                                    </div>
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="AutoScrubStartPercent">Auto Scrub Start (%)</label>
+                                    <input id="AutoScrubStartPercent" name="AutoScrubStartPercent" type="number" min="0" max="100" step="1" is="emby-input" />
+                                </div>
+
+                                <div id="AutoStepSettings">
+                                    <div class="inputContainer">
+                                        <label class="inputLabel inputLabelUnfocused" for="AutoScrubIntervalMs">Frame Delay (ms)</label>
+                                        <input id="AutoScrubIntervalMs" name="AutoScrubIntervalMs" type="number" min="16" step="1" is="emby-input" />
+                                    </div>
+                                </div>
+
+                                <div id="AutoContinuousSettings">
+                                    <div class="selectContainer">
+                                        <label class="selectLabel" for="AutoScrubPreset">Auto Scrub Preset</label>
+                                        <select id="AutoScrubPreset" name="AutoScrubPreset" is="emby-select">
+                                            <option value="snappy">Snappy</option>
+                                            <option value="balanced">Balanced</option>
+                                            <option value="cinematic">Cinematic</option>
+                                            <option value="custom">Custom</option>
+                                        </select>
+                                    </div>
+                                    <div id="AutoScrubPresetValues" class="jhs-pillRow" aria-hidden="true">
+                                        <span class="jhs-pill"><span class="jhs-pillKey">Min</span><span id="AutoScrubPresetMin" class="jhs-pillValue">60 ms</span></span>
+                                        <span class="jhs-pill"><span class="jhs-pillKey">Max</span><span id="AutoScrubPresetMax" class="jhs-pillValue">520 ms</span></span>
+                                        <span class="jhs-pill"><span class="jhs-pillKey">Duration</span><span id="AutoScrubPresetDuration" class="jhs-pillValue">6500 ms</span></span>
+                                    </div>
+
+                                    <div id="AutoCustomSettings">
+                                        <div class="inputContainer">
+                                            <label class="inputLabel inputLabelUnfocused" for="AutoScrubMinDelayMs">Auto Scrub Min Delay (ms)</label>
+                                            <input id="AutoScrubMinDelayMs" name="AutoScrubMinDelayMs" type="number" min="16" step="1" is="emby-input" />
+                                        </div>
+                                        <p class="jhs-note">Lower bound for the adaptive per-frame hold. Lower values feel more immediate.</p>
+
+                                        <div class="inputContainer">
+                                            <label class="inputLabel inputLabelUnfocused" for="AutoScrubMaxDelayMs">Auto Scrub Max Delay (ms)</label>
+                                            <input id="AutoScrubMaxDelayMs" name="AutoScrubMaxDelayMs" type="number" min="50" step="1" is="emby-input" />
+                                        </div>
+                                        <p class="jhs-note">Upper bound for sparse Trickplay sets so they never linger too long on one frame.</p>
+
+                                        <div class="inputContainer">
+                                            <label class="inputLabel inputLabelUnfocused" for="AutoScrubDurationMs">Planned Sweep Duration (ms)</label>
+                                            <input id="AutoScrubDurationMs" name="AutoScrubDurationMs" type="number" min="500" step="1" is="emby-input" />
+                                        </div>
+                                        <p class="jhs-note">Target overall sweep duration. The plugin derives a frame delay from it and then clamps that delay between your min and max values.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section id="TrailerSettingsSection" class="jhs-section">
+                            <h3>Trailer</h3>
+                            <p class="jhs-help">These options apply when trailer playback is used directly or as a fallback source.</p>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="TrailerAudioEnabled" name="TrailerAudioEnabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Enable Trailer Audio When Allowed</span>
+                                </label>
+                            </div>
+                            <p class="jhs-note">Browsers often block unmuted autoplay until the page has received user interaction once. Until then, trailers may still start muted.</p>
+
+                            <div id="TrailerVolumeSetting" class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="TrailerVolumePercent">Trailer Volume (%)</label>
+                                <input id="TrailerVolumePercent" name="TrailerVolumePercent" type="number" min="0" max="100" step="1" is="emby-input" />
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="YouTubeCropStrength">YouTube Crop Strength</label>
+                                <select id="YouTubeCropStrength" name="YouTubeCropStrength" is="emby-select">
+                                    <option value="off">Off</option>
+                                    <option value="light">Light</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="strong">Strong</option>
+                                </select>
+                            </div>
+                            <p class="jhs-note">Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.</p>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="TrailerExpandButtonEnabled" name="TrailerExpandButtonEnabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Show Expand Button</span>
+                                </label>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="TrailerExpandButtonPosition">Expand Button Position</label>
+                                <select id="TrailerExpandButtonPosition" name="TrailerExpandButtonPosition" is="emby-select">
+                                    <option value="top-left">Top Left</option>
+                                    <option value="top-right">Top Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                    <option value="bottom-right">Bottom Right</option>
+                                </select>
+                            </div>
+                        </section>
+
+                        <section class="jhs-section">
+                            <h3>Preview Appearance</h3>
+                            <p class="jhs-help">Control how hover previews are framed and styled on portrait and backdrop cards.</p>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="PortraitCardPreviewMode">Portrait Card Preview Mode</label>
+                                <select id="PortraitCardPreviewMode" name="PortraitCardPreviewMode" is="emby-select">
+                                    <option value="contain">Contain</option>
+                                    <option value="cover">Cover</option>
+                                    <option value="stretch">Stretch / Fill</option>
+                                </select>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="BackdropCardPreviewMode">Backdrop Card Preview Mode</label>
+                                <select id="BackdropCardPreviewMode" name="BackdropCardPreviewMode" is="emby-select">
+                                    <option value="cover">Cover</option>
+                                    <option value="contain">Contain</option>
+                                    <option value="stretch">Stretch / Fill</option>
+                                </select>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="PreviewBackdropMode">Poster Backdrop</label>
+                                <select id="PreviewBackdropMode" name="PreviewBackdropMode" is="emby-select">
+                                    <option value="off">Off</option>
+                                    <option value="dim">Dim</option>
+                                    <option value="blur">Blur</option>
+                                    <option value="dim-blur">Dim + Blur</option>
+                                </select>
+                            </div>
+
+                            <div id="PreviewBackdropIntensitySetting" class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="PreviewBackdropIntensityPercent">Backdrop Intensity (%)</label>
+                                <input id="PreviewBackdropIntensityPercent" name="PreviewBackdropIntensityPercent" type="number" min="0" max="100" step="1" is="emby-input" />
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="ShowProgressIndicator" name="ShowProgressIndicator" type="checkbox" is="emby-checkbox" />
+                                    <span>Show Progress Indicator</span>
+                                </label>
+                            </div>
+                        </section>
+
+                        <section class="jhs-section">
+                            <h3>Advanced</h3>
+                            <p class="jhs-help">Normally you can leave these alone.</p>
+
+                            <div class="inputContainer">
+                                <div id="TrickplayWidthSetting">
+                                    <label class="inputLabel inputLabelUnfocused" for="TrickplayWidth">Preferred Trickplay Width</label>
+                                    <input id="TrickplayWidth" name="TrickplayWidth" type="number" min="1" step="1" is="emby-input" />
+                                </div>
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="Debug" name="Debug" type="checkbox" is="emby-checkbox" />
+                                    <span>Enable Debug Logging</span>
+                                </label>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div>
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            (function () {
+                const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
+                const page = document.querySelector('#MediaPreviewConfigPage');
+                const form = page.querySelector('#MediaPreviewConfigForm');
+                const visibilitySelectors = ['#PreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode'];
+
+                function getField(selector) {
+                    return form.querySelector(selector);
+                }
+
+                function getStringValue(selector, fallback) {
+                    return getField(selector).value || fallback;
+                }
+
+                function getNumberValue(selector, fallback) {
+                    return parseInt(getField(selector).value || String(fallback), 10);
+                }
+
+                function getBooleanValue(selector) {
+                    return !!getField(selector).checked;
+                }
+
+                function markPresetCustom() {
+                    const presetField = getField('#AutoScrubPreset');
+                    if (!presetField || presetField.value === 'custom') {
+                        return;
+                    }
+
+                    presetField.value = 'custom';
+                    toggleVisibility();
+                }
+
+                function setDisabled(selectors, isDisabled) {
+                    selectors.forEach(function (selector) {
+                        const field = getField(selector);
+                        if (field) {
+                            field.disabled = !!isDisabled;
+                        }
+                    });
+                }
+
+                function toggleVisibility() {
+                    const presetProfiles = {
+                        snappy: { min: 24, max: 120, duration: 1800 },
+                        balanced: { min: 60, max: 520, duration: 6500 },
+                        cinematic: { min: 180, max: 1400, duration: 14000 }
+                    };
+                    const motionProfiles = {
+                        step: {
+                            glyph: '⋯',
+                            title: 'Frame by Frame',
+                            text: 'Advances one Trickplay frame at a time.'
+                        },
+                        sweep: {
+                            glyph: '↦',
+                            title: 'Continuous',
+                            text: 'Allows frame skips when needed so motion stays fluid.'
+                        },
+                        'ping-pong': {
+                            glyph: '↔',
+                            title: 'Continuous Ping-Pong',
+                            text: 'Uses continuous motion while sweeping back and forth.'
+                        }
+                    };
+                    motionProfiles.step.glyph = '1';
+                    motionProfiles.sweep.glyph = '>';
+                    motionProfiles['ping-pong'].glyph = '<>';
+                    const previewSource = getStringValue('#PreviewSource', 'trickplay');
+                    const hoverMode = getStringValue('#HoverMode', 'scrub');
+                    const autoMode = getStringValue('#AutoScrubMode', 'step');
+                    const autoPreset = getStringValue('#AutoScrubPreset', 'balanced');
+                    const usesTrailerOnly = previewSource === 'trailer';
+                    const canUseTrailer = previewSource !== 'trickplay';
+                    const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
+                    const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
+
+                    getField('#PreviewSourceNote').textContent = usesTrailerOnly
+                        ? 'Trailer mode starts a trailer on hover instead of scrubbing frames. It prefers local Jellyfin trailers and falls back to supported YouTube remote trailers.'
+                        : 'Trickplay modes use Jellyfin native scrub images. Prefer modes can fall back between Trickplay and trailer playback.';
+
+                    getField('#ScrubSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'scrub');
+                    getField('#AutoSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'auto');
+                    const stepMode = autoMode === 'step';
+                    const continuousMode = autoMode === 'sweep' || autoMode === 'ping-pong';
+                    getField('#AutoStepSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'auto' || !stepMode);
+                    getField('#AutoContinuousSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'auto' || !continuousMode);
+                    const customHidden = usesTrailerOnly || hoverMode !== 'auto' || !continuousMode || autoPreset !== 'custom';
+                    getField('#AutoCustomSettings').classList.toggle('jhs-hidden', customHidden);
+                    getField('#TrickplayWidthSetting').classList.toggle('jhs-hidden', usesTrailerOnly);
+                    getField('#TrailerSettingsSection').classList.toggle('jhs-hidden', !canUseTrailer);
+                    getField('#TrailerVolumeSetting').classList.toggle('jhs-hidden', !canUseTrailer || !trailerAudioEnabled);
+                    getField('#PreviewBackdropIntensitySetting').classList.toggle('jhs-hidden', previewBackdropMode === 'off');
+                    setDisabled([
+                        '#AutoScrubIntervalMs'
+                    ], !stepMode);
+                    setDisabled([
+                        '#AutoScrubMinDelayMs',
+                        '#AutoScrubMaxDelayMs',
+                        '#AutoScrubDurationMs'
+                    ], customHidden);
+
+                    const motionProfile = motionProfiles[autoMode] || motionProfiles.step;
+                    getField('#AutoScrubModeGlyph').textContent = motionProfile.glyph;
+                    getField('#AutoScrubModeTitle').textContent = motionProfile.title;
+                    getField('#AutoScrubModeText').textContent = motionProfile.text;
+
+                    const values = autoPreset === 'custom'
+                        ? {
+                            min: getNumberValue('#AutoScrubMinDelayMs', 40),
+                            max: getNumberValue('#AutoScrubMaxDelayMs', 1000),
+                            duration: getNumberValue('#AutoScrubDurationMs', 4000)
+                        }
+                        : (presetProfiles[autoPreset] || presetProfiles.balanced);
+
+                    getField('#AutoScrubPresetMin').textContent = values.min + ' ms';
+                    getField('#AutoScrubPresetMax').textContent = values.max + ' ms';
+                    getField('#AutoScrubPresetDuration').textContent = values.duration + ' ms';
+                }
+
+                function setValues(config) {
+                    getField('#Enabled').checked = !!config.Enabled;
+                    getField('#PreviewSource').value = config.PreviewSource || 'trickplay';
+                    getField('#TrailerAudioEnabled').checked = !!config.TrailerAudioEnabled;
+                    getField('#TrailerVolumePercent').value = config.TrailerVolumePercent ?? 35;
+                    getField('#YouTubeCropStrength').value = config.YouTubeCropStrength || 'medium';
+                    getField('#TrailerExpandButtonEnabled').checked = config.TrailerExpandButtonEnabled !== false;
+                    getField('#TrailerExpandButtonPosition').value = config.TrailerExpandButtonPosition || 'top-right';
+                    getField('#HoverMode').value = config.HoverMode || 'scrub';
+                    getField('#HoverDelayMs').value = config.HoverDelayMs ?? 300;
+                    getField('#TrickplayWidth').value = config.TrickplayWidth ?? 320;
+                    getField('#AutoScrubStartPercent').value = config.AutoScrubStartPercent ?? 0;
+                    getField('#AutoScrubMode').value = config.AutoScrubMode || 'step';
+                    getField('#AutoScrubPreset').value = config.AutoScrubPreset || 'balanced';
+                    getField('#AutoScrubIntervalMs').value = config.AutoScrubIntervalMs ?? 220;
+                    getField('#AutoScrubDurationMs').value = config.AutoScrubDurationMs ?? 4000;
+                    getField('#AutoScrubMinDelayMs').value = config.AutoScrubMinDelayMs ?? 40;
+                    getField('#AutoScrubMaxDelayMs').value = config.AutoScrubMaxDelayMs ?? 1000;
+                    getField('#PortraitCardPreviewMode').value = config.PortraitCardPreviewMode || 'contain';
+                    getField('#BackdropCardPreviewMode').value = config.BackdropCardPreviewMode || 'cover';
+                    getField('#PreviewBackdropMode').value = config.PreviewBackdropMode || 'dim-blur';
+                    getField('#PreviewBackdropIntensityPercent').value = config.PreviewBackdropIntensityPercent ?? 35;
+                    getField('#RestoreOnLeave').checked = config.RestoreOnLeave !== false;
+                    getField('#ShowProgressIndicator').checked = config.ShowProgressIndicator !== false;
+                    getField('#Debug').checked = !!config.Debug;
+                    toggleVisibility();
+                }
+
+                visibilitySelectors.forEach(function (selector) {
+                    getField(selector).addEventListener('change', toggleVisibility);
+                });
+
+                ['#AutoScrubMinDelayMs', '#AutoScrubMaxDelayMs', '#AutoScrubDurationMs'].forEach(function (selector) {
+                    getField(selector).addEventListener('input', markPresetCustom);
+                    getField(selector).addEventListener('change', markPresetCustom);
+                });
+
+                page.addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        setValues(config || {});
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    Dashboard.showLoadingMsg();
+
+                    const config = {
+                        Enabled: getBooleanValue('#Enabled'),
+                        PreviewSource: getStringValue('#PreviewSource', 'trickplay'),
+                        TrailerAudioEnabled: getBooleanValue('#TrailerAudioEnabled'),
+                        TrailerVolumePercent: getNumberValue('#TrailerVolumePercent', 35),
+                        YouTubeCropStrength: getStringValue('#YouTubeCropStrength', 'medium'),
+                        TrailerExpandButtonEnabled: getBooleanValue('#TrailerExpandButtonEnabled'),
+                        TrailerExpandButtonPosition: getStringValue('#TrailerExpandButtonPosition', 'top-right'),
+                        HoverMode: getStringValue('#HoverMode', 'scrub'),
+                        HoverDelayMs: getNumberValue('#HoverDelayMs', 300),
+                        TrickplayWidth: getNumberValue('#TrickplayWidth', 320),
+                        AutoScrubStartPercent: getNumberValue('#AutoScrubStartPercent', 0),
+                        AutoScrubMode: getStringValue('#AutoScrubMode', 'step'),
+                        AutoScrubPreset: getStringValue('#AutoScrubPreset', 'balanced'),
+                        AutoScrubIntervalMs: getNumberValue('#AutoScrubIntervalMs', 220),
+                        AutoScrubDurationMs: getNumberValue('#AutoScrubDurationMs', 4000),
+                        AutoScrubMinDelayMs: getNumberValue('#AutoScrubMinDelayMs', 40),
+                        AutoScrubMaxDelayMs: getNumberValue('#AutoScrubMaxDelayMs', 1000),
+                        PortraitCardPreviewMode: getStringValue('#PortraitCardPreviewMode', 'contain'),
+                        BackdropCardPreviewMode: getStringValue('#BackdropCardPreviewMode', 'cover'),
+                        PreviewBackdropMode: getStringValue('#PreviewBackdropMode', 'dim-blur'),
+                        PreviewBackdropIntensityPercent: getNumberValue('#PreviewBackdropIntensityPercent', 35),
+                        RestoreOnLeave: getBooleanValue('#RestoreOnLeave'),
+                        ShowProgressIndicator: getBooleanValue('#ShowProgressIndicator'),
+                        Debug: getBooleanValue('#Debug')
+                    };
+
+                    ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                        Dashboard.processPluginConfigurationUpdateResult(result);
+                    });
+                });
+            }());
+        </script>
+    </div>
+</body>
+</html>

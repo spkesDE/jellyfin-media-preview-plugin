@@ -1,0 +1,31 @@
+[changelog]
+header = "# Changelog\n\n"
+body = """
+{% if version -%}
+## {{ version }} - {{ timestamp | date(format="%Y-%m-%d") }}
+{% else -%}
+## Unreleased
+{% endif %}
+
+### Changes
+{% for commit in commits %}
+- {{ commit.message }}
+{% endfor %}
+
+"""
+trim = true
+footer = ""
+
+[git]
+conventional_commits = false
+filter_unconventional = false
+split_commits = false
+tag_pattern = "release-v[0-9].*"
+skip_tags = ""
+ignore_tags = ""
+topo_order = false
+sort_commits = "oldest"
+
+[[git.commit_parsers]]
+message = ".*"
+group = "Changes"

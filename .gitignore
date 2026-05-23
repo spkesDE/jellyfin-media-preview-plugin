@@ -1,0 +1,8 @@
+release/
+**/bin/
+**/obj/
+.vs/
+.vscode/
+*.user
+*.suo
+*.log

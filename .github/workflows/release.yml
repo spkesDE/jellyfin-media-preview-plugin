@@ -1,0 +1,106 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - "release-v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Derive release label
+        id: tag
+        shell: bash
+        run: |
+          echo "display_tag=${GITHUB_REF_NAME#release-}" >> "$GITHUB_OUTPUT"
+
+      - name: Read release metadata
+        id: metadata
+        shell: pwsh
+        run: |
+          $metadata = Get-Content release-metadata.json -Raw | ConvertFrom-Json
+          "manifest_changelog=$([string]$metadata.manifestChangelog)" >> $env:GITHUB_OUTPUT
+          "release_title=$([string]$metadata.releaseTitle)" >> $env:GITHUB_OUTPUT
+
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@v4
+        id: release_notes
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+          github_token: ${{ github.token }}
+        env:
+          OUTPUT: release-notes.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build release ZIP
+        shell: pwsh
+        run: ./build-release.ps1 -Changelog "${{ steps.metadata.outputs.manifest_changelog }}"
+
+      - name: Compute checksum and timestamp
+        id: artifact
+        shell: pwsh
+        run: |
+          $zipPath = Join-Path $PWD "release/MediaPreview.zip"
+          $checksum = (Get-FileHash $zipPath -Algorithm MD5).Hash.ToLowerInvariant()
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")
+          "checksum=$checksum" >> $env:GITHUB_OUTPUT
+          "timestamp=$timestamp" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" "release/MediaPreview.zip" --title "${{ steps.metadata.outputs.release_title }}" --notes-file "release-notes.md"
+
+      - name: Check out main branch
+        run: |
+          git fetch origin main
+          git checkout main
+          git pull --ff-only origin main
+
+      - name: Generate full changelog
+        uses: orhun/git-cliff-action@v4
+        id: full_changelog
+        with:
+          config: cliff.toml
+          args: --verbose
+          github_token: ${{ github.token }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Update manifest
+        shell: pwsh
+        run: |
+          ./update-manifest.ps1 `
+            -SourceUrl "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/MediaPreview.zip" `
+            -Checksum "${{ steps.artifact.outputs.checksum }}" `
+            -Timestamp "${{ steps.artifact.outputs.timestamp }}"
+
+      - name: Commit release artifacts
+        shell: bash
+        run: |
+          if git diff --quiet -- CHANGELOG.md manifest.json; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md manifest.json
+          git commit -m "Update changelog and manifest for ${{ github.ref_name }}"
+          git push origin main
