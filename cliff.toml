@@ -7,9 +7,11 @@ body = """
 ## Unreleased
 {% endif %}
 
-### Changes
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group }}
 {% for commit in commits %}
 - {{ commit.message }}
+{% endfor %}
 {% endfor %}
 
 """
@@ -27,5 +29,29 @@ topo_order = false
 sort_commits = "oldest"
 
 [[git.commit_parsers]]
+message = "^Prepare release .*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^feat"
+group = "Features"
+
+[[git.commit_parsers]]
+message = "^fix"
+group = "Fixes"
+
+[[git.commit_parsers]]
+message = "^build"
+group = "Build"
+
+[[git.commit_parsers]]
+message = "^docs"
+group = "Documentation"
+
+[[git.commit_parsers]]
+message = "^refactor"
+group = "Refactoring"
+
+[[git.commit_parsers]]
 message = ".*"
-group = "Changes"
+group = "Other"
