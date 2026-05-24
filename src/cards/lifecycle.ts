@@ -226,7 +226,9 @@ export function applyHoverCountdownSettings(state: CardState | null | undefined)
 }
 
 export function updateHoverCountdown(state: CardState | null | undefined, remainingMs: number, totalMs: number): void {
-  if (!ensureHoverCountdown(state) || !state.hoverCountdownLabel) {
+  const hoverCountdown = ensureHoverCountdown(state);
+  const hoverCountdownLabel = state?.hoverCountdownLabel;
+  if (!hoverCountdown || !hoverCountdownLabel) {
     return;
   }
 
@@ -236,9 +238,9 @@ export function updateHoverCountdown(state: CardState | null | undefined, remain
   const progress = Math.max(0, Math.min(1, clampedRemainingMs / safeTotalMs));
   const secondsRemaining = Math.max(0, Math.ceil(clampedRemainingMs / 1000));
 
-  state.hoverCountdown.style.display = 'block';
-  state.hoverCountdown.style.setProperty('--progress', progress.toFixed(4));
-  state.hoverCountdownLabel.textContent = String(secondsRemaining);
+  hoverCountdown.style.display = 'block';
+  hoverCountdown.style.setProperty('--progress', progress.toFixed(4));
+  hoverCountdownLabel.textContent = String(secondsRemaining);
 }
 
 export function resetHoverCountdown(state: CardState | null | undefined): void {
@@ -259,12 +261,13 @@ export function resetHoverCountdown(state: CardState | null | undefined): void {
 }
 
 export function showUnavailableMessage(state: CardState | null | undefined, message: string): void {
-  if (!ensureUnavailableMessage(state)) {
+  const unavailableMessage = ensureUnavailableMessage(state);
+  if (!unavailableMessage) {
     return;
   }
 
-  state.unavailableMessage.textContent = message;
-  state.unavailableMessage.style.display = 'block';
+  unavailableMessage.textContent = message;
+  unavailableMessage.style.display = 'block';
 }
 
 export function hideUnavailableMessage(state: CardState | null | undefined): void {
@@ -339,12 +342,14 @@ export function hidePreviewFrame(state: CardState | null | undefined): void {
 }
 
 export function showProgress(state: CardState | null | undefined, percent: number | null | undefined): void {
-  if (!ensureProgress(state) || !state.progressBar) {
+  const progress = ensureProgress(state);
+  const progressBar = state?.progressBar;
+  if (!progress || !progressBar) {
     return;
   }
 
-  state.progress.style.display = '';
-  state.progressBar.style.width = `${Math.round((percent || 0) * 100)}%`;
+  progress.style.display = '';
+  progressBar.style.width = `${Math.round((percent || 0) * 100)}%`;
 }
 
 export function hideProgress(state: CardState | null | undefined): void {
