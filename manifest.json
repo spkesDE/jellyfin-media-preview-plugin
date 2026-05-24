@@ -1,0 +1,20 @@
+[
+{
+  "guid": "2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2",
+  "name": "Media Preview",
+  "overview": "Hover previews for Jellyfin Web using Trickplay and trailers.",
+  "description": "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers.",
+  "owner": "spkesDE",
+  "category": "General",
+  "versions": [
+    {
+      "version": "0.1.0.0",
+      "changelog": "Initial Release",
+      "targetAbi": "10.11.9.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.0.0/MediaPreview.zip",
+      "checksum": "",
+      "timestamp": ""
+    }
+  ]
+}
+]

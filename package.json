@@ -1,0 +1,14 @@
+{
+  "name": "jellyfin-media-preview-plugin",
+  "private": true,
+  "version": "0.1.0.0",
+  "description": "TypeScript build for the Jellyfin Media Preview client bundle.",
+  "scripts": {
+    "build": "esbuild src/main.ts --bundle --format=iife --global-name=JellyfinMediaPreviewBundle --target=es2020 --minify --sourcemap --outfile=dist/mediapreview.bundle.js",
+    "dev": "esbuild src/main.ts --bundle --format=iife --global-name=JellyfinMediaPreviewBundle --target=es2020 --sourcemap --outfile=dist/mediapreview.bundle.js --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "typescript": "^5.9.3"
+  }
+}

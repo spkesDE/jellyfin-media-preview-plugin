@@ -1,0 +1,141 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create release app token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Check out tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: true
+
+      - name: Derive release label
+        id: tag
+        shell: bash
+        run: |
+          echo "display_tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Read release metadata
+        id: metadata
+        shell: pwsh
+        run: |
+          $metadata = Get-Content release-metadata.json -Raw | ConvertFrom-Json
+          "manifest_changelog=$([string]$metadata.manifestChangelog)" >> $env:GITHUB_OUTPUT
+          "release_title=$([string]$metadata.releaseTitle)" >> $env:GITHUB_OUTPUT
+
+      - name: Generate release notes
+        uses: orhun/git-cliff-action@v4
+        id: release_notes
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+          github_token: ${{ steps.app-token.outputs.token }}
+        env:
+          OUTPUT: release-notes.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build release ZIP
+        shell: pwsh
+        run: ./build-release.ps1 -Changelog "${{ steps.metadata.outputs.manifest_changelog }}"
+
+      - name: Compute checksum and timestamp
+        id: artifact
+        shell: pwsh
+        run: |
+          $zipPath = Join-Path $PWD "release/MediaPreview.zip"
+
+          if (-not (Test-Path $zipPath)) {
+            throw "Release ZIP not found at $zipPath"
+          }
+
+          $checksum = (Get-FileHash $zipPath -Algorithm MD5).Hash.ToLowerInvariant()
+          $timestamp = (Get-Date).ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss")
+
+          "checksum=$checksum" >> $env:GITHUB_OUTPUT
+          "timestamp=$timestamp" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            "release/MediaPreview.zip" \
+            --title "${{ steps.metadata.outputs.release_title }}" \
+            --notes-file "release-notes.md" \
+            --verify-tag
+
+      - name: Check out main branch
+        shell: bash
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Generate full changelog
+        uses: orhun/git-cliff-action@v4
+        id: full_changelog
+        with:
+          config: cliff.toml
+          args: --verbose
+          github_token: ${{ steps.app-token.outputs.token }}
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Update manifest
+        shell: pwsh
+        run: |
+          ./update-manifest.ps1 `
+            -SourceUrl "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/MediaPreview.zip" `
+            -Checksum "${{ steps.artifact.outputs.checksum }}" `
+            -Timestamp "${{ steps.artifact.outputs.timestamp }}"
+
+      - name: Get release app bot user id
+        id: app-user
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          echo "user-id=$(gh api "/users/${{ steps.app-token.outputs.app-slug }}[bot]" --jq .id)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit release artifacts
+        shell: bash
+        run: |
+          if git diff --quiet -- CHANGELOG.md manifest.json; then
+            echo "No changelog or manifest changes to commit."
+            exit 0
+          fi
+
+          git config user.name "${{ steps.app-token.outputs.app-slug }}[bot]"
+          git config user.email "${{ steps.app-user.outputs.user-id }}+${{ steps.app-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+
+          git add CHANGELOG.md manifest.json
+          git commit -m "Update changelog and manifest for ${{ github.ref_name }}"
+          git push origin main

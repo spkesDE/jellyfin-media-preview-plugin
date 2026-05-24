@@ -1,0 +1,36 @@
+import type { PreviewResult, TrailerCandidate, TrickplayInfo } from './preview';
+
+export interface CardState {
+  hoverTimer: number | null;
+  leaveHoldTimer: number | null;
+  pointerInside: boolean;
+  previewActive: boolean;
+  previewBackdrop: HTMLDivElement | null;
+  previewFrame: HTMLDivElement | null;
+  trailerLayer: HTMLDivElement | null;
+  trailerActions: HTMLDivElement | null;
+  trailerExpandButton: HTMLButtonElement | null;
+  trailerMedia: HTMLVideoElement | HTMLIFrameElement | null;
+  trailerMediaKind: 'video' | 'iframe' | null;
+  currentTrailer: TrailerCandidate | null;
+  trailerPlaybackStartedAt: number;
+  progress: HTMLDivElement | null;
+  progressBar: HTMLDivElement | null;
+  lastPreviewKey: string | null;
+  activePreviewSource: PreviewResult['source'] | null;
+  lastMoveAt: number;
+  queuedPercent: number | null;
+  queuedMoveTimer: number | null;
+  queuedMoveFrame: number | null;
+  latestRequestToken: number;
+  rootHost: HTMLElement | null;
+  autoScrubTimer: number | null;
+  autoScrubPercent: number | null;
+  autoScrubDirection: 1 | -1;
+  autoScrubAnimationFrame: number | null;
+  autoScrubStartedAt: number | null;
+  currentTrickplayInfo: TrickplayInfo | null;
+  lastRequestedTrickplayFrameIndex: number | null;
+  lastRenderedTrickplayFrameIndex: number | null;
+  lastTrickplayRenderAt: number;
+}
