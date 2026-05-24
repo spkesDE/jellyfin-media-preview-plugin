@@ -31,7 +31,7 @@ export function ensureInjectedStyles(): void {
   document.head.appendChild(style);
 }
 
-export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState | null {
+export function ensurePreviewHost(card: HTMLElement, state: CardState): CardState | null {
   const imageHost = getImageRenderHost(card);
   if (!imageHost) {
     return null;
@@ -46,13 +46,28 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
   }
 
   state.rootHost = positionedHost;
+  return state;
+}
+
+export function ensurePreviewBackdrop(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
+  }
 
   if (!state.previewBackdrop) {
     const previewBackdrop = document.createElement('div');
     previewBackdrop.className = 'jmp-preview-backdrop';
     previewBackdrop.setAttribute('aria-hidden', 'true');
-    positionedHost.appendChild(previewBackdrop);
+    state.rootHost.appendChild(previewBackdrop);
     state.previewBackdrop = previewBackdrop;
+  }
+
+  return state.previewBackdrop;
+}
+
+export function ensurePreviewFrame(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
   }
 
   if (!state.previewFrame) {
@@ -60,8 +75,16 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
     previewFrame.className = 'jmp-preview-layer';
     previewFrame.setAttribute('aria-hidden', 'true');
     previewFrame.style.display = 'none';
-    positionedHost.appendChild(previewFrame);
+    state.rootHost.appendChild(previewFrame);
     state.previewFrame = previewFrame;
+  }
+
+  return state.previewFrame;
+}
+
+export function ensureHoverCountdown(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
   }
 
   if (!state.hoverCountdown) {
@@ -75,10 +98,19 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
     hoverCountdownLabel.className = 'jmp-hover-countdown-label';
     hoverCountdownLabel.textContent = '1';
     hoverCountdown.appendChild(hoverCountdownLabel);
-    positionedHost.appendChild(hoverCountdown);
+    state.rootHost.appendChild(hoverCountdown);
 
     state.hoverCountdown = hoverCountdown;
     state.hoverCountdownLabel = hoverCountdownLabel;
+  }
+
+  applyHoverCountdownSettings(state);
+  return state.hoverCountdown;
+}
+
+export function ensureUnavailableMessage(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
   }
 
   if (!state.unavailableMessage) {
@@ -86,16 +118,32 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
     unavailableMessage.className = 'jmp-unavailable-message';
     unavailableMessage.setAttribute('aria-hidden', 'true');
     unavailableMessage.style.display = 'none';
-    positionedHost.appendChild(unavailableMessage);
+    state.rootHost.appendChild(unavailableMessage);
     state.unavailableMessage = unavailableMessage;
+  }
+
+  return state.unavailableMessage;
+}
+
+export function ensureTrailerLayer(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
   }
 
   if (!state.trailerLayer) {
     const trailerLayer = document.createElement('div');
     trailerLayer.className = 'jmp-trailer-layer';
     trailerLayer.setAttribute('aria-hidden', 'true');
-    positionedHost.appendChild(trailerLayer);
+    state.rootHost.appendChild(trailerLayer);
     state.trailerLayer = trailerLayer;
+  }
+
+  return state.trailerLayer;
+}
+
+export function ensureTrailerActions(card: HTMLElement, state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
   }
 
   if (!state.trailerActions) {
@@ -120,14 +168,20 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
     });
 
     trailerActions.appendChild(trailerExpandButton);
-    positionedHost.appendChild(trailerActions);
+    state.rootHost.appendChild(trailerActions);
 
     state.trailerActions = trailerActions;
     state.trailerExpandButton = trailerExpandButton;
   }
 
   applyTrailerExpandButtonSettings(state);
-  applyHoverCountdownSettings(state);
+  return state.trailerActions;
+}
+
+export function ensureProgress(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
+  }
 
   if (!state.progress) {
     const progress = document.createElement('div');
@@ -138,13 +192,13 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
     const progressBar = document.createElement('div');
     progressBar.className = 'jmp-progress-bar';
     progress.appendChild(progressBar);
-    positionedHost.appendChild(progress);
+    state.rootHost.appendChild(progress);
 
     state.progress = progress;
     state.progressBar = progressBar;
   }
 
-  return state;
+  return state.progress;
 }
 
 export function resetPreviewBackdrop(state: CardState | null | undefined): void {
@@ -171,7 +225,7 @@ export function applyHoverCountdownSettings(state: CardState | null | undefined)
 }
 
 export function updateHoverCountdown(state: CardState | null | undefined, remainingMs: number, totalMs: number): void {
-  if (!state?.hoverCountdown || !state.hoverCountdownLabel) {
+  if (!ensureHoverCountdown(state) || !state.hoverCountdownLabel) {
     return;
   }
 
@@ -204,7 +258,7 @@ export function resetHoverCountdown(state: CardState | null | undefined): void {
 }
 
 export function showUnavailableMessage(state: CardState | null | undefined, message: string): void {
-  if (!state?.unavailableMessage) {
+  if (!ensureUnavailableMessage(state)) {
     return;
   }
 
@@ -276,7 +330,7 @@ export function hidePreviewFrame(state: CardState | null | undefined): void {
 }
 
 export function showProgress(state: CardState | null | undefined, percent: number | null | undefined): void {
-  if (!state?.progress || !state.progressBar) {
+  if (!ensureProgress(state) || !state.progressBar) {
     return;
   }
 

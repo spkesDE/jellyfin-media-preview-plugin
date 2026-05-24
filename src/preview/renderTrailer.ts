@@ -3,7 +3,9 @@ import { PREVIEW_SOURCE_TRAILER } from '../constants';
 import { getPreviewModeForCard } from '../cards/layout';
 import {
   applyPreviewBackdrop,
-  ensurePreviewDom,
+  ensurePreviewHost,
+  ensureTrailerActions,
+  ensureTrailerLayer,
   hidePreviewFrame,
   hideProgress,
   resetPreviewBackdrop,
@@ -107,7 +109,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
 
 export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview | null | undefined): void {
   const state = getOrCreateCardState(card);
-  if (!ensurePreviewDom(card, state) || !preview?.trailer) {
+  if (!ensurePreviewHost(card, state) || !preview?.trailer || !ensureTrailerLayer(state)) {
     return;
   }
 
@@ -153,6 +155,9 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
   state.currentTrailer = trailer;
   applyMediaLayout(state.trailerLayer, mediaElement, hostRect, previewMode, sourceWidth, sourceHeight, rootBorderRadius);
   setTrailerLayerVisible(state, true);
+  if (config.trailerExpandButtonEnabled) {
+    ensureTrailerActions(card, state);
+  }
   setTrailerExpandVisible(state, true);
   state.trailerLayer.style.background = 'transparent';
   mediaElement.style.background = 'transparent';

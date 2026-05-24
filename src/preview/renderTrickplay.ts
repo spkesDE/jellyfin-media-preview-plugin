@@ -1,6 +1,6 @@
 import { PREVIEW_MODE_CONTAIN, PREVIEW_MODE_STRETCH, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
 import { config } from '../config';
-import { ensurePreviewDom, resetPreviewBackdrop, showProgress, hideProgress } from '../cards/lifecycle';
+import { ensurePreviewFrame, ensurePreviewHost, hideProgress, resetPreviewBackdrop, showProgress } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { clearTrailerMedia } from './renderTrailer';
 import { preloadTileUrls } from './preload';
@@ -12,7 +12,7 @@ export function applyTrickplayPreview(
   percent: number
 ): void {
   const state = getOrCreateCardState(card);
-  if (!ensurePreviewDom(card, state) || !preview?.tileUrl || !preview.info) {
+  if (!ensurePreviewHost(card, state) || !preview?.tileUrl || !preview.info || !ensurePreviewFrame(state)) {
     return;
   }
 

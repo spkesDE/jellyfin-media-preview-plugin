@@ -17,7 +17,8 @@ import { getItemIdFromCard, findCandidateCards, getImageRenderHost } from '../ca
 import {
   clearLeaveHold,
   clearPendingMove,
-  ensurePreviewDom,
+  ensureHoverCountdown,
+  ensurePreviewHost,
   hideUnavailableMessage,
   resetHoverCountdown,
   restoreCard,
@@ -57,10 +58,14 @@ function getNoPreviewMessage(): string {
   return NO_PREVIEW_MESSAGE_ANY;
 }
 
-function startHoverCountdown(state: ReturnType<typeof getOrCreateCardState>): void {
+function startHoverCountdown(card: HTMLElement, state: ReturnType<typeof getOrCreateCardState>): void {
   resetHoverCountdown(state);
 
   if (!config.hoverCountdownEnabled || config.hoverDelayMs <= 0) {
+    return;
+  }
+
+  if (!ensurePreviewHost(card, state) || !ensureHoverCountdown(state)) {
     return;
   }
 
@@ -176,7 +181,10 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   }
 
   const state = getOrCreateCardState(card);
-  ensurePreviewDom(card, state);
+  if (!ensurePreviewHost(card, state)) {
+    return;
+  }
+
   if (state.pointerInside) {
     return;
   }
@@ -236,7 +244,7 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
     });
   }, config.hoverDelayMs);
 
-  startHoverCountdown(state);
+  startHoverCountdown(card, state);
 }
 
 export function handlePointerMove(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number }): void {
@@ -346,7 +354,6 @@ export function bindCard(card: HTMLElement): void {
   }
 
   const state = getOrCreateCardState(card);
-  ensurePreviewDom(card, state);
 
   if (card.getAttribute(STATE_ATTR) === 'true') {
     return;
