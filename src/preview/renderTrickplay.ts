@@ -1,6 +1,6 @@
 import { PREVIEW_MODE_CONTAIN, PREVIEW_MODE_STRETCH, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
 import { config } from '../config';
-import { ensurePreviewFrame, ensurePreviewHost, hideProgress, resetPreviewBackdrop, showProgress } from '../cards/lifecycle';
+import { applyPreviewBackdrop, ensurePreviewFrame, ensurePreviewHost, hideProgress, resetPreviewBackdrop, showProgress } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { clearTrailerMedia } from './renderTrailer';
 import { preloadTileUrls } from './preload';
@@ -99,6 +99,7 @@ export function applyTrickplayPreview(
   state.previewFrame.style.removeProperty('--jmp-fade-color');
   state.previewFrame.style.filter = 'none';
   resetPreviewBackdrop(state);
+  applyPreviewBackdrop(state);
 
   if (previewMode === PREVIEW_MODE_CONTAIN) {
     state.previewFrame.style.left = `${(hostRect.width - renderedFrameWidth) / 2}px`;

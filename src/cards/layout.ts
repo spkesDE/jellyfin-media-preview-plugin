@@ -86,7 +86,7 @@ export function getPreviewBackdropStyles(): {
     const vignette = `radial-gradient(circle at center, rgba(0, 0, 0, ${innerAlpha.toFixed(3)}) 22%, rgba(0, 0, 0, ${outerAlpha.toFixed(3)}) 100%)`;
 
     styles.background = mode === PREVIEW_BACKDROP_DIM_VIGNETTE && styles.background !== 'transparent'
-      ? `${styles.background}, ${vignette}`
+      ? `${vignette}, ${styles.background}`
       : vignette;
   }
 

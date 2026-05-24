@@ -210,6 +210,7 @@ export function resetPreviewBackdrop(state: CardState | null | undefined): void 
     webkitBackdropFilter: string;
   };
   state.previewBackdrop.style.display = 'none';
+  state.previewBackdrop.style.zIndex = '10';
   state.previewBackdrop.style.background = 'transparent';
   style.backdropFilter = 'none';
   style.webkitBackdropFilter = 'none';
@@ -294,12 +295,20 @@ export function applyTrailerExpandButtonSettings(state: CardState | null | undef
 }
 
 export function applyPreviewBackdrop(state: CardState | null | undefined): void {
+  const backdropStyles = getPreviewBackdropStyles();
+  const shouldShow = !(backdropStyles.background === 'transparent' && backdropStyles.backdropFilter === 'none');
+  if (!shouldShow && !state?.previewBackdrop) {
+    return;
+  }
+
+  if (shouldShow && !ensurePreviewBackdrop(state)) {
+    return;
+  }
+
   if (!state?.previewBackdrop) {
     return;
   }
 
-  const backdropStyles = getPreviewBackdropStyles();
-  const shouldShow = !(backdropStyles.background === 'transparent' && backdropStyles.backdropFilter === 'none');
   const style = state.previewBackdrop.style as CSSStyleDeclaration & {
     webkitBackdropFilter: string;
   };
