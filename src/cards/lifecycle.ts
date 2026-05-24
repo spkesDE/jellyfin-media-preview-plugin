@@ -425,6 +425,20 @@ export function destroyCardBindings(): void {
 
   document.querySelectorAll(`[${STATE_ATTR}="true"]`).forEach((card) => {
     if (card instanceof HTMLElement) {
+      const state = getOrCreateCardState(card);
+      if (state.boundTarget && state.boundHandlers) {
+        state.boundTarget.removeEventListener('pointerenter', state.boundHandlers.onPointerEnter);
+        state.boundTarget.removeEventListener('pointermove', state.boundHandlers.onPointerMove);
+        state.boundTarget.removeEventListener('pointerleave', state.boundHandlers.onPointerLeave);
+        state.boundTarget.removeEventListener('mouseenter', state.boundHandlers.onMouseEnter);
+        state.boundTarget.removeEventListener('mousemove', state.boundHandlers.onMouseMove);
+        state.boundTarget.removeEventListener('mouseleave', state.boundHandlers.onMouseLeave);
+        state.boundTarget.removeEventListener('pointercancel', state.boundHandlers.onPointerCancel);
+        state.boundTarget.removeEventListener('contextmenu', state.boundHandlers.onContextMenu);
+      }
+
+      state.boundTarget = null;
+      state.boundHandlers = null;
       restoreCard(card);
       card.removeAttribute(STATE_ATTR);
     }

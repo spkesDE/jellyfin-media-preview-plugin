@@ -1,14 +1,14 @@
 import { NAMESPACE } from './constants';
 import { normalizeConfig } from './config';
 import { ensureInjectedStyles, destroyCardBindings } from './cards/lifecycle';
-import { bindUserActivationEvents } from './interaction/userActivation';
-import { bindRouteEvents } from './core/router';
-import { bindDelegatedHoverEvents } from './interaction/delegatedEvents';
+import { bindUserActivationEvents, unbindUserActivationEvents } from './interaction/userActivation';
+import { bindRouteEvents, unbindRouteEvents } from './core/router';
+import { bindDelegatedHoverEvents, unbindDelegatedHoverEvents } from './interaction/delegatedEvents';
 import { bindCards } from './interaction/hover';
-import { scheduleAdminNavigationRefresh } from './admin/navigation';
-import { observePageChanges, scheduleScan } from './core/observer';
+import { cancelAdminNavigationRefresh, scheduleAdminNavigationRefresh } from './admin/navigation';
+import { cancelScheduledScan, observePageChanges, scheduleScan } from './core/observer';
 import { runtimeState } from './runtime';
-import { debugLog, log } from './core/logger';
+import { log } from './core/logger';
 import { config } from './config';
 import { createPublicApi } from './publicApi';
 import { collapseExpandedTrailer } from './trailerOverlay/expandedTrailer';
@@ -23,6 +23,11 @@ export function destroy(): void {
     runtimeState.observer = null;
   }
 
+  cancelScheduledScan();
+  cancelAdminNavigationRefresh();
+  unbindDelegatedHoverEvents();
+  unbindRouteEvents();
+  unbindUserActivationEvents();
   destroyCardBindings();
 }
 

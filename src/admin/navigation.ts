@@ -184,13 +184,27 @@ export function ensureAdminNavigationLink(): void {
 }
 
 export function scheduleAdminNavigationRefresh(): void {
+  if (runtimeState.adminNavRefreshFrame !== null) {
+    return;
+  }
+
   if (runtimeState.adminNavRefreshScheduled) {
     return;
   }
 
   runtimeState.adminNavRefreshScheduled = true;
-  window.requestAnimationFrame(() => {
+  runtimeState.adminNavRefreshFrame = window.requestAnimationFrame(() => {
+    runtimeState.adminNavRefreshFrame = null;
     runtimeState.adminNavRefreshScheduled = false;
     ensureAdminNavigationLink();
   });
+}
+
+export function cancelAdminNavigationRefresh(): void {
+  if (runtimeState.adminNavRefreshFrame !== null) {
+    window.cancelAnimationFrame(runtimeState.adminNavRefreshFrame);
+    runtimeState.adminNavRefreshFrame = null;
+  }
+
+  runtimeState.adminNavRefreshScheduled = false;
 }

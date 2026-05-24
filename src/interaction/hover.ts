@@ -360,39 +360,51 @@ export function bindCard(card: HTMLElement): void {
   }
 
   const bindTarget = imageHost;
-
-  bindTarget.addEventListener('pointerenter', (event) => {
+  const onPointerEnter = (event: PointerEvent) => {
     handlePointerEnter(card, event);
-  }, { passive: true });
-
-  bindTarget.addEventListener('pointermove', (event) => {
+  };
+  const onPointerMove = (event: PointerEvent) => {
     handlePointerMove(card, event);
-  }, { passive: true });
-
-  bindTarget.addEventListener('pointerleave', (event) => {
+  };
+  const onPointerLeave = (event: PointerEvent) => {
     handlePointerLeave(card, event);
-  }, { passive: true });
-
-  bindTarget.addEventListener('mouseenter', (event) => {
+  };
+  const onMouseEnter = (event: MouseEvent) => {
     handleMouseEnter(card, event);
-  }, { passive: true });
-
-  bindTarget.addEventListener('mousemove', (event) => {
+  };
+  const onMouseMove = (event: MouseEvent) => {
     handleMouseMove(card, event);
-  }, { passive: true });
-
-  bindTarget.addEventListener('mouseleave', () => {
+  };
+  const onMouseLeave = () => {
     handleMouseLeave(card);
-  }, { passive: true });
-
-  bindTarget.addEventListener('pointercancel', () => {
+  };
+  const onPointerCancel = () => {
     resetPointerTracking(card, 'pointercancel');
-  }, { passive: true });
-
-  bindTarget.addEventListener('contextmenu', () => {
+  };
+  const onContextMenu = () => {
     resetPointerTracking(card, 'contextmenu');
-  }, { passive: true });
+  };
 
+  bindTarget.addEventListener('pointerenter', onPointerEnter, { passive: true });
+  bindTarget.addEventListener('pointermove', onPointerMove, { passive: true });
+  bindTarget.addEventListener('pointerleave', onPointerLeave, { passive: true });
+  bindTarget.addEventListener('mouseenter', onMouseEnter, { passive: true });
+  bindTarget.addEventListener('mousemove', onMouseMove, { passive: true });
+  bindTarget.addEventListener('mouseleave', onMouseLeave, { passive: true });
+  bindTarget.addEventListener('pointercancel', onPointerCancel, { passive: true });
+  bindTarget.addEventListener('contextmenu', onContextMenu, { passive: true });
+
+  state.boundTarget = bindTarget;
+  state.boundHandlers = {
+    onPointerEnter,
+    onPointerMove,
+    onPointerLeave,
+    onMouseEnter,
+    onMouseMove,
+    onMouseLeave,
+    onPointerCancel,
+    onContextMenu
+  };
   card.setAttribute(STATE_ATTR, 'true');
   debugCardSummary(card, 'Bound card.');
 }

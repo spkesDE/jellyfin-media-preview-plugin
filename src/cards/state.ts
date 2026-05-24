@@ -43,7 +43,9 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       currentTrickplayInfo: null,
       lastRequestedTrickplayFrameIndex: null,
       lastRenderedTrickplayFrameIndex: null,
-      lastTrickplayRenderAt: 0
+      lastTrickplayRenderAt: 0,
+      boundTarget: null,
+      boundHandlers: null
     };
     cardState.set(card, state);
   }

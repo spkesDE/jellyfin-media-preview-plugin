@@ -39,4 +39,15 @@ export interface CardState {
   lastRequestedTrickplayFrameIndex: number | null;
   lastRenderedTrickplayFrameIndex: number | null;
   lastTrickplayRenderAt: number;
+  boundTarget: HTMLElement | null;
+  boundHandlers: {
+    onPointerEnter: (event: PointerEvent) => void;
+    onPointerMove: (event: PointerEvent) => void;
+    onPointerLeave: (event: PointerEvent) => void;
+    onMouseEnter: (event: MouseEvent) => void;
+    onMouseMove: (event: MouseEvent) => void;
+    onMouseLeave: () => void;
+    onPointerCancel: () => void;
+    onContextMenu: () => void;
+  } | null;
 }

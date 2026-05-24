@@ -106,5 +106,30 @@ export function bindDelegatedHoverEvents(): void {
   document.addEventListener('mouseover', onMouseOver, true);
   document.addEventListener('mousemove', onMouseMove, true);
   document.addEventListener('mouseout', onMouseOut, true);
+  runtimeState.delegatedHoverHandlers = {
+    onPointerOver,
+    onPointerMove,
+    onPointerOut,
+    onMouseOver,
+    onMouseMove,
+    onMouseOut
+  };
   runtimeState.delegatedHoverEventsBound = true;
+}
+
+export function unbindDelegatedHoverEvents(): void {
+  if (!runtimeState.delegatedHoverHandlers) {
+    runtimeState.delegatedHoverEventsBound = false;
+    return;
+  }
+
+  const handlers = runtimeState.delegatedHoverHandlers;
+  document.removeEventListener('pointerover', handlers.onPointerOver, true);
+  document.removeEventListener('pointermove', handlers.onPointerMove, true);
+  document.removeEventListener('pointerout', handlers.onPointerOut, true);
+  document.removeEventListener('mouseover', handlers.onMouseOver, true);
+  document.removeEventListener('mousemove', handlers.onMouseMove, true);
+  document.removeEventListener('mouseout', handlers.onMouseOut, true);
+  runtimeState.delegatedHoverHandlers = null;
+  runtimeState.delegatedHoverEventsBound = false;
 }

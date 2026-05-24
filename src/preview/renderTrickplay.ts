@@ -1,6 +1,7 @@
 import { PREVIEW_MODE_CONTAIN, PREVIEW_MODE_STRETCH, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
 import { config } from '../config';
 import { applyPreviewBackdrop, ensurePreviewFrame, ensurePreviewHost, hideProgress, resetPreviewBackdrop, showProgress } from '../cards/lifecycle';
+import { getPreviewModeForCard } from '../cards/layout';
 import { getOrCreateCardState } from '../cards/state';
 import { clearTrailerMedia } from './renderTrailer';
 import { preloadTileUrls } from './preload';
@@ -26,7 +27,7 @@ export function applyTrickplayPreview(
     return;
   }
 
-  const previewMode = PREVIEW_MODE_CONTAIN;
+  const previewMode = getPreviewModeForCard(card);
   let scaleX = hostRect.width / preview.info.frameWidth;
   let scaleY = hostRect.height / preview.info.frameHeight;
   let offsetX: number;

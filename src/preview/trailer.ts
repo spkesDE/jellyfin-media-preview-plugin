@@ -220,11 +220,18 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
     });
   }).catch((error) => {
     debugLog('Failed to resolve trailer info for item.', itemId, error);
+    trailerInfoCache.delete(itemId);
     return null;
   });
 
   trailerInfoCache.set(itemId, request);
-  return request;
+  return request.then((result) => {
+    if (!result) {
+      trailerInfoCache.delete(itemId);
+    }
+
+    return result;
+  });
 }
 
 export function getTrailerPreview(itemId: string): Promise<TrailerPreview | null> {

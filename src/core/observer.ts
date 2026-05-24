@@ -3,14 +3,27 @@ import { bindCards } from '../interaction/hover';
 import { runtimeState } from '../runtime';
 
 export function scheduleScan(rootNode?: ParentNode | Node | null): void {
-  if (runtimeState.scanScheduled) {
+  runtimeState.pendingScanRoots.add(rootNode || document);
+
+  if (runtimeState.scanFrame !== null || runtimeState.scanScheduled) {
     return;
   }
 
   runtimeState.scanScheduled = true;
-  window.requestAnimationFrame(() => {
+  runtimeState.scanFrame = window.requestAnimationFrame(() => {
+    runtimeState.scanFrame = null;
     runtimeState.scanScheduled = false;
-    bindCards(rootNode || document);
+    const pendingRoots = Array.from(runtimeState.pendingScanRoots);
+    runtimeState.pendingScanRoots.clear();
+
+    if (!pendingRoots.length || pendingRoots.includes(document)) {
+      bindCards(document);
+      return;
+    }
+
+    pendingRoots.forEach((pendingRoot) => {
+      bindCards(pendingRoot);
+    });
   });
 }
 
@@ -34,4 +47,14 @@ export function observePageChanges(): void {
     childList: true,
     subtree: true
   });
+}
+
+export function cancelScheduledScan(): void {
+  if (runtimeState.scanFrame !== null) {
+    window.cancelAnimationFrame(runtimeState.scanFrame);
+    runtimeState.scanFrame = null;
+  }
+
+  runtimeState.scanScheduled = false;
+  runtimeState.pendingScanRoots.clear();
 }

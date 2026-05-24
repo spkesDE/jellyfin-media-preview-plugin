@@ -200,11 +200,18 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
     return normalized;
   }).catch((error) => {
     debugLog('Failed to load trickplay metadata for item.', itemId, error);
+    itemInfoCache.delete(itemId);
     return null;
   });
 
   itemInfoCache.set(itemId, request);
-  return request;
+  return request.then((result) => {
+    if (!result) {
+      itemInfoCache.delete(itemId);
+    }
+
+    return result;
+  });
 }
 
 export function getTrickplayPreview(itemId: string, percent: number): Promise<TrickplayPreview | null> {
