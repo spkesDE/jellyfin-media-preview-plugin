@@ -1,6 +1,13 @@
 export const mediaPreviewStyles = [
   '.jhs-preview-backdrop{position:absolute;inset:0;z-index:10;pointer-events:none;background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;display:none;border-radius:inherit;}',
   '.jhs-preview-layer{position:absolute;inset:0;z-index:20;pointer-events:none;opacity:1;background-repeat:no-repeat;background-position:0 0;background-color:transparent;overflow:hidden;border-radius:inherit;}',
+  '.jhs-hover-countdown{position:absolute;z-index:24;display:none;width:34px;height:34px;border:0;border-radius:999px;background:conic-gradient(rgba(255,255,255,.42) calc(var(--progress,1)*1turn), rgba(255,255,255,.08) 0);box-shadow:0 8px 24px rgba(0,0,0,.28);pointer-events:none;overflow:hidden;}',
+  '.jhs-hover-countdown.pos-top-left{top:10px;left:10px;}',
+  '.jhs-hover-countdown.pos-top-right{top:10px;right:10px;}',
+  '.jhs-hover-countdown.pos-bottom-left{bottom:10px;left:10px;}',
+  '.jhs-hover-countdown.pos-bottom-right{bottom:10px;right:10px;}',
+  '.jhs-hover-countdown-label{position:absolute;inset:2px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:rgba(10,14,20,.76);color:rgba(255,255,255,.92);font-size:13px;font-weight:700;line-height:1;letter-spacing:.02em;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}',
+  '.jhs-unavailable-message{position:absolute;left:50%;top:50%;z-index:26;display:none;max-width:calc(100% - 28px);padding:9px 14px;border-radius:999px;transform:translate(-50%,-50%);background:rgba(10,14,20,.76);color:rgba(232,236,242,.84);font-size:11px;font-weight:700;line-height:1.2;text-align:center;letter-spacing:.01em;border:1px solid rgba(255,255,255,.05);box-shadow:0 8px 24px rgba(0,0,0,.28);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);pointer-events:none;}',
   '.jhs-trailer-layer{position:absolute;inset:0;z-index:30;pointer-events:none;overflow:hidden;border-radius:inherit;background:transparent;display:none;}',
   '.jhs-trailer-actions{position:absolute;z-index:45;display:none;pointer-events:none;}',
   '.jhs-trailer-actions.pos-top-left{top:10px;left:10px;}',

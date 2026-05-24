@@ -7,11 +7,17 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
   if (!state) {
     state = {
       hoverTimer: null,
+      hoverCountdownFrame: null,
+      hoverCountdownStartedAt: null,
+      hoverCountdownDurationMs: 0,
       leaveHoldTimer: null,
       pointerInside: false,
       previewActive: false,
       previewBackdrop: null,
       previewFrame: null,
+      hoverCountdown: null,
+      hoverCountdownLabel: null,
+      unavailableMessage: null,
       trailerLayer: null,
       trailerActions: null,
       trailerExpandButton: null,

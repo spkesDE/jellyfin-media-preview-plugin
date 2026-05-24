@@ -2,11 +2,17 @@ import type { PreviewResult, TrailerCandidate, TrickplayInfo } from './preview';
 
 export interface CardState {
   hoverTimer: number | null;
+  hoverCountdownFrame: number | null;
+  hoverCountdownStartedAt: number | null;
+  hoverCountdownDurationMs: number;
   leaveHoldTimer: number | null;
   pointerInside: boolean;
   previewActive: boolean;
   previewBackdrop: HTMLDivElement | null;
   previewFrame: HTMLDivElement | null;
+  hoverCountdown: HTMLDivElement | null;
+  hoverCountdownLabel: HTMLSpanElement | null;
+  unavailableMessage: HTMLDivElement | null;
   trailerLayer: HTMLDivElement | null;
   trailerActions: HTMLDivElement | null;
   trailerExpandButton: HTMLButtonElement | null;

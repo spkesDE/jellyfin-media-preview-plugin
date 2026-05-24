@@ -1,8 +1,29 @@
 import { config } from '../config';
-import { DEBUG_LEAVE_HOLD_MS, HOVER_MODE_AUTO, PREVIEW_SOURCE_TRAILER, STATE_ATTR, SUPPORTED_TYPES } from '../constants';
+import {
+  DEBUG_LEAVE_HOLD_MS,
+  HOVER_MODE_AUTO,
+  NO_PREVIEW_MESSAGE_ANY,
+  NO_PREVIEW_MESSAGE_TRAILER,
+  NO_PREVIEW_MESSAGE_TRICKPLAY,
+  PREVIEW_SOURCE_PREFER_TRAILER,
+  PREVIEW_SOURCE_PREFER_TRICKPLAY,
+  PREVIEW_SOURCE_TRAILER,
+  PREVIEW_SOURCE_TRICKPLAY,
+  STATE_ATTR,
+  SUPPORTED_TYPES
+} from '../constants';
 import { debugCardSummary, debugLog } from '../core/logger';
 import { getItemIdFromCard, findCandidateCards, getImageRenderHost } from '../cards/discovery';
-import { clearLeaveHold, clearPendingMove, ensurePreviewDom, restoreCard } from '../cards/lifecycle';
+import {
+  clearLeaveHold,
+  clearPendingMove,
+  ensurePreviewDom,
+  hideUnavailableMessage,
+  resetHoverCountdown,
+  restoreCard,
+  showUnavailableMessage,
+  updateHoverCountdown
+} from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { runtimeState } from '../runtime';
 import { applyPreview } from '../preview';
@@ -18,6 +39,55 @@ export function getRelativePercent(card: HTMLElement, event: MouseEvent | Pointe
   }
 
   return Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+}
+
+function getNoPreviewMessage(): string {
+  if (config.previewSource === PREVIEW_SOURCE_TRAILER) {
+    return NO_PREVIEW_MESSAGE_TRAILER;
+  }
+
+  if (config.previewSource === PREVIEW_SOURCE_TRICKPLAY) {
+    return NO_PREVIEW_MESSAGE_TRICKPLAY;
+  }
+
+  if (config.previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY || config.previewSource === PREVIEW_SOURCE_PREFER_TRAILER) {
+    return NO_PREVIEW_MESSAGE_ANY;
+  }
+
+  return NO_PREVIEW_MESSAGE_ANY;
+}
+
+function startHoverCountdown(state: ReturnType<typeof getOrCreateCardState>): void {
+  resetHoverCountdown(state);
+
+  if (!config.hoverCountdownEnabled || config.hoverDelayMs <= 0) {
+    return;
+  }
+
+  const startedAt = window.performance.now();
+  state.hoverCountdownStartedAt = startedAt;
+  state.hoverCountdownDurationMs = config.hoverDelayMs;
+
+  const tick = (timestamp: number) => {
+    if (!state.pointerInside || state.hoverCountdownStartedAt === null) {
+      resetHoverCountdown(state);
+      return;
+    }
+
+    const elapsedMs = Math.max(0, timestamp - startedAt);
+    const remainingMs = Math.max(0, config.hoverDelayMs - elapsedMs);
+    updateHoverCountdown(state, remainingMs, config.hoverDelayMs);
+
+    if (remainingMs <= 0) {
+      state.hoverCountdownFrame = null;
+      return;
+    }
+
+    state.hoverCountdownFrame = window.requestAnimationFrame(tick);
+  };
+
+  updateHoverCountdown(state, config.hoverDelayMs, config.hoverDelayMs);
+  state.hoverCountdownFrame = window.requestAnimationFrame(tick);
 }
 
 export function runPreviewUpdate(card: HTMLElement, percent: number): void {
@@ -106,6 +176,7 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   }
 
   const state = getOrCreateCardState(card);
+  ensurePreviewDom(card, state);
   if (state.pointerInside) {
     return;
   }
@@ -113,14 +184,21 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   clearLeaveHold(state);
   state.pointerInside = true;
   restoreCard(card);
+  hideUnavailableMessage(state);
   debugCardSummary(card, 'Pointer entered card.');
 
   state.hoverTimer = window.setTimeout(() => {
     state.hoverTimer = null;
     state.previewActive = true;
+    if (state.hoverCountdownFrame) {
+      window.cancelAnimationFrame(state.hoverCountdownFrame);
+      state.hoverCountdownFrame = null;
+    }
+    updateHoverCountdown(state, 0, config.hoverDelayMs);
 
     const itemId = getItemIdFromCard(card);
     if (!itemId) {
+      resetHoverCountdown(state);
       return;
     }
 
@@ -130,13 +208,19 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
 
     getPreviewUrl(itemId, initialPercent).then((preview) => {
       if (!state.previewActive || !preview) {
+        resetHoverCountdown(state);
         debugCardSummary(card, 'Hover activation found no preview source.', {
           itemId,
           previewSource: config.previewSource
         });
+        if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
+          showUnavailableMessage(state, getNoPreviewMessage());
+        }
         return;
       }
 
+      resetHoverCountdown(state);
+      hideUnavailableMessage(state);
       applyPreview(card, preview, initialPercent);
 
       if (preview.source === PREVIEW_SOURCE_TRAILER) {
@@ -147,9 +231,12 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
         startAutoScrub(card);
       }
     }).catch((error) => {
+      resetHoverCountdown(state);
       debugLog('Hover activation failed.', itemId, error);
     });
   }, config.hoverDelayMs);
+
+  startHoverCountdown(state);
 }
 
 export function handlePointerMove(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number }): void {
@@ -240,7 +327,7 @@ export function handleMouseLeave(card: HTMLElement): void {
 }
 
 export function bindCard(card: HTMLElement): void {
-  if (!card || card.getAttribute(STATE_ATTR) === 'true') {
+  if (!card) {
     return;
   }
 
@@ -260,6 +347,10 @@ export function bindCard(card: HTMLElement): void {
 
   const state = getOrCreateCardState(card);
   ensurePreviewDom(card, state);
+
+  if (card.getAttribute(STATE_ATTR) === 'true') {
+    return;
+  }
 
   const bindTarget = imageHost;
 

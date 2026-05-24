@@ -54,6 +54,32 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
     state.previewFrame = previewFrame;
   }
 
+  if (!state.hoverCountdown) {
+    const hoverCountdown = document.createElement('div');
+    hoverCountdown.className = 'jhs-hover-countdown';
+    hoverCountdown.setAttribute('aria-hidden', 'true');
+    hoverCountdown.style.display = 'none';
+    hoverCountdown.style.setProperty('--progress', '1');
+
+    const hoverCountdownLabel = document.createElement('span');
+    hoverCountdownLabel.className = 'jhs-hover-countdown-label';
+    hoverCountdownLabel.textContent = '1';
+    hoverCountdown.appendChild(hoverCountdownLabel);
+    positionedHost.appendChild(hoverCountdown);
+
+    state.hoverCountdown = hoverCountdown;
+    state.hoverCountdownLabel = hoverCountdownLabel;
+  }
+
+  if (!state.unavailableMessage) {
+    const unavailableMessage = document.createElement('div');
+    unavailableMessage.className = 'jhs-unavailable-message';
+    unavailableMessage.setAttribute('aria-hidden', 'true');
+    unavailableMessage.style.display = 'none';
+    positionedHost.appendChild(unavailableMessage);
+    state.unavailableMessage = unavailableMessage;
+  }
+
   if (!state.trailerLayer) {
     const trailerLayer = document.createElement('div');
     trailerLayer.className = 'jhs-trailer-layer';
@@ -91,6 +117,7 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
   }
 
   applyTrailerExpandButtonSettings(state);
+  applyHoverCountdownSettings(state);
 
   if (!state.progress) {
     const progress = document.createElement('div');
@@ -122,6 +149,66 @@ export function resetPreviewBackdrop(state: CardState | null | undefined): void 
   state.previewBackdrop.style.background = 'transparent';
   style.backdropFilter = 'none';
   style.webkitBackdropFilter = 'none';
+}
+
+export function applyHoverCountdownSettings(state: CardState | null | undefined): void {
+  if (!state?.hoverCountdown) {
+    return;
+  }
+
+  state.hoverCountdown.classList.remove('pos-top-left', 'pos-top-right', 'pos-bottom-left', 'pos-bottom-right');
+  state.hoverCountdown.classList.add(`pos-${config.hoverCountdownPosition}`);
+}
+
+export function updateHoverCountdown(state: CardState | null | undefined, remainingMs: number, totalMs: number): void {
+  if (!state?.hoverCountdown || !state.hoverCountdownLabel) {
+    return;
+  }
+
+  applyHoverCountdownSettings(state);
+  const safeTotalMs = Math.max(1, totalMs);
+  const clampedRemainingMs = Math.max(0, remainingMs);
+  const progress = Math.max(0, Math.min(1, clampedRemainingMs / safeTotalMs));
+  const secondsRemaining = Math.max(0, Math.ceil(clampedRemainingMs / 1000));
+
+  state.hoverCountdown.style.display = 'block';
+  state.hoverCountdown.style.setProperty('--progress', progress.toFixed(4));
+  state.hoverCountdownLabel.textContent = String(secondsRemaining);
+}
+
+export function resetHoverCountdown(state: CardState | null | undefined): void {
+  if (state?.hoverCountdownFrame) {
+    window.cancelAnimationFrame(state.hoverCountdownFrame);
+    state.hoverCountdownFrame = null;
+  }
+
+  if (!state?.hoverCountdown || !state.hoverCountdownLabel) {
+    return;
+  }
+
+  state.hoverCountdownStartedAt = null;
+  state.hoverCountdownDurationMs = 0;
+  state.hoverCountdown.style.display = 'none';
+  state.hoverCountdown.style.setProperty('--progress', '1');
+  state.hoverCountdownLabel.textContent = '1';
+}
+
+export function showUnavailableMessage(state: CardState | null | undefined, message: string): void {
+  if (!state?.unavailableMessage) {
+    return;
+  }
+
+  state.unavailableMessage.textContent = message;
+  state.unavailableMessage.style.display = 'block';
+}
+
+export function hideUnavailableMessage(state: CardState | null | undefined): void {
+  if (!state?.unavailableMessage) {
+    return;
+  }
+
+  state.unavailableMessage.style.display = 'none';
+  state.unavailableMessage.textContent = '';
 }
 
 export function setTrailerExpandVisible(state: CardState | null | undefined, isVisible: boolean): void {
@@ -241,6 +328,8 @@ export function restoreCard(card: HTMLElement): void {
   state.lastRequestedTrickplayFrameIndex = null;
   state.lastRenderedTrickplayFrameIndex = null;
   state.lastTrickplayRenderAt = 0;
+  resetHoverCountdown(state);
+  hideUnavailableMessage(state);
 
   if (config.restoreOnLeave) {
     hidePreviewFrame(state);
