@@ -8,6 +8,14 @@
   "category": "General",
   "versions": [
     {
+      "version": "0.1.1.0",
+      "changelog": "Bug fixes & Refactor of some code",
+      "targetAbi": "10.11.9.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.1.0/MediaPreview.zip",
+      "checksum": "a1e376c6b314326d759b3dcae5710951",
+      "timestamp": "2026-05-24 20:06:16"
+    },
+    {
       "version": "0.1.0.0",
       "changelog": "Initial Release",
       "targetAbi": "10.11.9.0",
