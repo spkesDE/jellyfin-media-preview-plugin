@@ -1,0 +1,44 @@
+.jmp-preview-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: none;
+  pointer-events: none;
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: inherit;
+}
+
+.jmp-preview-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 1;
+  overflow: hidden;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  border-radius: inherit;
+}
+
+.jmp-progress {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  z-index: 90;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.jmp-progress-bar {
+  width: 0;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.88);
+  transform-origin: left center;
+}

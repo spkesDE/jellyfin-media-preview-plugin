@@ -4,8 +4,8 @@
   "version": "0.1.0.0",
   "description": "TypeScript build for the Jellyfin Media Preview client bundle.",
   "scripts": {
-    "build": "esbuild src/main.ts --bundle --format=iife --global-name=JellyfinMediaPreviewBundle --target=es2020 --minify --sourcemap --outfile=dist/mediapreview.bundle.js",
-    "dev": "esbuild src/main.ts --bundle --format=iife --global-name=JellyfinMediaPreviewBundle --target=es2020 --sourcemap --outfile=dist/mediapreview.bundle.js --watch"
+    "build": "esbuild src/main.ts --bundle --format=iife --global-name=JellyfinMediaPreviewBundle --target=es2020 --loader:.css=text --minify --sourcemap --outfile=dist/mediapreview.bundle.js",
+    "dev": "esbuild src/main.ts --bundle --format=iife --global-name=JellyfinMediaPreviewBundle --target=es2020 --loader:.css=text --sourcemap --outfile=dist/mediapreview.bundle.js --watch"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",

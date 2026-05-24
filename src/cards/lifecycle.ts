@@ -7,8 +7,18 @@ import { clearTrailerMedia } from '../preview/renderTrailer';
 import { expandTrailer } from '../trailerOverlay/expandedTrailer';
 import { clearAutoScrub } from '../interaction/autoScrub';
 import { runtimeState } from '../runtime';
-import { mediaPreviewStyles } from '../styles/mediaPreviewStyles';
+import mediaPreviewGlobalStyles from '../styles/mediaPreviewGlobal.css';
+import mediaPreviewHoverStyles from '../styles/mediaPreviewHover.css';
+import mediaPreviewTrailerStyles from '../styles/mediaPreviewTrailer.css';
+import mediaPreviewExpandedTrailerStyles from '../styles/mediaPreviewExpandedTrailer.css';
 import type { CardState } from '../types/state';
+
+const mediaPreviewStyles = [
+  mediaPreviewGlobalStyles,
+  mediaPreviewHoverStyles,
+  mediaPreviewTrailerStyles,
+  mediaPreviewExpandedTrailerStyles
+].join('\n');
 
 export function ensureInjectedStyles(): void {
   if (document.getElementById(STYLE_ID)) {
