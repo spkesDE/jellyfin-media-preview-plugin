@@ -32,7 +32,6 @@ export interface CardState {
   rootHost: HTMLElement | null;
   autoScrubTimer: number | null;
   autoScrubPercent: number | null;
-  autoScrubDirection: 1 | -1;
   autoScrubAnimationFrame: number | null;
   autoScrubStartedAt: number | null;
   currentTrickplayInfo: TrickplayInfo | null;

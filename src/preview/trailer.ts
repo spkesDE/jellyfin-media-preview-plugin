@@ -8,6 +8,8 @@ import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
 import type { AspectRatio, TrailerCandidate, TrailerInfo, TrailerPreview } from '../types/preview';
 
+const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']);
+
 export function extractItemList(payload: unknown): JellyfinItem[] {
   if (Array.isArray(payload)) {
     return payload as JellyfinItem[];
@@ -34,7 +36,21 @@ export function getMediaSourceContainer(mediaSource: JellyfinMediaSource | null 
 }
 
 export function isSupportedVideoContainer(container: string | null | undefined): boolean {
-  return new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']).has(container || '');
+  return SUPPORTED_VIDEO_CONTAINERS.has(container || '');
+}
+
+async function loadLocalTrailerCandidates(itemId: string, localTrailerCount: number): Promise<TrailerCandidate[]> {
+  if (localTrailerCount <= 0) {
+    return [];
+  }
+
+  try {
+    const payload = await requestJson<unknown>(`Items/${encodeURIComponent(itemId)}/LocalTrailers`);
+    return extractItemList(payload).map(normalizeLocalTrailerCandidate).filter(Boolean) as TrailerCandidate[];
+  } catch (error) {
+    debugLog('Failed to load local trailers.', itemId, error);
+    return [];
+  }
 }
 
 export function getMediaSourceAspectRatio(mediaSource: JellyfinMediaSource | null | undefined): AspectRatio {
@@ -182,42 +198,32 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
 
   const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
     Fields: 'LocalTrailerCount,RemoteTrailers'
-  }).then((item) => {
+  }).then(async (item) => {
     if (!item || !SUPPORTED_TYPES.has(item.Type || '')) {
       return null;
     }
 
-    const localTrailerPromise = Number(item.LocalTrailerCount) > 0
-      ? requestJson<unknown>(`Items/${encodeURIComponent(itemId)}/LocalTrailers`).then((payload) => {
-        return extractItemList(payload).map(normalizeLocalTrailerCandidate).filter(Boolean) as TrailerCandidate[];
-      }).catch((error) => {
-        debugLog('Failed to load local trailers.', itemId, error);
-        return [];
-      })
-      : Promise.resolve([] as TrailerCandidate[]);
+    const localCandidates = await loadLocalTrailerCandidates(itemId, Number(item.LocalTrailerCount) || 0);
+    const remoteCandidates = Array.isArray(item.RemoteTrailers)
+      ? item.RemoteTrailers.map(normalizeRemoteTrailerCandidate).filter(Boolean) as TrailerCandidate[]
+      : [];
 
-    return localTrailerPromise.then((localCandidates) => {
-      const remoteCandidates = Array.isArray(item.RemoteTrailers)
-        ? item.RemoteTrailers.map(normalizeRemoteTrailerCandidate).filter(Boolean) as TrailerCandidate[]
-        : [];
-
-      const candidates = localCandidates.concat(remoteCandidates);
-      if (!candidates.length) {
-        debugLog('No usable trailer candidates found.', {
-          itemId,
-          localTrailerCount: item.LocalTrailerCount || 0,
-          remoteTrailerCount: Array.isArray(item.RemoteTrailers) ? item.RemoteTrailers.length : 0
-        });
-        return null;
-      }
-
-      const trailerInfo: TrailerInfo = {
+    const candidates = localCandidates.concat(remoteCandidates);
+    if (!candidates.length) {
+      debugLog('No usable trailer candidates found.', {
         itemId,
-        candidates
-      };
-      debugLog('Resolved trailer candidates.', trailerInfo);
-      return trailerInfo;
-    });
+        localTrailerCount: item.LocalTrailerCount || 0,
+        remoteTrailerCount: Array.isArray(item.RemoteTrailers) ? item.RemoteTrailers.length : 0
+      });
+      return null;
+    }
+
+    const trailerInfo: TrailerInfo = {
+      itemId,
+      candidates
+    };
+    debugLog('Resolved trailer candidates.', trailerInfo);
+    return trailerInfo;
   }).catch((error) => {
     debugLog('Failed to resolve trailer info for item.', itemId, error);
     trailerInfoCache.delete(itemId);

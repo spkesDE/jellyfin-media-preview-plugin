@@ -37,7 +37,6 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       rootHost: null,
       autoScrubTimer: null,
       autoScrubPercent: null,
-      autoScrubDirection: 1,
       autoScrubAnimationFrame: null,
       autoScrubStartedAt: null,
       currentTrickplayInfo: null,
