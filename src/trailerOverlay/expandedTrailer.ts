@@ -13,31 +13,31 @@ export function ensureExpandedTrailerDom() {
   }
 
   const overlay = document.createElement('div');
-  overlay.className = 'jhs-expanded-trailer-overlay';
+  overlay.className = 'jmp-expanded-trailer-overlay';
   overlay.setAttribute('aria-hidden', 'true');
 
   const backdrop = document.createElement('div');
-  backdrop.className = 'jhs-expanded-trailer-backdrop';
+  backdrop.className = 'jmp-expanded-trailer-backdrop';
 
   const shell = document.createElement('div');
-  shell.className = 'jhs-expanded-trailer-shell';
+  shell.className = 'jmp-expanded-trailer-shell';
 
   const viewport = document.createElement('div');
-  viewport.className = 'jhs-expanded-trailer-viewport';
+  viewport.className = 'jmp-expanded-trailer-viewport';
 
   const mediaHost = document.createElement('div');
-  mediaHost.className = 'jhs-expanded-trailer-media-host';
+  mediaHost.className = 'jmp-expanded-trailer-media-host';
   viewport.appendChild(mediaHost);
 
   const ui = document.createElement('div');
-  ui.className = 'jhs-expanded-trailer-ui';
+  ui.className = 'jmp-expanded-trailer-ui';
 
   const title = document.createElement('div');
-  title.className = 'jhs-expanded-trailer-title';
+  title.className = 'jmp-expanded-trailer-title';
   title.textContent = '';
 
   const closeButton = document.createElement('button');
-  closeButton.className = 'jhs-expanded-trailer-close';
+  closeButton.className = 'jmp-expanded-trailer-close';
   closeButton.type = 'button';
   closeButton.title = 'Close expanded trailer';
   closeButton.setAttribute('aria-label', 'Close expanded trailer');
@@ -195,7 +195,7 @@ export function expandTrailer(card: HTMLElement): void {
   if (state.trailerMediaKind === 'iframe' && state.currentTrailer.youtubeId) {
     const expandedMedia = document.createElement('iframe');
     const startSeconds = getApproximateTrailerPlaybackSeconds(state);
-    expandedMedia.className = 'jhs-trailer-media jhs-interactive';
+    expandedMedia.className = 'jmp-trailer-media jmp-interactive';
     expandedMedia.setAttribute('aria-hidden', 'true');
     expandedMedia.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
     expandedMedia.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
@@ -212,7 +212,7 @@ export function expandTrailer(card: HTMLElement): void {
     }
   } else {
     overlayState.mediaHost.appendChild(state.trailerMedia);
-    state.trailerMedia.classList.add('jhs-interactive');
+    state.trailerMedia.classList.add('jmp-interactive');
     if (state.trailerMedia instanceof HTMLVideoElement) {
       state.trailerMedia.controls = true;
     }
@@ -257,12 +257,12 @@ export function collapseExpandedTrailer(options?: { immediate?: boolean }): void
         state.trailerMedia = session.expandedMedia;
         state.trailerMediaKind = 'iframe';
         state.trailerPlaybackStartedAt = session.expandedPlaybackStartedAt || Date.now();
-        state.trailerMedia.classList.remove('jhs-interactive');
+        state.trailerMedia.classList.remove('jmp-interactive');
         state.trailerLayer.appendChild(state.trailerMedia);
       } else if (state.trailerMedia) {
         if (state.trailerMediaKind === 'video' && state.trailerMedia instanceof HTMLVideoElement) {
           state.trailerMedia.controls = false;
-          state.trailerMedia.classList.remove('jhs-interactive');
+          state.trailerMedia.classList.remove('jmp-interactive');
         }
 
         state.trailerLayer.appendChild(state.trailerMedia);

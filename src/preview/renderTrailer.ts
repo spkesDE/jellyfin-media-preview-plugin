@@ -53,7 +53,7 @@ export function ensureTrailerMediaElement(
   }
 
   const mediaElement = document.createElement(kind === 'iframe' ? 'iframe' : 'video') as HTMLVideoElement | HTMLIFrameElement;
-  mediaElement.className = 'jhs-trailer-media';
+  mediaElement.className = 'jmp-trailer-media';
   mediaElement.setAttribute('aria-hidden', 'true');
 
   if (kind === 'iframe') {
@@ -156,7 +156,7 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
   setTrailerExpandVisible(state, true);
   state.trailerLayer.style.background = 'transparent';
   mediaElement.style.background = 'transparent';
-  state.trailerLayer.classList.toggle('jhs-debug-visible', !!config.debug);
+  state.trailerLayer.classList.toggle('jmp-debug-visible', !!config.debug);
   debugLog('Applying trailer preview.', {
     title: trailer.title || null,
     kind: trailer.kind,
@@ -185,9 +185,9 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
     updateTrailerAudioState(mediaElement);
 
     mediaElement.onerror = () => {
-      if (trailer.fallbackSrc && mediaElement.dataset.jhsFallbackApplied !== 'true') {
+      if (trailer.fallbackSrc && mediaElement.dataset.jmpFallbackApplied !== 'true') {
         debugLog('Local trailer direct playback failed. Falling back to transcoded MP4.', trailer.title || trailer.src);
-        mediaElement.dataset.jhsFallbackApplied = 'true';
+        mediaElement.dataset.jmpFallbackApplied = 'true';
         mediaElement.src = trailer.fallbackSrc;
         mediaElement.load();
         updateTrailerAudioState(mediaElement);
@@ -201,7 +201,7 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
     };
 
     if (trailer.src && mediaElement.src !== trailer.src) {
-      mediaElement.dataset.jhsFallbackApplied = 'false';
+      mediaElement.dataset.jmpFallbackApplied = 'false';
       mediaElement.src = trailer.src;
       mediaElement.load();
       state.trailerPlaybackStartedAt = Date.now();

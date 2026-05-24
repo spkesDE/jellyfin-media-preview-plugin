@@ -39,7 +39,7 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.previewBackdrop) {
     const previewBackdrop = document.createElement('div');
-    previewBackdrop.className = 'jhs-preview-backdrop';
+    previewBackdrop.className = 'jmp-preview-backdrop';
     previewBackdrop.setAttribute('aria-hidden', 'true');
     positionedHost.appendChild(previewBackdrop);
     state.previewBackdrop = previewBackdrop;
@@ -47,7 +47,7 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.previewFrame) {
     const previewFrame = document.createElement('div');
-    previewFrame.className = 'jhs-preview-layer';
+    previewFrame.className = 'jmp-preview-layer';
     previewFrame.setAttribute('aria-hidden', 'true');
     previewFrame.style.display = 'none';
     positionedHost.appendChild(previewFrame);
@@ -56,13 +56,13 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.hoverCountdown) {
     const hoverCountdown = document.createElement('div');
-    hoverCountdown.className = 'jhs-hover-countdown';
+    hoverCountdown.className = 'jmp-hover-countdown';
     hoverCountdown.setAttribute('aria-hidden', 'true');
     hoverCountdown.style.display = 'none';
     hoverCountdown.style.setProperty('--progress', '1');
 
     const hoverCountdownLabel = document.createElement('span');
-    hoverCountdownLabel.className = 'jhs-hover-countdown-label';
+    hoverCountdownLabel.className = 'jmp-hover-countdown-label';
     hoverCountdownLabel.textContent = '1';
     hoverCountdown.appendChild(hoverCountdownLabel);
     positionedHost.appendChild(hoverCountdown);
@@ -73,7 +73,7 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.unavailableMessage) {
     const unavailableMessage = document.createElement('div');
-    unavailableMessage.className = 'jhs-unavailable-message';
+    unavailableMessage.className = 'jmp-unavailable-message';
     unavailableMessage.setAttribute('aria-hidden', 'true');
     unavailableMessage.style.display = 'none';
     positionedHost.appendChild(unavailableMessage);
@@ -82,7 +82,7 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.trailerLayer) {
     const trailerLayer = document.createElement('div');
-    trailerLayer.className = 'jhs-trailer-layer';
+    trailerLayer.className = 'jmp-trailer-layer';
     trailerLayer.setAttribute('aria-hidden', 'true');
     positionedHost.appendChild(trailerLayer);
     state.trailerLayer = trailerLayer;
@@ -90,12 +90,12 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.trailerActions) {
     const trailerActions = document.createElement('div');
-    trailerActions.className = 'jhs-trailer-actions';
+    trailerActions.className = 'jmp-trailer-actions';
     trailerActions.setAttribute('aria-hidden', 'true');
     trailerActions.style.display = 'none';
 
     const trailerExpandButton = document.createElement('button');
-    trailerExpandButton.className = 'jhs-trailer-expand';
+    trailerExpandButton.className = 'jmp-trailer-expand';
     trailerExpandButton.type = 'button';
     trailerExpandButton.title = 'Expand trailer';
     trailerExpandButton.setAttribute('aria-label', 'Expand trailer');
@@ -121,12 +121,12 @@ export function ensurePreviewDom(card: HTMLElement, state: CardState): CardState
 
   if (!state.progress) {
     const progress = document.createElement('div');
-    progress.className = 'jhs-progress';
+    progress.className = 'jmp-progress';
     progress.setAttribute('aria-hidden', 'true');
     progress.style.display = 'none';
 
     const progressBar = document.createElement('div');
-    progressBar.className = 'jhs-progress-bar';
+    progressBar.className = 'jmp-progress-bar';
     progress.appendChild(progressBar);
     positionedHost.appendChild(progress);
 

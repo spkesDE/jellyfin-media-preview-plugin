@@ -8,12 +8,12 @@
     <div id="MediaPreviewConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
         <div data-role="content">
             <style>
-                #MediaPreviewConfigPage .jhs-grid {
+                #MediaPreviewConfigPage .jmp-grid {
                     display: grid;
                     gap: 1rem;
                 }
 
-                #MediaPreviewConfigPage .jhs-section {
+                #MediaPreviewConfigPage .jmp-section {
                     padding: 1rem 1rem 0.25rem;
                     border-radius: 0.75rem;
                     background: rgba(255, 255, 255, 0.03);
@@ -21,28 +21,28 @@
                     margin-bottom: 1rem;
                 }
 
-                #MediaPreviewConfigPage .jhs-section h3 {
+                #MediaPreviewConfigPage .jmp-section h3 {
                     margin: 0 0 0.25rem;
                 }
 
-                #MediaPreviewConfigPage .jhs-help {
+                #MediaPreviewConfigPage .jmp-help {
                     margin: 0 0 1rem;
                     opacity: 0.8;
                     font-size: 0.95em;
                 }
 
-                #MediaPreviewConfigPage .jhs-hidden {
+                #MediaPreviewConfigPage .jmp-hidden {
                     display: none !important;
                 }
 
-                #MediaPreviewConfigPage .jhs-note {
+                #MediaPreviewConfigPage .jmp-note {
                     margin-top: -0.5rem;
                     margin-bottom: 1rem;
                     opacity: 0.75;
                     font-size: 0.9em;
                 }
 
-                #MediaPreviewConfigPage .jhs-pillRow {
+                #MediaPreviewConfigPage .jmp-pillRow {
                     display: flex;
                     flex-wrap: wrap;
                     gap: 0.5rem;
@@ -50,7 +50,7 @@
                     margin-bottom: 1rem;
                 }
 
-                #MediaPreviewConfigPage .jhs-pill {
+                #MediaPreviewConfigPage .jmp-pill {
                     display: inline-flex;
                     align-items: center;
                     gap: 0.35rem;
@@ -62,15 +62,15 @@
                     line-height: 1;
                 }
 
-                #MediaPreviewConfigPage .jhs-pillKey {
+                #MediaPreviewConfigPage .jmp-pillKey {
                     opacity: 0.72;
                 }
 
-                #MediaPreviewConfigPage .jhs-pillValue {
+                #MediaPreviewConfigPage .jmp-pillValue {
                     font-weight: 600;
                 }
 
-                #MediaPreviewConfigPage .jhs-modeCard {
+                #MediaPreviewConfigPage .jmp-modeCard {
                     display: flex;
                     align-items: flex-start;
                     gap: 0.75rem;
@@ -82,7 +82,7 @@
                     border: 1px solid rgba(255, 255, 255, 0.07);
                 }
 
-                #MediaPreviewConfigPage .jhs-modeGlyph {
+                #MediaPreviewConfigPage .jmp-modeGlyph {
                     flex: 0 0 auto;
                     width: 1.9rem;
                     height: 1.9rem;
@@ -96,18 +96,18 @@
                     line-height: 1;
                 }
 
-                #MediaPreviewConfigPage .jhs-modeCardBody {
+                #MediaPreviewConfigPage .jmp-modeCardBody {
                     min-width: 0;
                 }
 
-                #MediaPreviewConfigPage .jhs-modeTitle {
+                #MediaPreviewConfigPage .jmp-modeTitle {
                     margin: 0 0 0.2rem;
                     font-size: 0.95em;
                     font-weight: 600;
                     color: rgba(255, 255, 255, 0.96);
                 }
 
-                #MediaPreviewConfigPage .jhs-modeText {
+                #MediaPreviewConfigPage .jmp-modeText {
                     margin: 0;
                     opacity: 0.78;
                     font-size: 0.9em;
@@ -128,10 +128,10 @@
                         </p>
                     </div>
 
-                    <div class="jhs-grid">
-                        <section class="jhs-section">
+                    <div class="jmp-grid">
+                        <section class="jmp-section">
                             <h3>General</h3>
-                            <p class="jhs-help">Core on/off switches and the preview source strategy.</p>
+                            <p class="jmp-help">Core on/off switches and the preview source strategy.</p>
 
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
@@ -149,13 +149,13 @@
                                     <option value="prefer-trailer">Prefer Trailer</option>
                                 </select>
                             </div>
-                            <p id="PreviewSourceNote" class="jhs-note">Choose between native Trickplay scrub files and trailer playback. Trailer mode currently supports local Jellyfin trailers and YouTube remote trailers when available.</p>
+                            <p id="PreviewSourceNote" class="jmp-note">Choose between native Trickplay scrub files and trailer playback. Trailer mode currently supports local Jellyfin trailers and YouTube remote trailers when available.</p>
 
                             <div class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="HoverDelayMs">Hover Delay (ms)</label>
                                 <input id="HoverDelayMs" name="HoverDelayMs" type="number" min="0" step="50" is="emby-input" />
                             </div>
-                            <p class="jhs-note">The optional countdown uses this same hover delay.</p>
+                            <p class="jmp-note">The optional countdown uses this same hover delay.</p>
 
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
@@ -189,9 +189,9 @@
                             </div>
                         </section>
 
-                        <section class="jhs-section">
+                        <section class="jmp-section">
                             <h3>Trickplay Motion</h3>
-                            <p class="jhs-help">Control how Trickplay previews move when you hover a card.</p>
+                            <p class="jmp-help">Control how Trickplay previews move when you hover a card.</p>
 
                             <div class="selectContainer">
                                 <label class="selectLabel" for="HoverMode">Hover Mode</label>
@@ -202,7 +202,7 @@
                             </div>
 
                             <div id="ScrubSettings">
-                                <p class="jhs-note">Scrub pacing is adaptive automatically. Dense Trickplay sets react quickly, while sparse sets hold each frame a bit longer so the preview feels calmer instead of jumpy.</p>
+                                <p class="jmp-note">Scrub pacing is adaptive automatically. Dense Trickplay sets react quickly, while sparse sets hold each frame a bit longer so the preview feels calmer instead of jumpy.</p>
                             </div>
 
                             <div id="AutoSettings">
@@ -214,11 +214,11 @@
                                         <option value="ping-pong">Continuous Ping-Pong</option>
                                     </select>
                                 </div>
-                                <div id="AutoScrubModeNote" class="jhs-modeCard" aria-hidden="true">
-                                    <span id="AutoScrubModeGlyph" class="jhs-modeGlyph" aria-hidden="true">></span>
-                                    <div class="jhs-modeCardBody">
-                                        <p id="AutoScrubModeTitle" class="jhs-modeTitle">Continuous</p>
-                                        <p id="AutoScrubModeText" class="jhs-modeText">Allows frame skips when needed so motion stays fluid.</p>
+                                <div id="AutoScrubModeNote" class="jmp-modeCard" aria-hidden="true">
+                                    <span id="AutoScrubModeGlyph" class="jmp-modeGlyph" aria-hidden="true">></span>
+                                    <div class="jmp-modeCardBody">
+                                        <p id="AutoScrubModeTitle" class="jmp-modeTitle">Continuous</p>
+                                        <p id="AutoScrubModeText" class="jmp-modeText">Allows frame skips when needed so motion stays fluid.</p>
                                     </div>
                                 </div>
 
@@ -244,10 +244,10 @@
                                             <option value="custom">Custom</option>
                                         </select>
                                     </div>
-                                    <div id="AutoScrubPresetValues" class="jhs-pillRow" aria-hidden="true">
-                                        <span class="jhs-pill"><span class="jhs-pillKey">Min</span><span id="AutoScrubPresetMin" class="jhs-pillValue">60 ms</span></span>
-                                        <span class="jhs-pill"><span class="jhs-pillKey">Max</span><span id="AutoScrubPresetMax" class="jhs-pillValue">520 ms</span></span>
-                                        <span class="jhs-pill"><span class="jhs-pillKey">Duration</span><span id="AutoScrubPresetDuration" class="jhs-pillValue">6500 ms</span></span>
+                                    <div id="AutoScrubPresetValues" class="jmp-pillRow" aria-hidden="true">
+                                        <span class="jmp-pill"><span class="jmp-pillKey">Min</span><span id="AutoScrubPresetMin" class="jmp-pillValue">60 ms</span></span>
+                                        <span class="jmp-pill"><span class="jmp-pillKey">Max</span><span id="AutoScrubPresetMax" class="jmp-pillValue">520 ms</span></span>
+                                        <span class="jmp-pill"><span class="jmp-pillKey">Duration</span><span id="AutoScrubPresetDuration" class="jmp-pillValue">6500 ms</span></span>
                                     </div>
 
                                     <div id="AutoCustomSettings">
@@ -255,27 +255,27 @@
                                             <label class="inputLabel inputLabelUnfocused" for="AutoScrubMinDelayMs">Auto Scrub Min Delay (ms)</label>
                                             <input id="AutoScrubMinDelayMs" name="AutoScrubMinDelayMs" type="number" min="16" step="1" is="emby-input" />
                                         </div>
-                                        <p class="jhs-note">Lower bound for the adaptive per-frame hold. Lower values feel more immediate.</p>
+                                        <p class="jmp-note">Lower bound for the adaptive per-frame hold. Lower values feel more immediate.</p>
 
                                         <div class="inputContainer">
                                             <label class="inputLabel inputLabelUnfocused" for="AutoScrubMaxDelayMs">Auto Scrub Max Delay (ms)</label>
                                             <input id="AutoScrubMaxDelayMs" name="AutoScrubMaxDelayMs" type="number" min="50" step="1" is="emby-input" />
                                         </div>
-                                        <p class="jhs-note">Upper bound for sparse Trickplay sets so they never linger too long on one frame.</p>
+                                        <p class="jmp-note">Upper bound for sparse Trickplay sets so they never linger too long on one frame.</p>
 
                                         <div class="inputContainer">
                                             <label class="inputLabel inputLabelUnfocused" for="AutoScrubDurationMs">Planned Sweep Duration (ms)</label>
                                             <input id="AutoScrubDurationMs" name="AutoScrubDurationMs" type="number" min="500" step="1" is="emby-input" />
                                         </div>
-                                        <p class="jhs-note">Target overall sweep duration. The plugin derives a frame delay from it and then clamps that delay between your min and max values.</p>
+                                        <p class="jmp-note">Target overall sweep duration. The plugin derives a frame delay from it and then clamps that delay between your min and max values.</p>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <section id="TrailerSettingsSection" class="jhs-section">
+                        <section id="TrailerSettingsSection" class="jmp-section">
                             <h3>Trailer</h3>
-                            <p class="jhs-help">These options apply when trailer playback is used directly or as a fallback source.</p>
+                            <p class="jmp-help">These options apply when trailer playback is used directly or as a fallback source.</p>
 
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
@@ -283,7 +283,7 @@
                                     <span>Enable Trailer Audio When Allowed</span>
                                 </label>
                             </div>
-                            <p class="jhs-note">Browsers often block unmuted autoplay until the page has received user interaction once. Until then, trailers may still start muted.</p>
+                            <p class="jmp-note">Browsers often block unmuted autoplay until the page has received user interaction once. Until then, trailers may still start muted.</p>
 
                             <div id="TrailerVolumeSetting" class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="TrailerVolumePercent">Trailer Volume (%)</label>
@@ -299,7 +299,7 @@
                                     <option value="strong">Strong</option>
                                 </select>
                             </div>
-                            <p class="jhs-note">Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.</p>
+                            <p class="jmp-note">Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.</p>
 
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
@@ -319,9 +319,9 @@
                             </div>
                         </section>
 
-                        <section class="jhs-section">
+                        <section class="jmp-section">
                             <h3>Preview Appearance</h3>
-                            <p class="jhs-help">Control how hover previews are framed and styled on portrait and backdrop cards.</p>
+                            <p class="jmp-help">Control how hover previews are framed and styled on portrait and backdrop cards.</p>
 
                             <div class="selectContainer">
                                 <label class="selectLabel" for="PortraitCardPreviewMode">Portrait Card Preview Mode</label>
@@ -352,7 +352,7 @@
                                     <option value="dim-blur">Dim + Blur</option>
                                 </select>
                             </div>
-                            <p class="jhs-note">Vignette modes avoid CSS blur and are usually the safer choice on weaker devices.</p>
+                            <p class="jmp-note">Vignette modes avoid CSS blur and are usually the safer choice on weaker devices.</p>
 
                             <div id="PreviewBackdropIntensitySetting" class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="PreviewBackdropIntensityPercent">Backdrop Intensity (%)</label>
@@ -367,9 +367,9 @@
                             </div>
                         </section>
 
-                        <section class="jhs-section">
+                        <section class="jmp-section">
                             <h3>Advanced</h3>
-                            <p class="jhs-help">Normally you can leave these alone.</p>
+                            <p class="jmp-help">Normally you can leave these alone.</p>
 
                             <div class="inputContainer">
                                 <div id="TrickplayWidthSetting">
@@ -478,19 +478,19 @@
                         ? 'Trailer mode starts a trailer on hover instead of scrubbing frames. It prefers local Jellyfin trailers and falls back to supported YouTube remote trailers.'
                         : 'Trickplay modes use Jellyfin native scrub images. Prefer modes can fall back between Trickplay and trailer playback.';
 
-                    getField('#ScrubSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'scrub');
-                    getField('#AutoSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'auto');
+                    getField('#ScrubSettings').classList.toggle('jmp-hidden', usesTrailerOnly || hoverMode !== 'scrub');
+                    getField('#AutoSettings').classList.toggle('jmp-hidden', usesTrailerOnly || hoverMode !== 'auto');
                     const stepMode = autoMode === 'step';
                     const continuousMode = autoMode === 'sweep' || autoMode === 'ping-pong';
-                    getField('#AutoStepSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'auto' || !stepMode);
-                    getField('#AutoContinuousSettings').classList.toggle('jhs-hidden', usesTrailerOnly || hoverMode !== 'auto' || !continuousMode);
+                    getField('#AutoStepSettings').classList.toggle('jmp-hidden', usesTrailerOnly || hoverMode !== 'auto' || !stepMode);
+                    getField('#AutoContinuousSettings').classList.toggle('jmp-hidden', usesTrailerOnly || hoverMode !== 'auto' || !continuousMode);
                     const customHidden = usesTrailerOnly || hoverMode !== 'auto' || !continuousMode || autoPreset !== 'custom';
-                    getField('#AutoCustomSettings').classList.toggle('jhs-hidden', customHidden);
-                    getField('#TrickplayWidthSetting').classList.toggle('jhs-hidden', usesTrailerOnly);
-                    getField('#TrailerSettingsSection').classList.toggle('jhs-hidden', !canUseTrailer);
-                    getField('#TrailerVolumeSetting').classList.toggle('jhs-hidden', !canUseTrailer || !trailerAudioEnabled);
-                    getField('#HoverCountdownPositionSetting').classList.toggle('jhs-hidden', !hoverCountdownEnabled);
-                    getField('#PreviewBackdropIntensitySetting').classList.toggle('jhs-hidden', previewBackdropMode === 'off');
+                    getField('#AutoCustomSettings').classList.toggle('jmp-hidden', customHidden);
+                    getField('#TrickplayWidthSetting').classList.toggle('jmp-hidden', usesTrailerOnly);
+                    getField('#TrailerSettingsSection').classList.toggle('jmp-hidden', !canUseTrailer);
+                    getField('#TrailerVolumeSetting').classList.toggle('jmp-hidden', !canUseTrailer || !trailerAudioEnabled);
+                    getField('#HoverCountdownPositionSetting').classList.toggle('jmp-hidden', !hoverCountdownEnabled);
+                    getField('#PreviewBackdropIntensitySetting').classList.toggle('jmp-hidden', previewBackdropMode === 'off');
                     setDisabled([
                         '#AutoScrubIntervalMs'
                     ], !stepMode);

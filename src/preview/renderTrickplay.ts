@@ -94,9 +94,9 @@ export function applyTrickplayPreview(
   state.previewFrame.style.top = '0';
   state.previewFrame.style.width = `${hostRect.width}px`;
   state.previewFrame.style.height = `${hostRect.height}px`;
-  state.previewFrame.classList.remove('jhs-contain');
-  state.previewFrame.style.removeProperty('--jhs-fade-size');
-  state.previewFrame.style.removeProperty('--jhs-fade-color');
+  state.previewFrame.classList.remove('jmp-contain');
+  state.previewFrame.style.removeProperty('--jmp-fade-size');
+  state.previewFrame.style.removeProperty('--jmp-fade-color');
   state.previewFrame.style.filter = 'none';
   resetPreviewBackdrop(state);
 
@@ -106,7 +106,7 @@ export function applyTrickplayPreview(
     state.previewFrame.style.width = `${renderedFrameWidth}px`;
     state.previewFrame.style.height = `${renderedFrameHeight}px`;
     state.previewFrame.style.borderRadius = '0';
-    state.previewFrame.classList.add('jhs-contain');
+    state.previewFrame.classList.add('jmp-contain');
   }
 
   if (config.showProgressIndicator) {

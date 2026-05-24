@@ -30,7 +30,7 @@ export function start(): void {
   normalizeConfig();
 
   if (!config.enabled) {
-    log('Hover scrub is disabled by config.');
+    log('Media Preview is disabled by config.');
     return;
   }
 
@@ -46,7 +46,7 @@ export function start(): void {
   bindCards(document);
   scheduleAdminNavigationRefresh();
   observePageChanges();
-  log('Hover scrub initialized.');
+  log('Media Preview initialized.');
 }
 
 export function rebind(): void {
