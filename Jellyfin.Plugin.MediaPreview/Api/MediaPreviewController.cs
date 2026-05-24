@@ -45,9 +45,12 @@ public sealed class MediaPreviewController : ControllerBase
         {
             enabled = config.Enabled,
             previewSource = config.PreviewSource,
+            showNoPreviewMessage = config.ShowNoPreviewMessage,
             trailerAudioEnabled = config.TrailerAudioEnabled,
             trailerVolumePercent = config.TrailerVolumePercent,
             hoverDelayMs = config.HoverDelayMs,
+            hoverCountdownEnabled = config.HoverCountdownEnabled,
+            hoverCountdownPosition = config.HoverCountdownPosition,
             trickplayWidth = config.TrickplayWidth,
             restoreOnLeave = config.RestoreOnLeave,
             showProgressIndicator = config.ShowProgressIndicator,

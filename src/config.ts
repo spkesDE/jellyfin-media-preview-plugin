@@ -28,9 +28,12 @@ import type { PluginConfig, RuntimePluginConfig } from './types/config';
 const standaloneFallbackConfig: PluginConfig = {
   enabled: true,
   previewSource: PREVIEW_SOURCE_TRICKPLAY,
+  showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
   hoverDelayMs: 300,
+  hoverCountdownEnabled: false,
+  hoverCountdownPosition: 'top-right',
   trickplayWidth: 320,
   restoreOnLeave: true,
   showProgressIndicator: true,
@@ -57,9 +60,12 @@ const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPrevi
 export const config: PluginConfig = {
   enabled: runtimeConfig?.enabled ?? standaloneFallbackConfig.enabled,
   previewSource: runtimeConfig?.previewSource ?? standaloneFallbackConfig.previewSource,
+  showNoPreviewMessage: runtimeConfig?.showNoPreviewMessage ?? standaloneFallbackConfig.showNoPreviewMessage,
   trailerAudioEnabled: runtimeConfig?.trailerAudioEnabled ?? standaloneFallbackConfig.trailerAudioEnabled,
   trailerVolumePercent: runtimeConfig?.trailerVolumePercent ?? standaloneFallbackConfig.trailerVolumePercent,
   hoverDelayMs: runtimeConfig?.hoverDelayMs ?? standaloneFallbackConfig.hoverDelayMs,
+  hoverCountdownEnabled: runtimeConfig?.hoverCountdownEnabled ?? standaloneFallbackConfig.hoverCountdownEnabled,
+  hoverCountdownPosition: runtimeConfig?.hoverCountdownPosition ?? standaloneFallbackConfig.hoverCountdownPosition,
   trickplayWidth: runtimeConfig?.trickplayWidth ?? standaloneFallbackConfig.trickplayWidth,
   restoreOnLeave: runtimeConfig?.restoreOnLeave ?? standaloneFallbackConfig.restoreOnLeave,
   showProgressIndicator: runtimeConfig?.showProgressIndicator ?? standaloneFallbackConfig.showProgressIndicator,
@@ -125,6 +131,10 @@ export function normalizeConfig(): void {
     config.trailerExpandButtonPosition = TRAILER_EXPAND_BUTTON_TOP_RIGHT;
   }
 
+  if (!VALID_TRAILER_EXPAND_BUTTON_POSITIONS.has(config.hoverCountdownPosition)) {
+    config.hoverCountdownPosition = TRAILER_EXPAND_BUTTON_TOP_RIGHT;
+  }
+
   config.hoverDelayMs = Math.max(0, Number(config.hoverDelayMs) || 300);
   config.trickplayWidth = Math.max(1, Number(config.trickplayWidth) || 320);
   config.trailerVolumePercent = clamp(Number.isFinite(Number(config.trailerVolumePercent)) ? Number(config.trailerVolumePercent) : 35, 0, 100);
@@ -134,5 +144,7 @@ export function normalizeConfig(): void {
   config.autoScrubDurationMs = Math.max(500, Number(config.autoScrubDurationMs) || 4000);
   config.autoScrubMinDelayMs = Math.max(16, Number(config.autoScrubMinDelayMs) || 40);
   config.autoScrubMaxDelayMs = Math.max(config.autoScrubMinDelayMs, Number(config.autoScrubMaxDelayMs) || 1000);
+  config.showNoPreviewMessage = config.showNoPreviewMessage === true;
+  config.hoverCountdownEnabled = config.hoverCountdownEnabled === true;
   config.trailerExpandButtonEnabled = config.trailerExpandButtonEnabled !== false;
 }

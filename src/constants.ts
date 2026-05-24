@@ -5,6 +5,9 @@ export const PREVIEW_SOURCE_TRICKPLAY = 'trickplay';
 export const PREVIEW_SOURCE_TRAILER = 'trailer';
 export const PREVIEW_SOURCE_PREFER_TRICKPLAY = 'prefer-trickplay';
 export const PREVIEW_SOURCE_PREFER_TRAILER = 'prefer-trailer';
+export const NO_PREVIEW_MESSAGE_TRAILER = 'No Trailer Found';
+export const NO_PREVIEW_MESSAGE_TRICKPLAY = 'No Trickplay Found';
+export const NO_PREVIEW_MESSAGE_ANY = 'No Trailer/Trickplay Found';
 export const HOVER_MODE_SCRUB = 'scrub';
 export const HOVER_MODE_AUTO = 'auto';
 export const AUTO_SCRUB_MODE_STEP = 'step';
@@ -19,6 +22,8 @@ export const PREVIEW_MODE_CONTAIN = 'contain';
 export const PREVIEW_MODE_STRETCH = 'stretch';
 export const PREVIEW_BACKDROP_OFF = 'off';
 export const PREVIEW_BACKDROP_DIM = 'dim';
+export const PREVIEW_BACKDROP_VIGNETTE = 'vignette';
+export const PREVIEW_BACKDROP_DIM_VIGNETTE = 'dim-vignette';
 export const PREVIEW_BACKDROP_BLUR = 'blur';
 export const PREVIEW_BACKDROP_DIM_BLUR = 'dim-blur';
 export const YOUTUBE_CROP_OFF = 'off';
@@ -69,6 +74,8 @@ export const VALID_PREVIEW_MODES = new Set([
 export const VALID_PREVIEW_BACKDROP_MODES = new Set([
   PREVIEW_BACKDROP_OFF,
   PREVIEW_BACKDROP_DIM,
+  PREVIEW_BACKDROP_VIGNETTE,
+  PREVIEW_BACKDROP_DIM_VIGNETTE,
   PREVIEW_BACKDROP_BLUR,
   PREVIEW_BACKDROP_DIM_BLUR
 ] as const);

@@ -155,6 +155,31 @@
                                 <label class="inputLabel inputLabelUnfocused" for="HoverDelayMs">Hover Delay (ms)</label>
                                 <input id="HoverDelayMs" name="HoverDelayMs" type="number" min="0" step="50" is="emby-input" />
                             </div>
+                            <p class="jhs-note">The optional countdown uses this same hover delay.</p>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="HoverCountdownEnabled" name="HoverCountdownEnabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Show Hover Countdown</span>
+                                </label>
+                            </div>
+
+                            <div id="HoverCountdownPositionSetting" class="selectContainer">
+                                <label class="selectLabel" for="HoverCountdownPosition">Countdown Position</label>
+                                <select id="HoverCountdownPosition" name="HoverCountdownPosition" is="emby-select">
+                                    <option value="top-left">Top Left</option>
+                                    <option value="top-right">Top Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                    <option value="bottom-right">Bottom Right</option>
+                                </select>
+                            </div>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="ShowNoPreviewMessage" name="ShowNoPreviewMessage" type="checkbox" is="emby-checkbox" />
+                                    <span>Show "No Trailer/Trickplay Found" Message</span>
+                                </label>
+                            </div>
 
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
@@ -321,10 +346,13 @@
                                 <select id="PreviewBackdropMode" name="PreviewBackdropMode" is="emby-select">
                                     <option value="off">Off</option>
                                     <option value="dim">Dim</option>
+                                    <option value="vignette">Vignette</option>
+                                    <option value="dim-vignette">Dim + Vignette</option>
                                     <option value="blur">Blur</option>
                                     <option value="dim-blur">Dim + Blur</option>
                                 </select>
                             </div>
+                            <p class="jhs-note">Vignette modes avoid CSS blur and are usually the safer choice on weaker devices.</p>
 
                             <div id="PreviewBackdropIntensitySetting" class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="PreviewBackdropIntensityPercent">Backdrop Intensity (%)</label>
@@ -373,7 +401,7 @@
                 const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
-                const visibilitySelectors = ['#PreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode'];
+                const visibilitySelectors = ['#PreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled'];
 
                 function getField(selector) {
                     return form.querySelector(selector);
@@ -444,6 +472,7 @@
                     const canUseTrailer = previewSource !== 'trickplay';
                     const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
+                    const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
 
                     getField('#PreviewSourceNote').textContent = usesTrailerOnly
                         ? 'Trailer mode starts a trailer on hover instead of scrubbing frames. It prefers local Jellyfin trailers and falls back to supported YouTube remote trailers.'
@@ -460,6 +489,7 @@
                     getField('#TrickplayWidthSetting').classList.toggle('jhs-hidden', usesTrailerOnly);
                     getField('#TrailerSettingsSection').classList.toggle('jhs-hidden', !canUseTrailer);
                     getField('#TrailerVolumeSetting').classList.toggle('jhs-hidden', !canUseTrailer || !trailerAudioEnabled);
+                    getField('#HoverCountdownPositionSetting').classList.toggle('jhs-hidden', !hoverCountdownEnabled);
                     getField('#PreviewBackdropIntensitySetting').classList.toggle('jhs-hidden', previewBackdropMode === 'off');
                     setDisabled([
                         '#AutoScrubIntervalMs'
@@ -491,6 +521,7 @@
                 function setValues(config) {
                     getField('#Enabled').checked = !!config.Enabled;
                     getField('#PreviewSource').value = config.PreviewSource || 'trickplay';
+                    getField('#ShowNoPreviewMessage').checked = !!config.ShowNoPreviewMessage;
                     getField('#TrailerAudioEnabled').checked = !!config.TrailerAudioEnabled;
                     getField('#TrailerVolumePercent').value = config.TrailerVolumePercent ?? 35;
                     getField('#YouTubeCropStrength').value = config.YouTubeCropStrength || 'medium';
@@ -498,6 +529,8 @@
                     getField('#TrailerExpandButtonPosition').value = config.TrailerExpandButtonPosition || 'top-right';
                     getField('#HoverMode').value = config.HoverMode || 'scrub';
                     getField('#HoverDelayMs').value = config.HoverDelayMs ?? 300;
+                    getField('#HoverCountdownEnabled').checked = !!config.HoverCountdownEnabled;
+                    getField('#HoverCountdownPosition').value = config.HoverCountdownPosition || 'top-right';
                     getField('#TrickplayWidth').value = config.TrickplayWidth ?? 320;
                     getField('#AutoScrubStartPercent').value = config.AutoScrubStartPercent ?? 0;
                     getField('#AutoScrubMode').value = config.AutoScrubMode || 'step';
@@ -540,6 +573,7 @@
                     const config = {
                         Enabled: getBooleanValue('#Enabled'),
                         PreviewSource: getStringValue('#PreviewSource', 'trickplay'),
+                        ShowNoPreviewMessage: getBooleanValue('#ShowNoPreviewMessage'),
                         TrailerAudioEnabled: getBooleanValue('#TrailerAudioEnabled'),
                         TrailerVolumePercent: getNumberValue('#TrailerVolumePercent', 35),
                         YouTubeCropStrength: getStringValue('#YouTubeCropStrength', 'medium'),
@@ -547,6 +581,8 @@
                         TrailerExpandButtonPosition: getStringValue('#TrailerExpandButtonPosition', 'top-right'),
                         HoverMode: getStringValue('#HoverMode', 'scrub'),
                         HoverDelayMs: getNumberValue('#HoverDelayMs', 300),
+                        HoverCountdownEnabled: getBooleanValue('#HoverCountdownEnabled'),
+                        HoverCountdownPosition: getStringValue('#HoverCountdownPosition', 'top-right'),
                         TrickplayWidth: getNumberValue('#TrickplayWidth', 320),
                         AutoScrubStartPercent: getNumberValue('#AutoScrubStartPercent', 0),
                         AutoScrubMode: getStringValue('#AutoScrubMode', 'step'),

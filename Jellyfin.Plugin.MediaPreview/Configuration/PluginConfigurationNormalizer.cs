@@ -42,6 +42,8 @@ internal static class PluginConfigurationNormalizer
     {
         "off",
         "dim",
+        "vignette",
+        "dim-vignette",
         "blur",
         "dim-blur"
     };
@@ -69,9 +71,12 @@ internal static class PluginConfigurationNormalizer
         {
             Enabled = source.Enabled,
             PreviewSource = NormalizeChoice(source.PreviewSource, ValidPreviewSources, "trickplay"),
+            ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),
             HoverDelayMs = Math.Max(0, source.HoverDelayMs),
+            HoverCountdownEnabled = source.HoverCountdownEnabled,
+            HoverCountdownPosition = NormalizeChoice(source.HoverCountdownPosition, ValidTrailerExpandButtonPositions, "top-right"),
             TrickplayWidth = Math.Max(1, source.TrickplayWidth),
             RestoreOnLeave = source.RestoreOnLeave,
             ShowProgressIndicator = source.ShowProgressIndicator,

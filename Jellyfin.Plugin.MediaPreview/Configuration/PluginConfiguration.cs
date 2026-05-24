@@ -18,11 +18,17 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string PreviewSource { get; set; } = "prefer-trailer";
 
+    public bool ShowNoPreviewMessage { get; set; } = false;
+
     public bool TrailerAudioEnabled { get; set; } = false;
 
     public int TrailerVolumePercent { get; set; } = 35;
 
     public string HoverMode { get; set; } = "auto";
+
+    public bool HoverCountdownEnabled { get; set; } = false;
+
+    public string HoverCountdownPosition { get; set; } = "top-right";
 
     public string AutoScrubMode { get; set; } = "step";
 

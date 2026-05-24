@@ -3,7 +3,9 @@ import {
   PREVIEW_BACKDROP_BLUR,
   PREVIEW_BACKDROP_DIM,
   PREVIEW_BACKDROP_DIM_BLUR,
+  PREVIEW_BACKDROP_DIM_VIGNETTE,
   PREVIEW_BACKDROP_OFF,
+  PREVIEW_BACKDROP_VIGNETTE,
   VALID_PREVIEW_BACKDROP_MODES,
   VALID_YOUTUBE_CROP_STRENGTHS,
   YOUTUBE_CROP_LIGHT,
@@ -73,9 +75,19 @@ export function getPreviewBackdropStyles(): {
     return styles;
   }
 
-  if (mode === PREVIEW_BACKDROP_DIM || mode === PREVIEW_BACKDROP_DIM_BLUR) {
+  if (mode === PREVIEW_BACKDROP_DIM || mode === PREVIEW_BACKDROP_DIM_BLUR || mode === PREVIEW_BACKDROP_DIM_VIGNETTE) {
     const alpha = Math.max(0, Math.min(0.8, intensity * 0.75));
     styles.background = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
+  }
+
+  if (mode === PREVIEW_BACKDROP_VIGNETTE || mode === PREVIEW_BACKDROP_DIM_VIGNETTE) {
+    const innerAlpha = Math.max(0, Math.min(0.45, intensity * 0.18));
+    const outerAlpha = Math.max(0.16, Math.min(0.92, 0.22 + (intensity * 0.62)));
+    const vignette = `radial-gradient(circle at center, rgba(0, 0, 0, ${innerAlpha.toFixed(3)}) 22%, rgba(0, 0, 0, ${outerAlpha.toFixed(3)}) 100%)`;
+
+    styles.background = mode === PREVIEW_BACKDROP_DIM_VIGNETTE && styles.background !== 'transparent'
+      ? `${styles.background}, ${vignette}`
+      : vignette;
   }
 
   if (mode === PREVIEW_BACKDROP_BLUR || mode === PREVIEW_BACKDROP_DIM_BLUR) {

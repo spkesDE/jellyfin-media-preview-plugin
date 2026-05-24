@@ -27,6 +27,8 @@ Depending on your settings, previews can use:
 - Trickplay first, then trailers as fallback
 - trailers first, then Trickplay as fallback
 
+Poster backdrops can also be styled independently. If blur is too expensive on a device, you can switch to lighter overlay modes such as `Dim`, `Vignette`, or `Dim + Vignette`.
+
 If no supported preview source is available for an item, the card is left unchanged.
 
 ## Supported Content
