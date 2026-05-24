@@ -14,7 +14,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $manifestFullPath = Join-Path $repoRoot $ManifestPath
 $metaFullPath = Join-Path $repoRoot $MetaPath
 

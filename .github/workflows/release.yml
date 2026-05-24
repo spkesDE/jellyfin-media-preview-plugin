@@ -112,7 +112,7 @@ jobs:
       - name: Update manifest
         shell: pwsh
         run: |
-          ./update-manifest.ps1 `
+          ./scripts/update-manifest.ps1 `
             -SourceUrl "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/MediaPreview.zip" `
             -Checksum "${{ steps.artifact.outputs.checksum }}" `
             -Timestamp "${{ steps.artifact.outputs.timestamp }}"
