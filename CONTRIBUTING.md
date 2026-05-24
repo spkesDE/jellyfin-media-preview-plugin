@@ -41,7 +41,7 @@ That creates:
 
 ## Commit Style
 
-This repository uses `git-cliff` to generate `CHANGELOG.md` and GitHub release notes from commit messages between release tags.
+This repository uses `git-cliff` to generate `CHANGELOG.md`, GitHub release notes, and the latest `manifest.json` changelog entry from commit messages between release tags.
 
 Because of that, commit messages should be short, clear, and useful on their own.
 

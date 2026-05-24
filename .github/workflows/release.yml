@@ -32,19 +32,16 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           persist-credentials: true
 
-      - name: Derive release label
-        id: tag
-        shell: bash
-        run: |
-          echo "display_tag=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
-
-      - name: Read release metadata
-        id: metadata
-        shell: pwsh
-        run: |
-          $metadata = Get-Content release-metadata.json -Raw | ConvertFrom-Json
-          "manifest_changelog=$([string]$metadata.manifestChangelog)" >> $env:GITHUB_OUTPUT
-          "release_title=$([string]$metadata.releaseTitle)" >> $env:GITHUB_OUTPUT
+      - name: Generate manifest changelog
+        uses: orhun/git-cliff-action@v4
+        id: manifest_changelog
+        with:
+          config: cliff-manifest.toml
+          args: --latest --strip all
+          github_token: ${{ steps.app-token.outputs.token }}
+        env:
+          OUTPUT: manifest-changelog.md
+          GITHUB_REPO: ${{ github.repository }}
 
       - name: Generate release notes
         uses: orhun/git-cliff-action@v4
@@ -64,7 +61,9 @@ jobs:
 
       - name: Build release ZIP
         shell: pwsh
-        run: ./build-release.ps1 -Changelog "${{ steps.metadata.outputs.manifest_changelog }}"
+        run: |
+          $manifestChangelog = Get-Content manifest-changelog.md -Raw
+          ./build-release.ps1 -Changelog $manifestChangelog
 
       - name: Compute checksum and timestamp
         id: artifact
@@ -88,7 +87,7 @@ jobs:
         run: |
           gh release create "${{ github.ref_name }}" \
             "release/MediaPreview.zip" \
-            --title "${{ steps.metadata.outputs.release_title }}" \
+            --title "Release ${{ github.ref_name }}" \
             --notes-file "release-notes.md" \
             --verify-tag
 

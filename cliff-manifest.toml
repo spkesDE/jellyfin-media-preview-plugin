@@ -1,0 +1,65 @@
+[changelog]
+header = ""
+body = """
+{% for group, commits in commits | group_by(attribute="group") -%}
+{% for commit in commits -%}
+- {{ commit.message }}
+{% endfor -%}
+{% endfor -%}
+"""
+trim = true
+footer = ""
+
+[git]
+conventional_commits = false
+filter_unconventional = false
+split_commits = false
+tag_pattern = "v[0-9].*"
+skip_tags = ""
+ignore_tags = ""
+topo_order = false
+sort_commits = "oldest"
+
+[[git.commit_parsers]]
+message = "^Prepare release .*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^Update changelog and manifest for v.*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^Merge branch .*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^Merge pull request .*"
+skip = true
+
+[[git.commit_parsers]]
+message = "^ci"
+skip = true
+
+[[git.commit_parsers]]
+message = "^feat"
+group = "Features"
+
+[[git.commit_parsers]]
+message = "^fix"
+group = "Fixes"
+
+[[git.commit_parsers]]
+message = "^build"
+group = "Build"
+
+[[git.commit_parsers]]
+message = "^docs"
+group = "Documentation"
+
+[[git.commit_parsers]]
+message = "^refactor"
+group = "Refactoring"
+
+[[git.commit_parsers]]
+message = ".*"
+group = "Other"

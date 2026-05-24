@@ -41,3 +41,5 @@ The release helper script installs frontend dependencies, rebuilds the frontend 
 ```powershell
 .\build-release.ps1
 ```
+
+For tagged releases, GitHub Actions generates both the GitHub release notes and the newest `manifest.json` changelog entry from `git-cliff`.

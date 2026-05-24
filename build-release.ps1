@@ -20,7 +20,6 @@ $buildOutput = Join-Path $projectDir ("bin\" + $Configuration + "\" + $framework
 $releaseRoot = Join-Path $repoRoot "release"
 $stageDir = Join-Path $releaseRoot $pluginName
 $zipPath = Join-Path $releaseRoot ($pluginName + ".zip")
-$releaseMetadataPath = Join-Path $repoRoot "release-metadata.json"
 
 [xml]$projectXml = Get-Content $projectFile
 $propertyGroup = $projectXml.Project.PropertyGroup | Select-Object -First 1
@@ -42,13 +41,6 @@ while ($versionParts.Count -lt 4) {
     $versionParts += "0"
 }
 $targetAbi = ($versionParts | Select-Object -First 4) -join '.'
-
-if ([string]::IsNullOrWhiteSpace($Changelog) -and (Test-Path $releaseMetadataPath)) {
-    $releaseMetadata = Get-Content $releaseMetadataPath -Raw | ConvertFrom-Json
-    if (-not [string]::IsNullOrWhiteSpace([string]$releaseMetadata.manifestChangelog)) {
-        $Changelog = [string]$releaseMetadata.manifestChangelog
-    }
-}
 
 if ([string]::IsNullOrWhiteSpace($Changelog)) {
     $Changelog = "Initial release."
