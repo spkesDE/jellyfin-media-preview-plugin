@@ -9,7 +9,7 @@
   "versions": [
     {
       "version": "0.1.1.0",
-      "changelog": "Bug fixes & Refactor of some code",
+      "changelog": "- feat: extend preview backdrop and hover settings\n- feat: add hover countdown and preview availability overlays\n- refactor: rename media preview frontend classes to jmp\n- refactor: split media preview styles into css modules\n- refactor: lazily inject preview dom\n- fix: restore preview backdrop rendering\n- fix: resolve lifecycle type guards\n- fix: restore reliable hover preview lifecycle\n- chore: rebuild media preview bundle\n- chore: minify css in bundled styles\n- chore: move manifest updater into scripts",
       "targetAbi": "10.11.9.0",
       "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.1.0/MediaPreview.zip",
       "checksum": "a1e376c6b314326d759b3dcae5710951",
