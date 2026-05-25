@@ -19,6 +19,10 @@ export interface JellyfinItem {
   Id?: string;
   Name?: string;
   Type?: string;
+  ProductionYear?: number;
+  RunTimeTicks?: number;
+  OfficialRating?: string;
+  CommunityRating?: number;
   LocalTrailerCount?: number;
   RemoteTrailers?: JellyfinRemoteTrailer[];
   MediaSources?: JellyfinMediaSource[];

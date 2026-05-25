@@ -42,3 +42,52 @@
   background: rgba(255, 255, 255, 0.88);
   transform-origin: left center;
 }
+
+.jmp-metadata-overlay {
+  position: absolute;
+  z-index: 80;
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  max-width: calc(100% - 16px);
+  padding: 8px 10px;
+  pointer-events: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(8, 10, 14, 0.86), rgba(8, 10, 14, 0.72));
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+  color: #fff;
+}
+
+.jmp-metadata-overlay.pos-top-left {
+  top: 8px;
+  left: 8px;
+}
+
+.jmp-metadata-overlay.pos-top-right {
+  top: 8px;
+  right: 8px;
+}
+
+.jmp-metadata-overlay.pos-bottom-left {
+  bottom: 8px;
+  left: 8px;
+}
+
+.jmp-metadata-overlay.pos-bottom-right {
+  right: 8px;
+  bottom: 8px;
+}
+
+.jmp-metadata-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.jmp-metadata-meta {
+  font-size: 0.76rem;
+  line-height: 1.25;
+  opacity: 0.88;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}

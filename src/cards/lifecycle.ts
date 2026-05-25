@@ -219,6 +219,36 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
   return state.trailerActions;
 }
 
+export function ensureMetadataOverlay(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
+  }
+
+  if (!state.metadataOverlay) {
+    const metadataOverlay = document.createElement('div');
+    metadataOverlay.className = 'jmp-metadata-overlay';
+    metadataOverlay.setAttribute('aria-hidden', 'true');
+    metadataOverlay.style.display = 'none';
+
+    const title = document.createElement('div');
+    title.className = 'jmp-metadata-title';
+
+    const meta = document.createElement('div');
+    meta.className = 'jmp-metadata-meta';
+
+    metadataOverlay.appendChild(title);
+    metadataOverlay.appendChild(meta);
+    state.rootHost.appendChild(metadataOverlay);
+
+    state.metadataOverlay = metadataOverlay;
+    state.metadataOverlayTitle = title;
+    state.metadataOverlayMeta = meta;
+  }
+
+  applyMetadataOverlaySettings(state);
+  return state.metadataOverlay;
+}
+
 export function ensureProgress(state: CardState | null | undefined): HTMLDivElement | null {
   if (!state?.rootHost) {
     return null;
@@ -329,6 +359,15 @@ export function setTrailerExpandVisible(state: CardState | null | undefined, isV
   state.trailerActions.style.display = isVisible && config.trailerExpandButtonEnabled ? 'block' : 'none';
 }
 
+export function applyMetadataOverlaySettings(state: CardState | null | undefined): void {
+  if (!state?.metadataOverlay) {
+    return;
+  }
+
+  state.metadataOverlay.classList.remove('pos-top-left', 'pos-top-right', 'pos-bottom-left', 'pos-bottom-right');
+  state.metadataOverlay.classList.add(`pos-${config.metadataOverlayPosition}`);
+}
+
 export function applyTrailerExpandButtonSettings(state: CardState | null | undefined): void {
   if (!state?.trailerActions) {
     return;
@@ -401,6 +440,34 @@ export function hideProgress(state: CardState | null | undefined): void {
   state.progress.style.display = 'none';
 }
 
+export function showMetadataOverlay(
+  state: CardState | null | undefined,
+  title: string | null | undefined,
+  meta: string | null | undefined
+): void {
+  const overlay = ensureMetadataOverlay(state);
+  if (!overlay || !state?.metadataOverlayTitle || !state.metadataOverlayMeta) {
+    return;
+  }
+
+  applyMetadataOverlaySettings(state);
+  state.metadataOverlayTitle.textContent = title || '';
+  state.metadataOverlayMeta.textContent = meta || '';
+  state.metadataOverlayTitle.style.display = title ? 'block' : 'none';
+  state.metadataOverlayMeta.style.display = meta ? 'block' : 'none';
+  overlay.style.display = 'flex';
+}
+
+export function hideMetadataOverlay(state: CardState | null | undefined): void {
+  if (!state?.metadataOverlay || !state.metadataOverlayTitle || !state.metadataOverlayMeta) {
+    return;
+  }
+
+  state.metadataOverlay.style.display = 'none';
+  state.metadataOverlayTitle.textContent = '';
+  state.metadataOverlayMeta.textContent = '';
+}
+
 export function clearPendingMove(state: CardState | null | undefined): void {
   if (state?.queuedMoveTimer) {
     window.clearTimeout(state.queuedMoveTimer);
@@ -452,6 +519,7 @@ export function restoreCard(card: HTMLElement): void {
   state.lastTrickplayRenderAt = 0;
   resetHoverCountdown(state);
   hideUnavailableMessage(state);
+  hideMetadataOverlay(state);
 
   if (config.restoreOnLeave) {
     hidePreviewFrame(state);
@@ -505,6 +573,10 @@ export function destroyCardBindings(): void {
       removeManagedNode<HTMLDivElement>(state, 'trailerActions');
       state.trailerActions = null;
       state.trailerExpandButton = null;
+      removeManagedNode<HTMLDivElement>(state, 'metadataOverlay');
+      state.metadataOverlay = null;
+      state.metadataOverlayTitle = null;
+      state.metadataOverlayMeta = null;
       removeManagedNode<HTMLDivElement>(state, 'progress');
       state.progress = null;
       state.progressBar = null;

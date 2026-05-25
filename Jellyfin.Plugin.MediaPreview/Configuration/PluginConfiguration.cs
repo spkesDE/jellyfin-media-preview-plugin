@@ -34,6 +34,20 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string SmartTrailerScope { get; set; } = "local-and-remote";
 
+    public bool MetadataOverlayEnabled { get; set; } = false;
+
+    public string MetadataOverlayPosition { get; set; } = "bottom-left";
+
+    public bool MetadataOverlayShowTitle { get; set; } = true;
+
+    public bool MetadataOverlayShowYear { get; set; } = true;
+
+    public bool MetadataOverlayShowRuntime { get; set; } = true;
+
+    public bool MetadataOverlayShowOfficialRating { get; set; } = true;
+
+    public bool MetadataOverlayShowCommunityRating { get; set; } = true;
+
     public bool RestoreOnLeave { get; set; } = true;
 
     public bool ShowProgressIndicator { get; set; } = true;

@@ -36,6 +36,15 @@ export interface TrailerInfo {
   candidates: TrailerCandidate[];
 }
 
+export interface MetadataOverlayInfo {
+  itemId: string;
+  title: string | null;
+  year: number | null;
+  runtimeTicks: number | null;
+  officialRating: string | null;
+  communityRating: number | null;
+}
+
 export interface TrickplayPreview {
   source: 'trickplay';
   info: TrickplayInfo;

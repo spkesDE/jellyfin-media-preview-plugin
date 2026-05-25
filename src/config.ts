@@ -70,7 +70,14 @@ const standaloneFallbackConfig: PluginConfig = {
   smartSeriesPrimarySource: PREVIEW_SOURCE_TRICKPLAY,
   smartEpisodePrimarySource: PREVIEW_SOURCE_TRICKPLAY,
   smartVideoPrimarySource: PREVIEW_SOURCE_TRICKPLAY,
-  smartTrailerScope: SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE
+  smartTrailerScope: SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE,
+  metadataOverlayEnabled: false,
+  metadataOverlayPosition: 'bottom-left',
+  metadataOverlayShowTitle: true,
+  metadataOverlayShowYear: true,
+  metadataOverlayShowRuntime: true,
+  metadataOverlayShowOfficialRating: true,
+  metadataOverlayShowCommunityRating: true
 };
 
 const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPreviewPluginConfig;
@@ -114,7 +121,14 @@ export const config: PluginConfig = {
   smartSeriesPrimarySource: runtimeConfig?.smartSeriesPrimarySource ?? standaloneFallbackConfig.smartSeriesPrimarySource,
   smartEpisodePrimarySource: runtimeConfig?.smartEpisodePrimarySource ?? standaloneFallbackConfig.smartEpisodePrimarySource,
   smartVideoPrimarySource: runtimeConfig?.smartVideoPrimarySource ?? standaloneFallbackConfig.smartVideoPrimarySource,
-  smartTrailerScope: runtimeConfig?.smartTrailerScope ?? standaloneFallbackConfig.smartTrailerScope
+  smartTrailerScope: runtimeConfig?.smartTrailerScope ?? standaloneFallbackConfig.smartTrailerScope,
+  metadataOverlayEnabled: runtimeConfig?.metadataOverlayEnabled ?? standaloneFallbackConfig.metadataOverlayEnabled,
+  metadataOverlayPosition: runtimeConfig?.metadataOverlayPosition ?? standaloneFallbackConfig.metadataOverlayPosition,
+  metadataOverlayShowTitle: runtimeConfig?.metadataOverlayShowTitle ?? standaloneFallbackConfig.metadataOverlayShowTitle,
+  metadataOverlayShowYear: runtimeConfig?.metadataOverlayShowYear ?? standaloneFallbackConfig.metadataOverlayShowYear,
+  metadataOverlayShowRuntime: runtimeConfig?.metadataOverlayShowRuntime ?? standaloneFallbackConfig.metadataOverlayShowRuntime,
+  metadataOverlayShowOfficialRating: runtimeConfig?.metadataOverlayShowOfficialRating ?? standaloneFallbackConfig.metadataOverlayShowOfficialRating,
+  metadataOverlayShowCommunityRating: runtimeConfig?.metadataOverlayShowCommunityRating ?? standaloneFallbackConfig.metadataOverlayShowCommunityRating
 };
 
 export function normalizeConfig(): void {
@@ -165,6 +179,10 @@ export function normalizeConfig(): void {
     config.smartTrailerScope = SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE;
   }
 
+  if (!VALID_TRAILER_EXPAND_BUTTON_POSITIONS.has(config.metadataOverlayPosition)) {
+    config.metadataOverlayPosition = 'bottom-left';
+  }
+
   if (!VALID_HOVER_MODES.has(config.hoverMode)) {
     config.hoverMode = HOVER_MODE_SCRUB;
   }
@@ -205,6 +223,12 @@ export function normalizeConfig(): void {
   config.hoverIntentEnabled = config.hoverIntentEnabled === true;
   config.hoverIntentThresholdPx = Math.max(0, Number(config.hoverIntentThresholdPx) || 18);
   config.hoverCooldownMs = Math.max(0, Number(config.hoverCooldownMs) || 0);
+  config.metadataOverlayEnabled = config.metadataOverlayEnabled === true;
+  config.metadataOverlayShowTitle = config.metadataOverlayShowTitle !== false;
+  config.metadataOverlayShowYear = config.metadataOverlayShowYear !== false;
+  config.metadataOverlayShowRuntime = config.metadataOverlayShowRuntime !== false;
+  config.metadataOverlayShowOfficialRating = config.metadataOverlayShowOfficialRating !== false;
+  config.metadataOverlayShowCommunityRating = config.metadataOverlayShowCommunityRating !== false;
   config.trickplayWidth = Math.max(1, Number(config.trickplayWidth) || 320);
   config.trailerVolumePercent = clamp(Number.isFinite(Number(config.trailerVolumePercent)) ? Number(config.trailerVolumePercent) : 35, 0, 100);
   config.previewBackdropIntensityPercent = clamp(Number.isFinite(Number(config.previewBackdropIntensityPercent)) ? Number(config.previewBackdropIntensityPercent) : 35, 0, 100);

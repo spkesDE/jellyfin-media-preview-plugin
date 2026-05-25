@@ -477,6 +477,60 @@
                                     <span>Show Progress Indicator</span>
                                 </label>
                             </div>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="MetadataOverlayEnabled" name="MetadataOverlayEnabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Show Mini Metadata Overlay</span>
+                                </label>
+                            </div>
+
+                            <div id="MetadataOverlaySettings">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="MetadataOverlayPosition">Metadata Overlay Position</label>
+                                    <select id="MetadataOverlayPosition" name="MetadataOverlayPosition" is="emby-select">
+                                        <option value="top-left">Top Left</option>
+                                        <option value="top-right">Top Right</option>
+                                        <option value="bottom-left">Bottom Left</option>
+                                        <option value="bottom-right">Bottom Right</option>
+                                    </select>
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="MetadataOverlayShowTitle" name="MetadataOverlayShowTitle" type="checkbox" is="emby-checkbox" />
+                                        <span>Show Title</span>
+                                    </label>
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="MetadataOverlayShowYear" name="MetadataOverlayShowYear" type="checkbox" is="emby-checkbox" />
+                                        <span>Show Year</span>
+                                    </label>
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="MetadataOverlayShowRuntime" name="MetadataOverlayShowRuntime" type="checkbox" is="emby-checkbox" />
+                                        <span>Show Runtime</span>
+                                    </label>
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="MetadataOverlayShowOfficialRating" name="MetadataOverlayShowOfficialRating" type="checkbox" is="emby-checkbox" />
+                                        <span>Show Official Rating</span>
+                                    </label>
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="MetadataOverlayShowCommunityRating" name="MetadataOverlayShowCommunityRating" type="checkbox" is="emby-checkbox" />
+                                        <span>Show Community Rating</span>
+                                    </label>
+                                </div>
+                            </div>
                         </section>
 
                         <section class="jmp-section">
@@ -513,7 +567,7 @@
                 const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
-                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled'];
+                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled'];
 
                 function getField(selector) {
                     return form.querySelector(selector);
@@ -590,6 +644,7 @@
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
                     const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
                     const hoverIntentEnabled = getBooleanValue('#HoverIntentEnabled');
+                    const metadataOverlayEnabled = getBooleanValue('#MetadataOverlayEnabled');
                     const usesSmartSource = previewSource === 'smart'
                         || moviePreviewSource === 'smart'
                         || seriesPreviewSource === 'smart'
@@ -617,6 +672,7 @@
                     getField('#HoverIntentThresholdSetting').classList.toggle('jmp-hidden', !hoverIntentEnabled);
                     getField('#HoverCountdownPositionSetting').classList.toggle('jmp-hidden', !hoverCountdownEnabled);
                     getField('#PreviewBackdropIntensitySetting').classList.toggle('jmp-hidden', previewBackdropMode === 'off');
+                    getField('#MetadataOverlaySettings').classList.toggle('jmp-hidden', !metadataOverlayEnabled);
                     setDisabled([
                         '#AutoScrubIntervalMs'
                     ], !stepMode);
@@ -683,6 +739,13 @@
                     getField('#PreviewBackdropIntensityPercent').value = config.PreviewBackdropIntensityPercent ?? 35;
                     getField('#RestoreOnLeave').checked = config.RestoreOnLeave !== false;
                     getField('#ShowProgressIndicator').checked = config.ShowProgressIndicator !== false;
+                    getField('#MetadataOverlayEnabled').checked = !!config.MetadataOverlayEnabled;
+                    getField('#MetadataOverlayPosition').value = config.MetadataOverlayPosition || 'bottom-left';
+                    getField('#MetadataOverlayShowTitle').checked = config.MetadataOverlayShowTitle !== false;
+                    getField('#MetadataOverlayShowYear').checked = config.MetadataOverlayShowYear !== false;
+                    getField('#MetadataOverlayShowRuntime').checked = config.MetadataOverlayShowRuntime !== false;
+                    getField('#MetadataOverlayShowOfficialRating').checked = config.MetadataOverlayShowOfficialRating !== false;
+                    getField('#MetadataOverlayShowCommunityRating').checked = config.MetadataOverlayShowCommunityRating !== false;
                     getField('#Debug').checked = !!config.Debug;
                     toggleVisibility();
                 }
@@ -747,6 +810,13 @@
                         PreviewBackdropIntensityPercent: getNumberValue('#PreviewBackdropIntensityPercent', 35),
                         RestoreOnLeave: getBooleanValue('#RestoreOnLeave'),
                         ShowProgressIndicator: getBooleanValue('#ShowProgressIndicator'),
+                        MetadataOverlayEnabled: getBooleanValue('#MetadataOverlayEnabled'),
+                        MetadataOverlayPosition: getStringValue('#MetadataOverlayPosition', 'bottom-left'),
+                        MetadataOverlayShowTitle: getBooleanValue('#MetadataOverlayShowTitle'),
+                        MetadataOverlayShowYear: getBooleanValue('#MetadataOverlayShowYear'),
+                        MetadataOverlayShowRuntime: getBooleanValue('#MetadataOverlayShowRuntime'),
+                        MetadataOverlayShowOfficialRating: getBooleanValue('#MetadataOverlayShowOfficialRating'),
+                        MetadataOverlayShowCommunityRating: getBooleanValue('#MetadataOverlayShowCommunityRating'),
                         Debug: getBooleanValue('#Debug')
                     };
 

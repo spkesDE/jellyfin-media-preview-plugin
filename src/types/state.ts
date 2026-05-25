@@ -23,6 +23,9 @@ export interface CardState {
   trailerMediaKind: 'video' | 'iframe' | null;
   currentTrailer: TrailerCandidate | null;
   trailerPlaybackStartedAt: number;
+  metadataOverlay: HTMLDivElement | null;
+  metadataOverlayTitle: HTMLDivElement | null;
+  metadataOverlayMeta: HTMLDivElement | null;
   progress: HTMLDivElement | null;
   progressBar: HTMLDivElement | null;
   lastPreviewKey: string | null;

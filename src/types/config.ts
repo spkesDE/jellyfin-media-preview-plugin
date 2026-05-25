@@ -60,6 +60,13 @@ export interface PluginConfig {
   smartEpisodePrimarySource: SmartPrimarySource;
   smartVideoPrimarySource: SmartPrimarySource;
   smartTrailerScope: SmartTrailerScope;
+  metadataOverlayEnabled: boolean;
+  metadataOverlayPosition: TrailerExpandButtonPosition;
+  metadataOverlayShowTitle: boolean;
+  metadataOverlayShowYear: boolean;
+  metadataOverlayShowRuntime: boolean;
+  metadataOverlayShowOfficialRating: boolean;
+  metadataOverlayShowCommunityRating: boolean;
 }
 
 export type RuntimePluginConfig = Partial<PluginConfig> & {
