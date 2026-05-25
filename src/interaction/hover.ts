@@ -31,7 +31,7 @@ import { applyPreview } from '../preview';
 import { getPreviewUrl } from '../preview/source';
 import { clamp } from '../core/dom';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
-import { startAutoScrub } from './autoScrub';
+import { clearAutoScrub, startAutoScrub } from './autoScrub';
 
 export function getRelativePercent(card: HTMLElement, event: MouseEvent | PointerEvent | { clientX: number }): number {
   const rect = card.getBoundingClientRect();
@@ -191,6 +191,49 @@ function scheduleHoverActivation(
   startHoverCountdown(card, state, effectiveDelayMs);
 }
 
+function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof getOrCreateCardState>): void {
+  const delayMs = Math.max(0, Number(config.keyboardPreviewDelayMs) || 0);
+  clearHoverActivationTimer(state);
+  resetHoverCountdown(state);
+
+  state.hoverTimer = window.setTimeout(() => {
+    state.hoverTimer = null;
+    state.previewActive = true;
+    state.latestRequestToken += 1;
+    const requestToken = state.latestRequestToken;
+
+    const itemId = getItemIdFromCard(card);
+    if (!itemId) {
+      return;
+    }
+
+    const itemType = getItemTypeFromCard(card);
+    const initialPercent = clamp((Number(config.keyboardPreviewStartPercent) || 0) / 100, 0, 1);
+
+    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
+      if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        return;
+      }
+
+      if (!preview) {
+        if (config.showNoPreviewMessage && state.focusInside) {
+          showUnavailableMessage(state, getNoPreviewMessage());
+        }
+        return;
+      }
+
+      hideUnavailableMessage(state);
+      applyPreview(card, preview, initialPercent);
+    }).catch((error) => {
+      if (requestToken !== state.latestRequestToken) {
+        return;
+      }
+
+      debugLog('Keyboard preview activation failed.', itemId, error);
+    });
+  }, delayMs);
+}
+
 export function runPreviewUpdate(card: HTMLElement, percent: number): void {
   const itemId = getItemIdFromCard(card);
   if (!itemId) {
@@ -328,6 +371,10 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
   const state = getOrCreateCardState(card);
   state.pointerInside = false;
   state.lastPreviewEndedAt = Date.now();
+  if (state.focusInside) {
+    return;
+  }
+
   if (config.debug) {
     clearLeaveHold(state);
     state.leaveHoldTimer = window.setTimeout(() => {
@@ -351,7 +398,92 @@ export function resetPointerTracking(card: HTMLElement, reason?: string): void {
   if (runtimeState.expandedTrailerSession && runtimeState.expandedTrailerSession.card === card) {
     return;
   }
+  if (state.focusInside) {
+    return;
+  }
   restoreCard(card);
+}
+
+export function handleFocusEnter(card: HTMLElement): void {
+  if (!config.enabled || !config.keyboardPreviewEnabled || runtimeState.expandedTrailerSession) {
+    return;
+  }
+
+  const state = getOrCreateCardState(card);
+  if (!ensurePreviewHost(card, state)) {
+    return;
+  }
+
+  if (state.focusInside || state.pointerInside) {
+    return;
+  }
+
+  state.focusInside = true;
+  restoreCard(card);
+  hideUnavailableMessage(state);
+  debugCardSummary(card, 'Keyboard focus entered card.');
+  scheduleKeyboardActivation(card, state);
+}
+
+export function handleFocusLeave(card: HTMLElement): void {
+  if (runtimeState.expandedTrailerSession) {
+    return;
+  }
+
+  const state = getOrCreateCardState(card);
+  state.focusInside = false;
+  state.lastPreviewEndedAt = Date.now();
+  if (state.pointerInside) {
+    return;
+  }
+
+  restoreCard(card);
+}
+
+export function handleKeyboardPreviewKey(card: HTMLElement, event: KeyboardEvent): void {
+  if (!config.enabled || !config.keyboardPreviewEnabled || runtimeState.expandedTrailerSession) {
+    return;
+  }
+
+  const state = getOrCreateCardState(card);
+  if (event.key === 'Escape' && config.keyboardEscapeClosesPreview && state.previewActive) {
+    event.preventDefault();
+    state.focusInside = false;
+    restoreCard(card);
+    return;
+  }
+
+  if (!config.keyboardArrowScrubEnabled || !state.previewActive || state.activePreviewSource === PREVIEW_SOURCE_TRAILER) {
+    return;
+  }
+
+  let nextPercent: number | null = null;
+  const step = clamp((Number(config.keyboardArrowStepPercent) || 8) / 100, 0.01, 1);
+  const currentPercent = state.currentTrickplayInfo && state.lastRenderedTrickplayFrameIndex !== null
+    ? clamp(
+      state.lastRenderedTrickplayFrameIndex / Math.max(1, state.currentTrickplayInfo.thumbnailCount - 1),
+      0,
+      1
+    )
+    : clamp((Number(config.keyboardPreviewStartPercent) || 50) / 100, 0, 1);
+
+  if (event.key === 'ArrowLeft') {
+    nextPercent = Math.max(0, currentPercent - step);
+  } else if (event.key === 'ArrowRight') {
+    nextPercent = Math.min(1, currentPercent + step);
+  } else if (event.key === 'Home') {
+    nextPercent = 0;
+  } else if (event.key === 'End') {
+    nextPercent = 1;
+  }
+
+  if (nextPercent === null) {
+    return;
+  }
+
+  event.preventDefault();
+  clearAutoScrub(state);
+  schedulePreviewUpdate(card, nextPercent);
 }
 
 export function handleMouseEnter(card: HTMLElement, event: MouseEvent): void {

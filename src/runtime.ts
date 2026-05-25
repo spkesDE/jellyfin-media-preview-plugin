@@ -14,6 +14,9 @@ export const runtimeState = {
     onMouseOver: (event: MouseEvent) => void;
     onMouseMove: (event: MouseEvent) => void;
     onMouseOut: (event: MouseEvent) => void;
+    onFocusIn: (event: FocusEvent) => void;
+    onFocusOut: (event: FocusEvent) => void;
+    onKeyDown: (event: KeyboardEvent) => void;
   } | null,
   userActivationEventsBound: false,
   userActivationHandler: null as (() => void) | null,

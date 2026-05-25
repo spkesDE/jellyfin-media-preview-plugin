@@ -47,6 +47,12 @@ const standaloneFallbackConfig: PluginConfig = {
   hoverIntentEnabled: false,
   hoverIntentThresholdPx: 18,
   hoverCooldownMs: 0,
+  keyboardPreviewEnabled: false,
+  keyboardPreviewDelayMs: 300,
+  keyboardPreviewStartPercent: 50,
+  keyboardArrowScrubEnabled: true,
+  keyboardArrowStepPercent: 8,
+  keyboardEscapeClosesPreview: true,
   hoverCountdownEnabled: false,
   hoverCountdownPosition: 'top-right',
   trickplayWidth: 320,
@@ -100,6 +106,12 @@ export const config: PluginConfig = {
   hoverIntentEnabled: runtimeConfig?.hoverIntentEnabled ?? standaloneFallbackConfig.hoverIntentEnabled,
   hoverIntentThresholdPx: runtimeConfig?.hoverIntentThresholdPx ?? standaloneFallbackConfig.hoverIntentThresholdPx,
   hoverCooldownMs: runtimeConfig?.hoverCooldownMs ?? standaloneFallbackConfig.hoverCooldownMs,
+  keyboardPreviewEnabled: runtimeConfig?.keyboardPreviewEnabled ?? standaloneFallbackConfig.keyboardPreviewEnabled,
+  keyboardPreviewDelayMs: runtimeConfig?.keyboardPreviewDelayMs ?? standaloneFallbackConfig.keyboardPreviewDelayMs,
+  keyboardPreviewStartPercent: runtimeConfig?.keyboardPreviewStartPercent ?? standaloneFallbackConfig.keyboardPreviewStartPercent,
+  keyboardArrowScrubEnabled: runtimeConfig?.keyboardArrowScrubEnabled ?? standaloneFallbackConfig.keyboardArrowScrubEnabled,
+  keyboardArrowStepPercent: runtimeConfig?.keyboardArrowStepPercent ?? standaloneFallbackConfig.keyboardArrowStepPercent,
+  keyboardEscapeClosesPreview: runtimeConfig?.keyboardEscapeClosesPreview ?? standaloneFallbackConfig.keyboardEscapeClosesPreview,
   hoverCountdownEnabled: runtimeConfig?.hoverCountdownEnabled ?? standaloneFallbackConfig.hoverCountdownEnabled,
   hoverCountdownPosition: runtimeConfig?.hoverCountdownPosition ?? standaloneFallbackConfig.hoverCountdownPosition,
   trickplayWidth: runtimeConfig?.trickplayWidth ?? standaloneFallbackConfig.trickplayWidth,
@@ -233,6 +245,12 @@ export function normalizeConfig(): void {
   config.hoverIntentEnabled = config.hoverIntentEnabled === true;
   config.hoverIntentThresholdPx = Math.max(0, Number(config.hoverIntentThresholdPx) || 18);
   config.hoverCooldownMs = Math.max(0, Number(config.hoverCooldownMs) || 0);
+  config.keyboardPreviewEnabled = config.keyboardPreviewEnabled === true;
+  config.keyboardPreviewDelayMs = Math.max(0, Number(config.keyboardPreviewDelayMs) || 300);
+  config.keyboardPreviewStartPercent = clamp(Number(config.keyboardPreviewStartPercent) || 0, 0, 100);
+  config.keyboardArrowScrubEnabled = config.keyboardArrowScrubEnabled !== false;
+  config.keyboardArrowStepPercent = clamp(Number(config.keyboardArrowStepPercent) || 8, 1, 100);
+  config.keyboardEscapeClosesPreview = config.keyboardEscapeClosesPreview !== false;
   config.metadataOverlayEnabled = config.metadataOverlayEnabled === true;
   config.metadataOverlayShowTitle = config.metadataOverlayShowTitle !== false;
   config.metadataOverlayShowYear = config.metadataOverlayShowYear !== false;

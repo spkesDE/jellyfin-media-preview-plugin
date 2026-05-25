@@ -187,3 +187,16 @@ export function getHoverCardFromEventTarget(target: EventTarget | null): HTMLEle
 
   return card;
 }
+
+export function getSupportedCardFromEventTarget(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Element) || typeof target.closest !== 'function') {
+    return null;
+  }
+
+  const card = normalizeCardElement(target.closest('.card[data-id]'));
+  if (!card || !SUPPORTED_TYPES.has(getItemTypeFromCard(card) || '')) {
+    return null;
+  }
+
+  return card;
+}

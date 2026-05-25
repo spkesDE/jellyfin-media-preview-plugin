@@ -14,6 +14,7 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       hoverIntentAnchorY: null,
       leaveHoldTimer: null,
       lastPreviewEndedAt: 0,
+      focusInside: false,
       pointerInside: false,
       previewActive: false,
       previewBackdrop: null,

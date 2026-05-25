@@ -35,6 +35,12 @@ export interface PluginConfig {
   hoverIntentEnabled: boolean;
   hoverIntentThresholdPx: number;
   hoverCooldownMs: number;
+  keyboardPreviewEnabled: boolean;
+  keyboardPreviewDelayMs: number;
+  keyboardPreviewStartPercent: number;
+  keyboardArrowScrubEnabled: boolean;
+  keyboardArrowStepPercent: number;
+  keyboardEscapeClosesPreview: boolean;
   hoverCountdownEnabled: boolean;
   hoverCountdownPosition: TrailerExpandButtonPosition;
   trickplayWidth: number;

@@ -302,6 +302,49 @@
                         </section>
 
                         <section class="jmp-section">
+                            <h3>Keyboard</h3>
+                            <p class="jmp-help">Lets keyboard navigation trigger and control previews too.</p>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
+                                    <input id="KeyboardPreviewEnabled" name="KeyboardPreviewEnabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Enable Keyboard Preview</span>
+                                </label>
+                            </div>
+
+                            <div id="KeyboardPreviewSettings">
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="KeyboardPreviewDelayMs">Keyboard Preview Delay (ms)</label>
+                                    <input id="KeyboardPreviewDelayMs" name="KeyboardPreviewDelayMs" type="number" min="0" step="50" is="emby-input" />
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="KeyboardPreviewStartPercent">Keyboard Start Position (%)</label>
+                                    <input id="KeyboardPreviewStartPercent" name="KeyboardPreviewStartPercent" type="number" min="0" max="100" step="1" is="emby-input" />
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="KeyboardArrowScrubEnabled" name="KeyboardArrowScrubEnabled" type="checkbox" is="emby-checkbox" />
+                                        <span>Enable Arrow-Key Scrubbing</span>
+                                    </label>
+                                </div>
+
+                                <div id="KeyboardArrowStepSetting" class="inputContainer">
+                                    <label class="inputLabel inputLabelUnfocused" for="KeyboardArrowStepPercent">Arrow-Key Step (%)</label>
+                                    <input id="KeyboardArrowStepPercent" name="KeyboardArrowStepPercent" type="number" min="1" max="100" step="1" is="emby-input" />
+                                </div>
+
+                                <div class="inputContainer">
+                                    <label class="checkboxContainer">
+                                        <input id="KeyboardEscapeClosesPreview" name="KeyboardEscapeClosesPreview" type="checkbox" is="emby-checkbox" />
+                                        <span>Escape Closes Preview</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="jmp-section">
                             <h3>Trickplay Motion</h3>
                             <p class="jmp-help">Control how Trickplay previews move when you hover a card.</p>
 
@@ -582,7 +625,7 @@
                 const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
-                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#PreviewTransitionMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled'];
+                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#PreviewTransitionMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled', '#KeyboardPreviewEnabled', '#KeyboardArrowScrubEnabled'];
 
                 function getField(selector) {
                     return form.querySelector(selector);
@@ -661,6 +704,8 @@
                     const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
                     const hoverIntentEnabled = getBooleanValue('#HoverIntentEnabled');
                     const metadataOverlayEnabled = getBooleanValue('#MetadataOverlayEnabled');
+                    const keyboardPreviewEnabled = getBooleanValue('#KeyboardPreviewEnabled');
+                    const keyboardArrowScrubEnabled = getBooleanValue('#KeyboardArrowScrubEnabled');
                     const usesSmartSource = previewSource === 'smart'
                         || moviePreviewSource === 'smart'
                         || seriesPreviewSource === 'smart'
@@ -690,6 +735,8 @@
                     getField('#PreviewBackdropIntensitySetting').classList.toggle('jmp-hidden', previewBackdropMode === 'off');
                     getField('#PreviewTransitionDurationSetting').classList.toggle('jmp-hidden', previewTransitionMode === 'off');
                     getField('#MetadataOverlaySettings').classList.toggle('jmp-hidden', !metadataOverlayEnabled);
+                    getField('#KeyboardPreviewSettings').classList.toggle('jmp-hidden', !keyboardPreviewEnabled);
+                    getField('#KeyboardArrowStepSetting').classList.toggle('jmp-hidden', !keyboardPreviewEnabled || !keyboardArrowScrubEnabled);
                     setDisabled([
                         '#AutoScrubIntervalMs'
                     ], !stepMode);
@@ -740,6 +787,12 @@
                     getField('#HoverIntentEnabled').checked = !!config.HoverIntentEnabled;
                     getField('#HoverIntentThresholdPx').value = config.HoverIntentThresholdPx ?? 18;
                     getField('#HoverCooldownMs').value = config.HoverCooldownMs ?? 0;
+                    getField('#KeyboardPreviewEnabled').checked = !!config.KeyboardPreviewEnabled;
+                    getField('#KeyboardPreviewDelayMs').value = config.KeyboardPreviewDelayMs ?? 300;
+                    getField('#KeyboardPreviewStartPercent').value = config.KeyboardPreviewStartPercent ?? 50;
+                    getField('#KeyboardArrowScrubEnabled').checked = config.KeyboardArrowScrubEnabled !== false;
+                    getField('#KeyboardArrowStepPercent').value = config.KeyboardArrowStepPercent ?? 8;
+                    getField('#KeyboardEscapeClosesPreview').checked = config.KeyboardEscapeClosesPreview !== false;
                     getField('#HoverCountdownEnabled').checked = !!config.HoverCountdownEnabled;
                     getField('#HoverCountdownPosition').value = config.HoverCountdownPosition || 'top-right';
                     getField('#TrickplayWidth').value = config.TrickplayWidth ?? 320;
@@ -813,6 +866,12 @@
                         HoverIntentEnabled: getBooleanValue('#HoverIntentEnabled'),
                         HoverIntentThresholdPx: getNumberValue('#HoverIntentThresholdPx', 18),
                         HoverCooldownMs: getNumberValue('#HoverCooldownMs', 0),
+                        KeyboardPreviewEnabled: getBooleanValue('#KeyboardPreviewEnabled'),
+                        KeyboardPreviewDelayMs: getNumberValue('#KeyboardPreviewDelayMs', 300),
+                        KeyboardPreviewStartPercent: getNumberValue('#KeyboardPreviewStartPercent', 50),
+                        KeyboardArrowScrubEnabled: getBooleanValue('#KeyboardArrowScrubEnabled'),
+                        KeyboardArrowStepPercent: getNumberValue('#KeyboardArrowStepPercent', 8),
+                        KeyboardEscapeClosesPreview: getBooleanValue('#KeyboardEscapeClosesPreview'),
                         HoverCountdownEnabled: getBooleanValue('#HoverCountdownEnabled'),
                         HoverCountdownPosition: getStringValue('#HoverCountdownPosition', 'top-right'),
                         TrickplayWidth: getNumberValue('#TrickplayWidth', 320),

@@ -14,6 +14,18 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int HoverCooldownMs { get; set; } = 0;
 
+    public bool KeyboardPreviewEnabled { get; set; } = false;
+
+    public int KeyboardPreviewDelayMs { get; set; } = 300;
+
+    public int KeyboardPreviewStartPercent { get; set; } = 50;
+
+    public bool KeyboardArrowScrubEnabled { get; set; } = true;
+
+    public int KeyboardArrowStepPercent { get; set; } = 8;
+
+    public bool KeyboardEscapeClosesPreview { get; set; } = true;
+
     public int TrickplayWidth { get; set; } = 320;
 
     public string MoviePreviewSource { get; set; } = "inherit";

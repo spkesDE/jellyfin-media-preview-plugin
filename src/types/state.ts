@@ -9,6 +9,7 @@ export interface CardState {
   hoverIntentAnchorY: number | null;
   leaveHoldTimer: number | null;
   lastPreviewEndedAt: number;
+  focusInside: boolean;
   pointerInside: boolean;
   previewActive: boolean;
   previewBackdrop: HTMLDivElement | null;
