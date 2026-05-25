@@ -198,6 +198,8 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   state.hoverTimer = window.setTimeout(() => {
     state.hoverTimer = null;
     state.previewActive = true;
+    state.latestRequestToken += 1;
+    const requestToken = state.latestRequestToken;
     if (state.hoverCountdownFrame) {
       window.cancelAnimationFrame(state.hoverCountdownFrame);
       state.hoverCountdownFrame = null;
@@ -215,6 +217,11 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
       : getRelativePercent(card, event);
 
     getPreviewUrl(itemId, initialPercent).then((preview) => {
+      if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        resetHoverCountdown(state);
+        return;
+      }
+
       if (!state.previewActive || !preview) {
         resetHoverCountdown(state);
         debugCardSummary(card, 'Hover activation found no preview source.', {
@@ -239,6 +246,10 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
         startAutoScrub(card);
       }
     }).catch((error) => {
+      if (requestToken !== state.latestRequestToken) {
+        return;
+      }
+
       resetHoverCountdown(state);
       debugLog('Hover activation failed.', itemId, error);
     });

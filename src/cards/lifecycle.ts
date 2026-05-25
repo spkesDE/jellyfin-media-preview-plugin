@@ -397,6 +397,7 @@ export function restoreCard(card: HTMLElement): void {
   clearLeaveHold(state);
   clearPendingMove(state);
   clearAutoScrub(state);
+  state.latestRequestToken += 1;
   state.previewActive = false;
   state.lastPreviewKey = null;
   state.activePreviewSource = null;
