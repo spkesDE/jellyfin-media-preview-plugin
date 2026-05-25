@@ -30,6 +30,8 @@ export interface CardState {
   queuedMoveFrame: number | null;
   latestRequestToken: number;
   rootHost: HTMLElement | null;
+  managedHostPosition: string | null;
+  managedHostOverflow: string | null;
   autoScrubTimer: number | null;
   autoScrubPercent: number | null;
   autoScrubAnimationFrame: number | null;

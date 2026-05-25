@@ -20,6 +20,37 @@ const mediaPreviewStyles = [
   mediaPreviewExpandedTrailerStyles
 ].join('\n');
 
+function restoreManagedHostStyles(state: CardState): void {
+  if (!state.rootHost) {
+    state.managedHostPosition = null;
+    state.managedHostOverflow = null;
+    return;
+  }
+
+  if (state.managedHostPosition !== null) {
+    state.rootHost.style.position = state.managedHostPosition;
+    state.managedHostPosition = null;
+  }
+
+  if (state.managedHostOverflow !== null) {
+    state.rootHost.style.overflow = state.managedHostOverflow;
+    state.managedHostOverflow = null;
+  }
+}
+
+function removeManagedNode<T extends HTMLElement>(state: CardState, key: keyof CardState): T | null {
+  const node = state[key];
+  if (!(node instanceof HTMLElement)) {
+    return null;
+  }
+
+  if (node.parentNode) {
+    node.parentNode.removeChild(node);
+  }
+
+  return node as T;
+}
+
 export function ensureInjectedStyles(): void {
   if (document.getElementById(STYLE_ID)) {
     return;
@@ -37,11 +68,21 @@ export function ensurePreviewHost(card: HTMLElement, state: CardState): CardStat
     return null;
   }
 
+  if (state.rootHost && state.rootHost !== imageHost) {
+    restoreManagedHostStyles(state);
+  }
+
   const positionedHost = imageHost;
   if (window.getComputedStyle(positionedHost).position === 'static') {
+    if (state.rootHost !== positionedHost || state.managedHostPosition === null) {
+      state.managedHostPosition = positionedHost.style.position;
+    }
     positionedHost.style.position = 'relative';
   }
   if (window.getComputedStyle(positionedHost).overflow !== 'hidden') {
+    if (state.rootHost !== positionedHost || state.managedHostOverflow === null) {
+      state.managedHostOverflow = positionedHost.style.overflow;
+    }
     positionedHost.style.overflow = 'hidden';
   }
 
@@ -420,6 +461,11 @@ export function restoreCard(card: HTMLElement): void {
 }
 
 export function destroyCardBindings(): void {
+  const style = document.getElementById(STYLE_ID);
+  if (style?.parentNode) {
+    style.parentNode.removeChild(style);
+  }
+
   document.querySelectorAll(`[${ADMIN_NAV_LINK_ATTR}="true"]`).forEach((entry) => {
     entry.remove();
   });
@@ -441,6 +487,27 @@ export function destroyCardBindings(): void {
       state.boundTarget = null;
       state.boundHandlers = null;
       restoreCard(card);
+      removeManagedNode<HTMLDivElement>(state, 'previewBackdrop');
+      state.previewBackdrop = null;
+      removeManagedNode<HTMLDivElement>(state, 'previewFrame');
+      state.previewFrame = null;
+      removeManagedNode<HTMLDivElement>(state, 'hoverCountdown');
+      state.hoverCountdown = null;
+      state.hoverCountdownLabel = null;
+      removeManagedNode<HTMLDivElement>(state, 'unavailableMessage');
+      state.unavailableMessage = null;
+      removeManagedNode<HTMLDivElement>(state, 'trailerLayer');
+      state.trailerLayer = null;
+      state.trailerMedia = null;
+      state.trailerMediaKind = null;
+      removeManagedNode<HTMLDivElement>(state, 'trailerActions');
+      state.trailerActions = null;
+      state.trailerExpandButton = null;
+      removeManagedNode<HTMLDivElement>(state, 'progress');
+      state.progress = null;
+      state.progressBar = null;
+      restoreManagedHostStyles(state);
+      state.rootHost = null;
       card.removeAttribute(STATE_ATTR);
     }
   });

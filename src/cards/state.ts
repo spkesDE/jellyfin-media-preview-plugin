@@ -35,6 +35,8 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       queuedMoveFrame: null,
       latestRequestToken: 0,
       rootHost: null,
+      managedHostPosition: null,
+      managedHostOverflow: null,
       autoScrubTimer: null,
       autoScrubPercent: null,
       autoScrubAnimationFrame: null,
