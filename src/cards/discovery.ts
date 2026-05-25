@@ -122,7 +122,8 @@ export function getItemIdFromCard(card: Element | null): string | null {
     return null;
   }
 
-  const directKeys = ['id', 'itemId', 'itemid', 'parentid', 'itemPrimaryImageId'];
+  const directKeys = ['id', 'itemId', 'itemid'];
+  const fallbackKeys = ['parentid', 'itemPrimaryImageId'];
   const htmlCard = card instanceof HTMLElement ? card : null;
 
   for (let i = 0; i < directKeys.length; i += 1) {
@@ -158,6 +159,21 @@ export function getItemIdFromCard(card: Element | null): string | null {
   const ownHrefId = parseItemIdFromHref(card.getAttribute('href'));
   if (ownHrefId) {
     return ownHrefId;
+  }
+
+  for (let i = 0; i < fallbackKeys.length; i += 1) {
+    const key = fallbackKeys[i];
+    const datasetValue = htmlCard?.dataset?.[key as keyof DOMStringMap];
+    if (datasetValue) {
+      return datasetValue;
+    }
+
+    const attrValue = card.getAttribute(
+      `data-${key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`
+    );
+    if (attrValue) {
+      return attrValue;
+    }
   }
 
   if (htmlCard) {

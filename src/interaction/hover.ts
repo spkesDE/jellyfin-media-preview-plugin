@@ -539,7 +539,7 @@ export function bindCard(card: HTMLElement): void {
     return;
   }
 
-  const itemType = card.getAttribute('data-type') || card.dataset.type || card.dataset.itemtype || '';
+  const itemType = getItemTypeFromCard(card) || '';
   if (itemType && !SUPPORTED_TYPES.has(itemType)) {
     return;
   }
