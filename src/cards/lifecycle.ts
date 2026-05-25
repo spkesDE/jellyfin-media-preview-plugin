@@ -15,6 +15,7 @@ import { clearAutoScrub } from '../interaction/autoScrub';
 import { runtimeState } from '../runtime';
 import mediaPreviewGlobalStyles from '../styles/mediaPreviewGlobal.css';
 import mediaPreviewHoverStyles from '../styles/mediaPreviewHover.css';
+import mediaPreviewMetadataStyles from '../styles/mediaPreviewMetadata.css';
 import mediaPreviewTrailerStyles from '../styles/mediaPreviewTrailer.css';
 import mediaPreviewExpandedTrailerStyles from '../styles/mediaPreviewExpandedTrailer.css';
 import type { CardState } from '../types/state';
@@ -22,6 +23,7 @@ import type { CardState } from '../types/state';
 const mediaPreviewStyles = [
   mediaPreviewGlobalStyles,
   mediaPreviewHoverStyles,
+  mediaPreviewMetadataStyles,
   mediaPreviewTrailerStyles,
   mediaPreviewExpandedTrailerStyles
 ].join('\n');
