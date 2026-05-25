@@ -56,6 +56,40 @@ export function getResolvedPreviewSource(itemType?: string | null, libraryId?: s
 }
 
 export function getPreviewUrl(itemId: string, percent: number, itemType?: string | null): Promise<PreviewResult | null> {
+  if (!config.libraryPreviewSourceOverrides.length) {
+    const effectiveSource = getContentTypePreviewSource(itemType);
+
+    if (effectiveSource === PREVIEW_SOURCE_TRICKPLAY) {
+      return getTrickplayPreview(itemId, percent);
+    }
+
+    if (effectiveSource === PREVIEW_SOURCE_TRAILER) {
+      return getTrailerPreview(itemId);
+    }
+
+    if (effectiveSource === PREVIEW_SOURCE_PREFER_TRICKPLAY) {
+      return getTrickplayPreview(itemId, percent).then<PreviewResult | null>((preview) => {
+        if (preview) {
+          return preview;
+        }
+
+        return getTrailerPreview(itemId);
+      });
+    }
+
+    if (effectiveSource === PREVIEW_SOURCE_PREFER_TRAILER) {
+      return getTrailerPreview(itemId).then<PreviewResult | null>((preview) => {
+        if (preview) {
+          return preview;
+        }
+
+        return getTrickplayPreview(itemId, percent);
+      });
+    }
+
+    return Promise.resolve(null);
+  }
+
   return getLibraryIdForItem(itemId).then((libraryId) => {
     const effectiveSource = getResolvedPreviewSource(itemType, libraryId);
 
