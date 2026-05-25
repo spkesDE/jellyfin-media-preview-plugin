@@ -5,9 +5,11 @@ import {
   AUTO_SCRUB_PRESET_BALANCED,
   HOVER_MODE_SCRUB,
   PREVIEW_SOURCE_INHERIT,
+  PREVIEW_SOURCE_SMART,
   PREVIEW_BACKDROP_DIM_BLUR,
   PREVIEW_MODE_CONTAIN,
   PREVIEW_MODE_COVER,
+  SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE,
   PREVIEW_SOURCE_TRICKPLAY,
   TRAILER_EXPAND_BUTTON_TOP_RIGHT,
   VALID_CONTENT_TYPE_PREVIEW_SOURCES,
@@ -17,6 +19,8 @@ import {
   VALID_PREVIEW_BACKDROP_MODES,
   VALID_PREVIEW_MODES,
   VALID_PREVIEW_SOURCES,
+  VALID_SMART_PRIMARY_SOURCES,
+  VALID_SMART_TRAILER_SCOPES,
   VALID_TRAILER_EXPAND_BUTTON_POSITIONS,
   VALID_YOUTUBE_CROP_STRENGTHS,
   YOUTUBE_CROP_MEDIUM
@@ -58,7 +62,12 @@ const standaloneFallbackConfig: PluginConfig = {
   previewBackdropIntensityPercent: 35,
   youTubeCropStrength: 'medium',
   trailerExpandButtonEnabled: true,
-  trailerExpandButtonPosition: 'top-right'
+  trailerExpandButtonPosition: 'top-right',
+  smartMoviePrimarySource: PREVIEW_SOURCE_TRAILER,
+  smartSeriesPrimarySource: PREVIEW_SOURCE_TRICKPLAY,
+  smartEpisodePrimarySource: PREVIEW_SOURCE_TRICKPLAY,
+  smartVideoPrimarySource: PREVIEW_SOURCE_TRICKPLAY,
+  smartTrailerScope: SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE
 };
 
 const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPreviewPluginConfig;
@@ -94,7 +103,12 @@ export const config: PluginConfig = {
   previewBackdropIntensityPercent: runtimeConfig?.previewBackdropIntensityPercent ?? standaloneFallbackConfig.previewBackdropIntensityPercent,
   youTubeCropStrength: runtimeConfig?.youTubeCropStrength ?? standaloneFallbackConfig.youTubeCropStrength,
   trailerExpandButtonEnabled: runtimeConfig?.trailerExpandButtonEnabled ?? standaloneFallbackConfig.trailerExpandButtonEnabled,
-  trailerExpandButtonPosition: runtimeConfig?.trailerExpandButtonPosition ?? standaloneFallbackConfig.trailerExpandButtonPosition
+  trailerExpandButtonPosition: runtimeConfig?.trailerExpandButtonPosition ?? standaloneFallbackConfig.trailerExpandButtonPosition,
+  smartMoviePrimarySource: runtimeConfig?.smartMoviePrimarySource ?? standaloneFallbackConfig.smartMoviePrimarySource,
+  smartSeriesPrimarySource: runtimeConfig?.smartSeriesPrimarySource ?? standaloneFallbackConfig.smartSeriesPrimarySource,
+  smartEpisodePrimarySource: runtimeConfig?.smartEpisodePrimarySource ?? standaloneFallbackConfig.smartEpisodePrimarySource,
+  smartVideoPrimarySource: runtimeConfig?.smartVideoPrimarySource ?? standaloneFallbackConfig.smartVideoPrimarySource,
+  smartTrailerScope: runtimeConfig?.smartTrailerScope ?? standaloneFallbackConfig.smartTrailerScope
 };
 
 export function normalizeConfig(): void {
@@ -123,6 +137,26 @@ export function normalizeConfig(): void {
 
   if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.videoPreviewSource)) {
     config.videoPreviewSource = PREVIEW_SOURCE_INHERIT;
+  }
+
+  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartMoviePrimarySource)) {
+    config.smartMoviePrimarySource = PREVIEW_SOURCE_TRAILER;
+  }
+
+  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartSeriesPrimarySource)) {
+    config.smartSeriesPrimarySource = PREVIEW_SOURCE_TRICKPLAY;
+  }
+
+  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartEpisodePrimarySource)) {
+    config.smartEpisodePrimarySource = PREVIEW_SOURCE_TRICKPLAY;
+  }
+
+  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartVideoPrimarySource)) {
+    config.smartVideoPrimarySource = PREVIEW_SOURCE_TRICKPLAY;
+  }
+
+  if (!VALID_SMART_TRAILER_SCOPES.has(config.smartTrailerScope)) {
+    config.smartTrailerScope = SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE;
   }
 
   if (!VALID_HOVER_MODES.has(config.hoverMode)) {

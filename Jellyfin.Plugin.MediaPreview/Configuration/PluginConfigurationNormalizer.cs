@@ -7,7 +7,8 @@ internal static class PluginConfigurationNormalizer
         "trickplay",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer"
+        "prefer-trailer",
+        "smart"
     };
 
     private static readonly HashSet<string> ValidContentTypePreviewSources = new(StringComparer.Ordinal)
@@ -16,7 +17,20 @@ internal static class PluginConfigurationNormalizer
         "trickplay",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer"
+        "prefer-trailer",
+        "smart"
+    };
+
+    private static readonly HashSet<string> ValidSmartPrimarySources = new(StringComparer.Ordinal)
+    {
+        "trickplay",
+        "trailer"
+    };
+
+    private static readonly HashSet<string> ValidSmartTrailerScopes = new(StringComparer.Ordinal)
+    {
+        "local-only",
+        "local-and-remote"
     };
 
     private static readonly HashSet<string> ValidHoverModes = new(StringComparer.Ordinal)
@@ -84,6 +98,11 @@ internal static class PluginConfigurationNormalizer
             SeriesPreviewSource = NormalizeChoice(source.SeriesPreviewSource, ValidContentTypePreviewSources, "inherit"),
             EpisodePreviewSource = NormalizeChoice(source.EpisodePreviewSource, ValidContentTypePreviewSources, "inherit"),
             VideoPreviewSource = NormalizeChoice(source.VideoPreviewSource, ValidContentTypePreviewSources, "inherit"),
+            SmartMoviePrimarySource = NormalizeChoice(source.SmartMoviePrimarySource, ValidSmartPrimarySources, "trailer"),
+            SmartSeriesPrimarySource = NormalizeChoice(source.SmartSeriesPrimarySource, ValidSmartPrimarySources, "trickplay"),
+            SmartEpisodePrimarySource = NormalizeChoice(source.SmartEpisodePrimarySource, ValidSmartPrimarySources, "trickplay"),
+            SmartVideoPrimarySource = NormalizeChoice(source.SmartVideoPrimarySource, ValidSmartPrimarySources, "trickplay"),
+            SmartTrailerScope = NormalizeChoice(source.SmartTrailerScope, ValidSmartTrailerScopes, "local-and-remote"),
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),

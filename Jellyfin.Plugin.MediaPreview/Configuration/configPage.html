@@ -147,6 +147,7 @@
                                     <option value="trailer">Trailer</option>
                                     <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
                                     <option value="prefer-trailer">Prefer Trailer</option>
+                                    <option value="smart">Smart</option>
                                 </select>
                             </div>
                             <p id="PreviewSourceNote" class="jmp-note">Choose between native Trickplay scrub files and trailer playback. Trailer mode currently supports local Jellyfin trailers and YouTube remote trailers when available.</p>
@@ -159,6 +160,7 @@
                                     <option value="trailer">Trailer</option>
                                     <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
                                     <option value="prefer-trailer">Prefer Trailer</option>
+                                    <option value="smart">Smart</option>
                                 </select>
                             </div>
 
@@ -170,6 +172,7 @@
                                     <option value="trailer">Trailer</option>
                                     <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
                                     <option value="prefer-trailer">Prefer Trailer</option>
+                                    <option value="smart">Smart</option>
                                 </select>
                             </div>
 
@@ -181,6 +184,7 @@
                                     <option value="trailer">Trailer</option>
                                     <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
                                     <option value="prefer-trailer">Prefer Trailer</option>
+                                    <option value="smart">Smart</option>
                                 </select>
                             </div>
 
@@ -192,9 +196,53 @@
                                     <option value="trailer">Trailer</option>
                                     <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
                                     <option value="prefer-trailer">Prefer Trailer</option>
+                                    <option value="smart">Smart</option>
                                 </select>
                             </div>
                             <p class="jmp-note">Lets you keep one global default while overriding the source strategy for movies, series, episodes, or generic video items.</p>
+
+                            <div id="SmartSourceSettings" class="jmp-hidden">
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="SmartMoviePrimarySource">Smart: Movie Primary Source</label>
+                                    <select id="SmartMoviePrimarySource" name="SmartMoviePrimarySource" is="emby-select">
+                                        <option value="trailer">Trailer first</option>
+                                        <option value="trickplay">Trickplay first</option>
+                                    </select>
+                                </div>
+
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="SmartSeriesPrimarySource">Smart: Series Primary Source</label>
+                                    <select id="SmartSeriesPrimarySource" name="SmartSeriesPrimarySource" is="emby-select">
+                                        <option value="trickplay">Trickplay first</option>
+                                        <option value="trailer">Trailer first</option>
+                                    </select>
+                                </div>
+
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="SmartEpisodePrimarySource">Smart: Episode Primary Source</label>
+                                    <select id="SmartEpisodePrimarySource" name="SmartEpisodePrimarySource" is="emby-select">
+                                        <option value="trickplay">Trickplay first</option>
+                                        <option value="trailer">Trailer first</option>
+                                    </select>
+                                </div>
+
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="SmartVideoPrimarySource">Smart: Video Primary Source</label>
+                                    <select id="SmartVideoPrimarySource" name="SmartVideoPrimarySource" is="emby-select">
+                                        <option value="trickplay">Trickplay first</option>
+                                        <option value="trailer">Trailer first</option>
+                                    </select>
+                                </div>
+
+                                <div class="selectContainer">
+                                    <label class="selectLabel" for="SmartTrailerScope">Smart: Trailer Candidate Scope</label>
+                                    <select id="SmartTrailerScope" name="SmartTrailerScope" is="emby-select">
+                                        <option value="local-and-remote">Local and remote trailers</option>
+                                        <option value="local-only">Local trailers only</option>
+                                    </select>
+                                </div>
+                                <p class="jmp-note">Smart mode picks a primary source per content type and falls back automatically. You can also decide whether remote trailers like YouTube are valid smart candidates or whether smart mode should only trust local Jellyfin trailers.</p>
+                            </div>
 
                             <div class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="HoverDelayMs">Hover Delay (ms)</label>
@@ -446,7 +494,7 @@
                 const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
-                const visibilitySelectors = ['#PreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled'];
+                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled'];
 
                 function getField(selector) {
                     return form.querySelector(selector);
@@ -510,6 +558,10 @@
                     motionProfiles.sweep.glyph = '>';
                     motionProfiles['ping-pong'].glyph = '<>';
                     const previewSource = getStringValue('#PreviewSource', 'trickplay');
+                    const moviePreviewSource = getStringValue('#MoviePreviewSource', 'inherit');
+                    const seriesPreviewSource = getStringValue('#SeriesPreviewSource', 'inherit');
+                    const episodePreviewSource = getStringValue('#EpisodePreviewSource', 'inherit');
+                    const videoPreviewSource = getStringValue('#VideoPreviewSource', 'inherit');
                     const hoverMode = getStringValue('#HoverMode', 'scrub');
                     const autoMode = getStringValue('#AutoScrubMode', 'step');
                     const autoPreset = getStringValue('#AutoScrubPreset', 'balanced');
@@ -518,10 +570,17 @@
                     const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
                     const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
+                    const usesSmartSource = previewSource === 'smart'
+                        || moviePreviewSource === 'smart'
+                        || seriesPreviewSource === 'smart'
+                        || episodePreviewSource === 'smart'
+                        || videoPreviewSource === 'smart';
 
                     getField('#PreviewSourceNote').textContent = usesTrailerOnly
                         ? 'Trailer mode starts a trailer on hover instead of scrubbing frames. It prefers local Jellyfin trailers and falls back to supported YouTube remote trailers.'
-                        : 'Trickplay modes use Jellyfin native scrub images. Prefer modes can fall back between Trickplay and trailer playback.';
+                        : previewSource === 'smart'
+                            ? 'Smart mode chooses a primary source based on the content type rules below, then falls back automatically if the preferred source is missing.'
+                            : 'Trickplay modes use Jellyfin native scrub images. Prefer modes can fall back between Trickplay and trailer playback.';
 
                     getField('#ScrubSettings').classList.toggle('jmp-hidden', usesTrailerOnly || hoverMode !== 'scrub');
                     getField('#AutoSettings').classList.toggle('jmp-hidden', usesTrailerOnly || hoverMode !== 'auto');
@@ -533,6 +592,7 @@
                     getField('#AutoCustomSettings').classList.toggle('jmp-hidden', customHidden);
                     getField('#TrickplayWidthSetting').classList.toggle('jmp-hidden', usesTrailerOnly);
                     getField('#TrailerSettingsSection').classList.toggle('jmp-hidden', !canUseTrailer);
+                    getField('#SmartSourceSettings').classList.toggle('jmp-hidden', !usesSmartSource);
                     getField('#TrailerVolumeSetting').classList.toggle('jmp-hidden', !canUseTrailer || !trailerAudioEnabled);
                     getField('#HoverCountdownPositionSetting').classList.toggle('jmp-hidden', !hoverCountdownEnabled);
                     getField('#PreviewBackdropIntensitySetting').classList.toggle('jmp-hidden', previewBackdropMode === 'off');
@@ -570,6 +630,11 @@
                     getField('#SeriesPreviewSource').value = config.SeriesPreviewSource || 'inherit';
                     getField('#EpisodePreviewSource').value = config.EpisodePreviewSource || 'inherit';
                     getField('#VideoPreviewSource').value = config.VideoPreviewSource || 'inherit';
+                    getField('#SmartMoviePrimarySource').value = config.SmartMoviePrimarySource || 'trailer';
+                    getField('#SmartSeriesPrimarySource').value = config.SmartSeriesPrimarySource || 'trickplay';
+                    getField('#SmartEpisodePrimarySource').value = config.SmartEpisodePrimarySource || 'trickplay';
+                    getField('#SmartVideoPrimarySource').value = config.SmartVideoPrimarySource || 'trickplay';
+                    getField('#SmartTrailerScope').value = config.SmartTrailerScope || 'local-and-remote';
                     getField('#ShowNoPreviewMessage').checked = !!config.ShowNoPreviewMessage;
                     getField('#TrailerAudioEnabled').checked = !!config.TrailerAudioEnabled;
                     getField('#TrailerVolumePercent').value = config.TrailerVolumePercent ?? 35;
@@ -626,6 +691,11 @@
                         SeriesPreviewSource: getStringValue('#SeriesPreviewSource', 'inherit'),
                         EpisodePreviewSource: getStringValue('#EpisodePreviewSource', 'inherit'),
                         VideoPreviewSource: getStringValue('#VideoPreviewSource', 'inherit'),
+                        SmartMoviePrimarySource: getStringValue('#SmartMoviePrimarySource', 'trailer'),
+                        SmartSeriesPrimarySource: getStringValue('#SmartSeriesPrimarySource', 'trickplay'),
+                        SmartEpisodePrimarySource: getStringValue('#SmartEpisodePrimarySource', 'trickplay'),
+                        SmartVideoPrimarySource: getStringValue('#SmartVideoPrimarySource', 'trickplay'),
+                        SmartTrailerScope: getStringValue('#SmartTrailerScope', 'local-and-remote'),
                         ShowNoPreviewMessage: getBooleanValue('#ShowNoPreviewMessage'),
                         TrailerAudioEnabled: getBooleanValue('#TrailerAudioEnabled'),
                         TrailerVolumePercent: getNumberValue('#TrailerVolumePercent', 35),

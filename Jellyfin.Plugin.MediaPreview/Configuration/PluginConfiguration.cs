@@ -18,6 +18,16 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string VideoPreviewSource { get; set; } = "inherit";
 
+    public string SmartMoviePrimarySource { get; set; } = "trailer";
+
+    public string SmartSeriesPrimarySource { get; set; } = "trickplay";
+
+    public string SmartEpisodePrimarySource { get; set; } = "trickplay";
+
+    public string SmartVideoPrimarySource { get; set; } = "trickplay";
+
+    public string SmartTrailerScope { get; set; } = "local-and-remote";
+
     public bool RestoreOnLeave { get; set; } = true;
 
     public bool ShowProgressIndicator { get; set; } = true;

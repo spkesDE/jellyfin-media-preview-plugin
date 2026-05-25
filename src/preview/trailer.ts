@@ -6,6 +6,7 @@ import { trailerInfoCache } from '../core/storage';
 import { requestJson } from '../core/request';
 import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
+import type { SmartTrailerScope } from '../types/config';
 import type { AspectRatio, TrailerCandidate, TrailerInfo, TrailerPreview } from '../types/preview';
 
 const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']);
@@ -180,6 +181,25 @@ export function normalizeLocalTrailerCandidate(trailerItem: JellyfinItem | null 
   };
 }
 
+export function isLocalTrailerCandidate(candidate: TrailerCandidate | null | undefined): boolean {
+  return candidate?.provider === 'local-trailer';
+}
+
+export function isTrailerCandidateAllowed(
+  candidate: TrailerCandidate | null | undefined,
+  remoteScope: SmartTrailerScope = 'local-and-remote'
+): boolean {
+  if (!candidate) {
+    return false;
+  }
+
+  if (isLocalTrailerCandidate(candidate)) {
+    return true;
+  }
+
+  return remoteScope === 'local-and-remote';
+}
+
 export function getTrailerInfo(itemId: string | null | undefined): Promise<TrailerInfo | null> {
   if (!itemId) {
     return Promise.resolve(null);
@@ -240,13 +260,21 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
   });
 }
 
-export function getTrailerPreview(itemId: string): Promise<TrailerPreview | null> {
+export function getTrailerPreview(
+  itemId: string,
+  options?: { remoteScope?: SmartTrailerScope }
+): Promise<TrailerPreview | null> {
   return getTrailerInfo(itemId).then((info) => {
     if (!info?.candidates?.length) {
       return null;
     }
 
-    const candidate = info.candidates[0];
+    const remoteScope = options?.remoteScope || 'local-and-remote';
+    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry, remoteScope));
+    if (!candidate) {
+      return null;
+    }
+
     return {
       source: PREVIEW_SOURCE_TRAILER,
       trailer: candidate,
