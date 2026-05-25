@@ -553,45 +553,59 @@
                             </div>
                         </section>
 
-                        <section class="jmp-section" data-tab-section="keyboard">
-                            <h3>Keyboard</h3>
-                            <p class="jmp-help">Lets keyboard navigation trigger and control previews too.</p>
+                        <section class="jmp-section jmp-section-plain" data-tab-section="keyboard">
+                            <div class="jmp-subgrid">
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Activation</p>
+                                    <p class="jmp-subsectionHelp">Let focus-based navigation trigger previews even without a mouse.</p>
 
-                            <div class="inputContainer">
-                                <label class="checkboxContainer">
-                                    <input id="KeyboardPreviewEnabled" name="KeyboardPreviewEnabled" type="checkbox" is="emby-checkbox" />
-                                    <span>Enable Keyboard Preview</span>
-                                </label>
+                                    <div class="inputContainer">
+                                        <label class="checkboxContainer">
+                                            <input id="KeyboardPreviewEnabled" name="KeyboardPreviewEnabled" type="checkbox" is="emby-checkbox" />
+                                            <span>Enable Keyboard Preview</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div id="KeyboardPreviewSettings">
-                                <div class="inputContainer">
-                                    <label class="inputLabel inputLabelUnfocused" for="KeyboardPreviewDelayMs">Keyboard Preview Delay (ms)</label>
-                                    <input id="KeyboardPreviewDelayMs" name="KeyboardPreviewDelayMs" type="number" min="0" step="50" is="emby-input" />
+                            <div id="KeyboardPreviewSettings" class="jmp-subgrid">
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Activation Timing</p>
+                                    <p class="jmp-subsectionHelp">Decide when a focused card should start its preview.</p>
+
+                                    <div class="inputContainer">
+                                        <label class="inputLabel inputLabelUnfocused" for="KeyboardPreviewDelayMs">Keyboard Preview Delay (ms)</label>
+                                        <input id="KeyboardPreviewDelayMs" name="KeyboardPreviewDelayMs" type="number" min="0" step="50" is="emby-input" />
+                                    </div>
+
+                                    <div class="inputContainer">
+                                        <label class="inputLabel inputLabelUnfocused" for="KeyboardPreviewStartPercent">Keyboard Start Position (%)</label>
+                                        <input id="KeyboardPreviewStartPercent" name="KeyboardPreviewStartPercent" type="number" min="0" max="100" step="1" is="emby-input" />
+                                    </div>
                                 </div>
 
-                                <div class="inputContainer">
-                                    <label class="inputLabel inputLabelUnfocused" for="KeyboardPreviewStartPercent">Keyboard Start Position (%)</label>
-                                    <input id="KeyboardPreviewStartPercent" name="KeyboardPreviewStartPercent" type="number" min="0" max="100" step="1" is="emby-input" />
-                                </div>
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Navigation</p>
+                                    <p class="jmp-subsectionHelp">Control how previews react once the card is focused.</p>
 
-                                <div class="inputContainer">
-                                    <label class="checkboxContainer">
-                                        <input id="KeyboardArrowScrubEnabled" name="KeyboardArrowScrubEnabled" type="checkbox" is="emby-checkbox" />
-                                        <span>Enable Arrow-Key Scrubbing</span>
-                                    </label>
-                                </div>
+                                    <div class="inputContainer">
+                                        <label class="checkboxContainer">
+                                            <input id="KeyboardArrowScrubEnabled" name="KeyboardArrowScrubEnabled" type="checkbox" is="emby-checkbox" />
+                                            <span>Enable Arrow-Key Scrubbing</span>
+                                        </label>
+                                    </div>
 
-                                <div id="KeyboardArrowStepSetting" class="inputContainer">
-                                    <label class="inputLabel inputLabelUnfocused" for="KeyboardArrowStepPercent">Arrow-Key Step (%)</label>
-                                    <input id="KeyboardArrowStepPercent" name="KeyboardArrowStepPercent" type="number" min="1" max="100" step="1" is="emby-input" />
-                                </div>
+                                    <div id="KeyboardArrowStepSetting" class="inputContainer">
+                                        <label class="inputLabel inputLabelUnfocused" for="KeyboardArrowStepPercent">Arrow-Key Step (%)</label>
+                                        <input id="KeyboardArrowStepPercent" name="KeyboardArrowStepPercent" type="number" min="1" max="100" step="1" is="emby-input" />
+                                    </div>
 
-                                <div class="inputContainer">
-                                    <label class="checkboxContainer">
-                                        <input id="KeyboardEscapeClosesPreview" name="KeyboardEscapeClosesPreview" type="checkbox" is="emby-checkbox" />
-                                        <span>Escape Closes Preview</span>
-                                    </label>
+                                    <div class="inputContainer">
+                                        <label class="checkboxContainer">
+                                            <input id="KeyboardEscapeClosesPreview" name="KeyboardEscapeClosesPreview" type="checkbox" is="emby-checkbox" />
+                                            <span>Escape Closes Preview</span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -680,49 +694,63 @@
                             </div>
                         </section>
 
-                        <section id="TrailerSettingsSection" class="jmp-section" data-tab-section="trailer">
-                            <h3>Trailer</h3>
-                            <p class="jmp-help">These options apply when trailer playback is used directly or as a fallback source.</p>
+                        <section id="TrailerSettingsSection" class="jmp-section jmp-section-plain" data-tab-section="trailer">
+                            <div class="jmp-subgrid">
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Playback</p>
+                                    <p class="jmp-subsectionHelp">These options apply whenever trailer playback is used directly or as a fallback source.</p>
 
-                            <div class="inputContainer">
-                                <label class="checkboxContainer">
-                                    <input id="TrailerAudioEnabled" name="TrailerAudioEnabled" type="checkbox" is="emby-checkbox" />
-                                    <span>Enable Trailer Audio When Allowed</span>
-                                </label>
-                            </div>
-                            <p class="jmp-note">Browsers often block unmuted autoplay until the page has received user interaction once. Until then, trailers may still start muted.</p>
+                                    <div class="inputContainer">
+                                        <label class="checkboxContainer">
+                                            <input id="TrailerAudioEnabled" name="TrailerAudioEnabled" type="checkbox" is="emby-checkbox" />
+                                            <span>Enable Trailer Audio When Allowed</span>
+                                        </label>
+                                    </div>
+                                    <p class="jmp-note">Browsers often block unmuted autoplay until the page has received user interaction once. Until then, trailers may still start muted.</p>
 
-                            <div id="TrailerVolumeSetting" class="inputContainer">
-                                <label class="inputLabel inputLabelUnfocused" for="TrailerVolumePercent">Trailer Volume (%)</label>
-                                <input id="TrailerVolumePercent" name="TrailerVolumePercent" type="number" min="0" max="100" step="1" is="emby-input" />
-                            </div>
+                                    <div id="TrailerVolumeSetting" class="inputContainer">
+                                        <label class="inputLabel inputLabelUnfocused" for="TrailerVolumePercent">Trailer Volume (%)</label>
+                                        <input id="TrailerVolumePercent" name="TrailerVolumePercent" type="number" min="0" max="100" step="1" is="emby-input" />
+                                    </div>
+                                </div>
 
-                            <div class="selectContainer">
-                                <label class="selectLabel" for="YouTubeCropStrength">YouTube Crop Strength</label>
-                                <select id="YouTubeCropStrength" name="YouTubeCropStrength" is="emby-select">
-                                    <option value="off">Off</option>
-                                    <option value="light">Light</option>
-                                    <option value="medium">Medium</option>
-                                    <option value="strong">Strong</option>
-                                </select>
-                            </div>
-                            <p class="jmp-note">Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.</p>
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Embed Framing</p>
+                                    <p class="jmp-subsectionHelp">Adjust how remote trailer embeds sit inside the card.</p>
 
-                            <div class="inputContainer">
-                                <label class="checkboxContainer">
-                                    <input id="TrailerExpandButtonEnabled" name="TrailerExpandButtonEnabled" type="checkbox" is="emby-checkbox" />
-                                    <span>Show Expand Button</span>
-                                </label>
-                            </div>
+                                    <div class="selectContainer">
+                                        <label class="selectLabel" for="YouTubeCropStrength">YouTube Crop Strength</label>
+                                        <select id="YouTubeCropStrength" name="YouTubeCropStrength" is="emby-select">
+                                            <option value="off">Off</option>
+                                            <option value="light">Light</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="strong">Strong</option>
+                                        </select>
+                                    </div>
+                                    <p class="jmp-note">Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.</p>
+                                </div>
 
-                            <div class="selectContainer">
-                                <label class="selectLabel" for="TrailerExpandButtonPosition">Expand Button Position</label>
-                                <select id="TrailerExpandButtonPosition" name="TrailerExpandButtonPosition" is="emby-select">
-                                    <option value="top-left">Top Left</option>
-                                    <option value="top-right">Top Right</option>
-                                    <option value="bottom-left">Bottom Left</option>
-                                    <option value="bottom-right">Bottom Right</option>
-                                </select>
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Controls</p>
+                                    <p class="jmp-subsectionHelp">Decide whether the in-card expand affordance should be shown and where it sits.</p>
+
+                                    <div class="inputContainer">
+                                        <label class="checkboxContainer">
+                                            <input id="TrailerExpandButtonEnabled" name="TrailerExpandButtonEnabled" type="checkbox" is="emby-checkbox" />
+                                            <span>Show Expand Button</span>
+                                        </label>
+                                    </div>
+
+                                    <div class="selectContainer">
+                                        <label class="selectLabel" for="TrailerExpandButtonPosition">Expand Button Position</label>
+                                        <select id="TrailerExpandButtonPosition" name="TrailerExpandButtonPosition" is="emby-select">
+                                            <option value="top-left">Top Left</option>
+                                            <option value="top-right">Top Right</option>
+                                            <option value="bottom-left">Bottom Left</option>
+                                            <option value="bottom-right">Bottom Right</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 
@@ -857,22 +885,31 @@
                             </div>
                         </section>
 
-                        <section class="jmp-section" data-tab-section="advanced">
-                            <h3>Advanced</h3>
-                            <p class="jmp-help">Normally you can leave these alone.</p>
+                        <section class="jmp-section jmp-section-plain" data-tab-section="advanced">
+                            <div class="jmp-subgrid">
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Performance</p>
+                                    <p class="jmp-subsectionHelp">Normally you can leave this alone unless you need to steer which Trickplay width Jellyfin should prefer.</p>
 
-                            <div class="inputContainer">
-                                <div id="TrickplayWidthSetting">
-                                    <label class="inputLabel inputLabelUnfocused" for="TrickplayWidth">Preferred Trickplay Width</label>
-                                    <input id="TrickplayWidth" name="TrickplayWidth" type="number" min="1" step="1" is="emby-input" />
+                                    <div class="inputContainer">
+                                        <div id="TrickplayWidthSetting">
+                                            <label class="inputLabel inputLabelUnfocused" for="TrickplayWidth">Preferred Trickplay Width</label>
+                                            <input id="TrickplayWidth" name="TrickplayWidth" type="number" min="1" step="1" is="emby-input" />
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="inputContainer">
-                                <label class="checkboxContainer">
-                                    <input id="Debug" name="Debug" type="checkbox" is="emby-checkbox" />
-                                    <span>Enable Debug Logging</span>
-                                </label>
+                                <div class="jmp-subsection">
+                                    <p class="jmp-subsectionTitle">Diagnostics</p>
+                                    <p class="jmp-subsectionHelp">Use this when you need to inspect matching, preview resolution, or rendering behavior in the browser console.</p>
+
+                                    <div class="inputContainer">
+                                        <label class="checkboxContainer">
+                                            <input id="Debug" name="Debug" type="checkbox" is="emby-checkbox" />
+                                            <span>Enable Debug Logging</span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -976,6 +1013,36 @@
                         .sort(function (left, right) {
                             return left.LibraryId.localeCompare(right.LibraryId);
                         });
+                }
+
+                function modeUsesTrailer(mode) {
+                    return mode === 'trailer' || mode === 'prefer-trailer' || mode === 'prefer-trickplay';
+                }
+
+                function modeUsesTrickplay(mode) {
+                    return mode === 'trickplay' || mode === 'prefer-trailer' || mode === 'prefer-trickplay';
+                }
+
+                function getConfiguredPreviewModes(defaultMode) {
+                    const modes = [defaultMode];
+                    [
+                        getStringValue('#MoviePreviewSource', 'inherit'),
+                        getStringValue('#SeriesPreviewSource', 'inherit'),
+                        getStringValue('#EpisodePreviewSource', 'inherit'),
+                        getStringValue('#VideoPreviewSource', 'inherit')
+                    ].forEach(function (mode) {
+                        if (mode && mode !== 'inherit') {
+                            modes.push(mode);
+                        }
+                    });
+
+                    getLibraryPreviewSourceOverridesValue().forEach(function (entry) {
+                        if (entry && entry.PreviewSource && entry.PreviewSource !== 'inherit') {
+                            modes.push(entry.PreviewSource);
+                        }
+                    });
+
+                    return modes;
                 }
 
                 function buildConfigPayload() {
@@ -1352,15 +1419,12 @@
                     motionProfiles.sweep.glyph = '>';
                     motionProfiles['ping-pong'].glyph = '<>';
                     const previewSource = getStringValue('#PreviewSource', 'trickplay');
-                    const moviePreviewSource = getStringValue('#MoviePreviewSource', 'inherit');
-                    const seriesPreviewSource = getStringValue('#SeriesPreviewSource', 'inherit');
-                    const episodePreviewSource = getStringValue('#EpisodePreviewSource', 'inherit');
-                    const videoPreviewSource = getStringValue('#VideoPreviewSource', 'inherit');
                     const hoverMode = getStringValue('#HoverMode', 'scrub');
                     const autoMode = getStringValue('#AutoScrubMode', 'step');
                     const autoPreset = getStringValue('#AutoScrubPreset', 'balanced');
-                    const usesTrailerOnly = previewSource === 'trailer';
-                    const canUseTrailer = previewSource !== 'trickplay';
+                    const configuredModes = getConfiguredPreviewModes(previewSource);
+                    const canUseTrailer = configuredModes.some(modeUsesTrailer);
+                    const canUseTrickplay = configuredModes.some(modeUsesTrickplay);
                     const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
                     const previewTransitionMode = getStringValue('#PreviewTransitionMode', 'fade');
@@ -1377,15 +1441,15 @@
                                 ? 'Prefer Trailer: local trailer, then supported remote trailer, then Trickplay.'
                                 : 'Prefer Trickplay: Trickplay first, then trailer if needed.');
 
-                    toggleHidden('#ScrubSettings', usesTrailerOnly || hoverMode !== 'scrub');
-                    toggleHidden('#AutoSettings', usesTrailerOnly || hoverMode !== 'auto');
+                    toggleHidden('#ScrubSettings', !canUseTrickplay || hoverMode !== 'scrub');
+                    toggleHidden('#AutoSettings', !canUseTrickplay || hoverMode !== 'auto');
                     const stepMode = autoMode === 'step';
                     const continuousMode = autoMode === 'sweep' || autoMode === 'ping-pong';
-                    toggleHidden('#AutoStepSettings', usesTrailerOnly || hoverMode !== 'auto' || !stepMode);
-                    toggleHidden('#AutoContinuousSettings', usesTrailerOnly || hoverMode !== 'auto' || !continuousMode);
-                    const customHidden = usesTrailerOnly || hoverMode !== 'auto' || !continuousMode || autoPreset !== 'custom';
+                    toggleHidden('#AutoStepSettings', !canUseTrickplay || hoverMode !== 'auto' || !stepMode);
+                    toggleHidden('#AutoContinuousSettings', !canUseTrickplay || hoverMode !== 'auto' || !continuousMode);
+                    const customHidden = !canUseTrickplay || hoverMode !== 'auto' || !continuousMode || autoPreset !== 'custom';
                     toggleHidden('#AutoCustomSettings', customHidden);
-                    toggleHidden('#TrickplayWidthSetting', usesTrailerOnly);
+                    toggleHidden('#TrickplayWidthSetting', !canUseTrickplay);
                     toggleHidden('#TrailerSettingsSection', !canUseTrailer);
                     toggleHidden('#TrailerVolumeSetting', !canUseTrailer || !trailerAudioEnabled);
                     toggleHidden('#HoverIntentThresholdSetting', !hoverIntentEnabled);
