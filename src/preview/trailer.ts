@@ -6,7 +6,6 @@ import { trailerInfoCache } from '../core/storage';
 import { requestJson } from '../core/request';
 import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
-import type { SmartTrailerScope } from '../types/config';
 import type { AspectRatio, TrailerCandidate, TrailerInfo, TrailerPreview } from '../types/preview';
 
 const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']);
@@ -186,8 +185,7 @@ export function isLocalTrailerCandidate(candidate: TrailerCandidate | null | und
 }
 
 export function isTrailerCandidateAllowed(
-  candidate: TrailerCandidate | null | undefined,
-  remoteScope: SmartTrailerScope = 'local-and-remote'
+  candidate: TrailerCandidate | null | undefined
 ): boolean {
   if (!candidate) {
     return false;
@@ -197,7 +195,7 @@ export function isTrailerCandidateAllowed(
     return true;
   }
 
-  return remoteScope === 'local-and-remote';
+  return true;
 }
 
 export function getTrailerInfo(itemId: string | null | undefined): Promise<TrailerInfo | null> {
@@ -261,16 +259,14 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
 }
 
 export function getTrailerPreview(
-  itemId: string,
-  options?: { remoteScope?: SmartTrailerScope }
+  itemId: string
 ): Promise<TrailerPreview | null> {
   return getTrailerInfo(itemId).then((info) => {
     if (!info?.candidates?.length) {
       return null;
     }
 
-    const remoteScope = options?.remoteScope || 'local-and-remote';
-    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry, remoteScope));
+    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry));
     if (!candidate) {
       return null;
     }

@@ -5,7 +5,6 @@ export const PREVIEW_SOURCE_TRICKPLAY = 'trickplay';
 export const PREVIEW_SOURCE_TRAILER = 'trailer';
 export const PREVIEW_SOURCE_PREFER_TRICKPLAY = 'prefer-trickplay';
 export const PREVIEW_SOURCE_PREFER_TRAILER = 'prefer-trailer';
-export const PREVIEW_SOURCE_SMART = 'smart';
 export const PREVIEW_SOURCE_INHERIT = 'inherit';
 export const NO_PREVIEW_MESSAGE_TRAILER = 'No Trailer Found';
 export const NO_PREVIEW_MESSAGE_TRICKPLAY = 'No Trickplay Found';
@@ -39,8 +38,6 @@ export const TRAILER_EXPAND_BUTTON_TOP_LEFT = 'top-left';
 export const TRAILER_EXPAND_BUTTON_TOP_RIGHT = 'top-right';
 export const TRAILER_EXPAND_BUTTON_BOTTOM_LEFT = 'bottom-left';
 export const TRAILER_EXPAND_BUTTON_BOTTOM_RIGHT = 'bottom-right';
-export const SMART_TRAILER_SCOPE_LOCAL_ONLY = 'local-only';
-export const SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE = 'local-and-remote';
 export const CONFIGURATION_PAGE_NAME = 'MediaPreviewConfigPage';
 export const CONFIGURATION_PAGE_HASH = `#/configurationpage?name=${CONFIGURATION_PAGE_NAME}`;
 export const ADMIN_NAV_LINK_ATTR = 'data-media-preview-admin-link';
@@ -51,8 +48,7 @@ export const VALID_PREVIEW_SOURCES = new Set([
   PREVIEW_SOURCE_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
-  PREVIEW_SOURCE_PREFER_TRAILER,
-  PREVIEW_SOURCE_SMART
+  PREVIEW_SOURCE_PREFER_TRAILER
 ] as const);
 
 export const VALID_CONTENT_TYPE_PREVIEW_SOURCES = new Set([
@@ -60,18 +56,7 @@ export const VALID_CONTENT_TYPE_PREVIEW_SOURCES = new Set([
   PREVIEW_SOURCE_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
-  PREVIEW_SOURCE_PREFER_TRAILER,
-  PREVIEW_SOURCE_SMART
-] as const);
-
-export const VALID_SMART_PRIMARY_SOURCES = new Set([
-  PREVIEW_SOURCE_TRICKPLAY,
-  PREVIEW_SOURCE_TRAILER
-] as const);
-
-export const VALID_SMART_TRAILER_SCOPES = new Set([
-  SMART_TRAILER_SCOPE_LOCAL_ONLY,
-  SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE
+  PREVIEW_SOURCE_PREFER_TRAILER
 ] as const);
 
 export const VALID_HOVER_MODES = new Set([
@@ -127,4 +112,4 @@ export const VALID_TRAILER_EXPAND_BUTTON_POSITIONS = new Set([
   TRAILER_EXPAND_BUTTON_BOTTOM_RIGHT
 ] as const);
 
-export const SUPPORTED_TYPES = new Set(['Movie', 'Episode', 'Series', 'Video']);
+export const SUPPORTED_TYPES = new Set(['Movie', 'Episode', 'Series', 'Season', 'Video']);

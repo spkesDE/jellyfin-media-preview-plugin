@@ -5,13 +5,12 @@ import {
   AUTO_SCRUB_PRESET_BALANCED,
   HOVER_MODE_SCRUB,
   PREVIEW_SOURCE_INHERIT,
-  PREVIEW_SOURCE_SMART,
   PREVIEW_BACKDROP_DIM_BLUR,
   PREVIEW_MODE_CONTAIN,
   PREVIEW_MODE_COVER,
   PREVIEW_TRANSITION_FADE,
-  SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE,
   PREVIEW_SOURCE_TRICKPLAY,
+  PREVIEW_SOURCE_TRAILER,
   TRAILER_EXPAND_BUTTON_TOP_RIGHT,
   VALID_CONTENT_TYPE_PREVIEW_SOURCES,
   VALID_AUTO_SCRUB_MODES,
@@ -21,14 +20,12 @@ import {
   VALID_PREVIEW_MODES,
   VALID_PREVIEW_SOURCES,
   VALID_PREVIEW_TRANSITION_MODES,
-  VALID_SMART_PRIMARY_SOURCES,
-  VALID_SMART_TRAILER_SCOPES,
   VALID_TRAILER_EXPAND_BUTTON_POSITIONS,
   VALID_YOUTUBE_CROP_STRENGTHS,
   YOUTUBE_CROP_MEDIUM
 } from './constants';
 import { clamp } from './core/dom';
-import type { PluginConfig, RuntimePluginConfig } from './types/config';
+import type { LibraryPreviewSourceOverride, PluginConfig, RuntimePluginConfig } from './types/config';
 
 // Runtime in Jellyfin always prepends `window.JellyfinMediaPreviewPluginConfig`
 // from the server-side plugin configuration. These values are only a fallback
@@ -40,6 +37,7 @@ const standaloneFallbackConfig: PluginConfig = {
   seriesPreviewSource: PREVIEW_SOURCE_INHERIT,
   episodePreviewSource: PREVIEW_SOURCE_INHERIT,
   videoPreviewSource: PREVIEW_SOURCE_INHERIT,
+  libraryPreviewSourceOverrides: [],
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
@@ -76,11 +74,6 @@ const standaloneFallbackConfig: PluginConfig = {
   youTubeCropStrength: 'medium',
   trailerExpandButtonEnabled: true,
   trailerExpandButtonPosition: 'top-right',
-  smartMoviePrimarySource: PREVIEW_SOURCE_TRAILER,
-  smartSeriesPrimarySource: PREVIEW_SOURCE_TRICKPLAY,
-  smartEpisodePrimarySource: PREVIEW_SOURCE_TRICKPLAY,
-  smartVideoPrimarySource: PREVIEW_SOURCE_TRICKPLAY,
-  smartTrailerScope: SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE,
   metadataOverlayEnabled: false,
   metadataOverlayPosition: 'bottom-left',
   metadataOverlayShowTitle: true,
@@ -99,6 +92,7 @@ export const config: PluginConfig = {
   seriesPreviewSource: runtimeConfig?.seriesPreviewSource ?? standaloneFallbackConfig.seriesPreviewSource,
   episodePreviewSource: runtimeConfig?.episodePreviewSource ?? standaloneFallbackConfig.episodePreviewSource,
   videoPreviewSource: runtimeConfig?.videoPreviewSource ?? standaloneFallbackConfig.videoPreviewSource,
+  libraryPreviewSourceOverrides: runtimeConfig?.libraryPreviewSourceOverrides ?? standaloneFallbackConfig.libraryPreviewSourceOverrides,
   showNoPreviewMessage: runtimeConfig?.showNoPreviewMessage ?? standaloneFallbackConfig.showNoPreviewMessage,
   trailerAudioEnabled: runtimeConfig?.trailerAudioEnabled ?? standaloneFallbackConfig.trailerAudioEnabled,
   trailerVolumePercent: runtimeConfig?.trailerVolumePercent ?? standaloneFallbackConfig.trailerVolumePercent,
@@ -135,11 +129,6 @@ export const config: PluginConfig = {
   youTubeCropStrength: runtimeConfig?.youTubeCropStrength ?? standaloneFallbackConfig.youTubeCropStrength,
   trailerExpandButtonEnabled: runtimeConfig?.trailerExpandButtonEnabled ?? standaloneFallbackConfig.trailerExpandButtonEnabled,
   trailerExpandButtonPosition: runtimeConfig?.trailerExpandButtonPosition ?? standaloneFallbackConfig.trailerExpandButtonPosition,
-  smartMoviePrimarySource: runtimeConfig?.smartMoviePrimarySource ?? standaloneFallbackConfig.smartMoviePrimarySource,
-  smartSeriesPrimarySource: runtimeConfig?.smartSeriesPrimarySource ?? standaloneFallbackConfig.smartSeriesPrimarySource,
-  smartEpisodePrimarySource: runtimeConfig?.smartEpisodePrimarySource ?? standaloneFallbackConfig.smartEpisodePrimarySource,
-  smartVideoPrimarySource: runtimeConfig?.smartVideoPrimarySource ?? standaloneFallbackConfig.smartVideoPrimarySource,
-  smartTrailerScope: runtimeConfig?.smartTrailerScope ?? standaloneFallbackConfig.smartTrailerScope,
   metadataOverlayEnabled: runtimeConfig?.metadataOverlayEnabled ?? standaloneFallbackConfig.metadataOverlayEnabled,
   metadataOverlayPosition: runtimeConfig?.metadataOverlayPosition ?? standaloneFallbackConfig.metadataOverlayPosition,
   metadataOverlayShowTitle: runtimeConfig?.metadataOverlayShowTitle ?? standaloneFallbackConfig.metadataOverlayShowTitle,
@@ -177,25 +166,9 @@ export function normalizeConfig(): void {
     config.videoPreviewSource = PREVIEW_SOURCE_INHERIT;
   }
 
-  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartMoviePrimarySource)) {
-    config.smartMoviePrimarySource = PREVIEW_SOURCE_TRAILER;
-  }
-
-  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartSeriesPrimarySource)) {
-    config.smartSeriesPrimarySource = PREVIEW_SOURCE_TRICKPLAY;
-  }
-
-  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartEpisodePrimarySource)) {
-    config.smartEpisodePrimarySource = PREVIEW_SOURCE_TRICKPLAY;
-  }
-
-  if (!VALID_SMART_PRIMARY_SOURCES.has(config.smartVideoPrimarySource)) {
-    config.smartVideoPrimarySource = PREVIEW_SOURCE_TRICKPLAY;
-  }
-
-  if (!VALID_SMART_TRAILER_SCOPES.has(config.smartTrailerScope)) {
-    config.smartTrailerScope = SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE;
-  }
+  config.libraryPreviewSourceOverrides = Array.isArray(config.libraryPreviewSourceOverrides)
+    ? normalizeLibraryPreviewSourceOverrides(config.libraryPreviewSourceOverrides)
+    : [];
 
   if (!VALID_TRAILER_EXPAND_BUTTON_POSITIONS.has(config.metadataOverlayPosition)) {
     config.metadataOverlayPosition = 'bottom-left';
@@ -269,4 +242,28 @@ export function normalizeConfig(): void {
   config.showNoPreviewMessage = config.showNoPreviewMessage === true;
   config.hoverCountdownEnabled = config.hoverCountdownEnabled === true;
   config.trailerExpandButtonEnabled = config.trailerExpandButtonEnabled !== false;
+}
+
+function normalizeLibraryPreviewSourceOverrides(
+  overrides: LibraryPreviewSourceOverride[]
+): LibraryPreviewSourceOverride[] {
+  const normalized = new Map<string, LibraryPreviewSourceOverride>();
+
+  overrides.forEach((entry) => {
+    const libraryId = String(entry?.libraryId || '').trim();
+    if (!libraryId) {
+      return;
+    }
+
+    const previewSource = VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(entry?.previewSource)
+      ? entry.previewSource
+      : PREVIEW_SOURCE_INHERIT;
+
+    normalized.set(libraryId, {
+      libraryId,
+      previewSource
+    });
+  });
+
+  return Array.from(normalized.values());
 }

@@ -36,15 +36,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string VideoPreviewSource { get; set; } = "inherit";
 
-    public string SmartMoviePrimarySource { get; set; } = "trailer";
-
-    public string SmartSeriesPrimarySource { get; set; } = "trickplay";
-
-    public string SmartEpisodePrimarySource { get; set; } = "trickplay";
-
-    public string SmartVideoPrimarySource { get; set; } = "trickplay";
-
-    public string SmartTrailerScope { get; set; } = "local-and-remote";
+    public List<LibraryPreviewSourceOverride> LibraryPreviewSourceOverrides { get; set; } = [];
 
     public bool MetadataOverlayEnabled { get; set; } = false;
 

@@ -2,11 +2,13 @@ export type PreviewSource =
   | 'trickplay'
   | 'trailer'
   | 'prefer-trickplay'
-  | 'prefer-trailer'
-  | 'smart';
+  | 'prefer-trailer';
 export type ContentTypePreviewSource = PreviewSource | 'inherit';
-export type SmartPrimarySource = 'trickplay' | 'trailer';
-export type SmartTrailerScope = 'local-only' | 'local-and-remote';
+
+export interface LibraryPreviewSourceOverride {
+  libraryId: string;
+  previewSource: ContentTypePreviewSource;
+}
 
 export type HoverMode = 'scrub' | 'auto';
 export type AutoScrubMode = 'step' | 'sweep' | 'ping-pong';
@@ -28,6 +30,7 @@ export interface PluginConfig {
   seriesPreviewSource: ContentTypePreviewSource;
   episodePreviewSource: ContentTypePreviewSource;
   videoPreviewSource: ContentTypePreviewSource;
+  libraryPreviewSourceOverrides: LibraryPreviewSourceOverride[];
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
@@ -64,11 +67,6 @@ export interface PluginConfig {
   youTubeCropStrength: YouTubeCropStrength;
   trailerExpandButtonEnabled: boolean;
   trailerExpandButtonPosition: TrailerExpandButtonPosition;
-  smartMoviePrimarySource: SmartPrimarySource;
-  smartSeriesPrimarySource: SmartPrimarySource;
-  smartEpisodePrimarySource: SmartPrimarySource;
-  smartVideoPrimarySource: SmartPrimarySource;
-  smartTrailerScope: SmartTrailerScope;
   metadataOverlayEnabled: boolean;
   metadataOverlayPosition: TrailerExpandButtonPosition;
   metadataOverlayShowTitle: boolean;

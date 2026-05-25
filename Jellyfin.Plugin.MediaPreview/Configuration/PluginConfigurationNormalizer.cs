@@ -7,8 +7,7 @@ internal static class PluginConfigurationNormalizer
         "trickplay",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer",
-        "smart"
+        "prefer-trailer"
     };
 
     private static readonly HashSet<string> ValidContentTypePreviewSources = new(StringComparer.Ordinal)
@@ -17,20 +16,7 @@ internal static class PluginConfigurationNormalizer
         "trickplay",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer",
-        "smart"
-    };
-
-    private static readonly HashSet<string> ValidSmartPrimarySources = new(StringComparer.Ordinal)
-    {
-        "trickplay",
-        "trailer"
-    };
-
-    private static readonly HashSet<string> ValidSmartTrailerScopes = new(StringComparer.Ordinal)
-    {
-        "local-only",
-        "local-and-remote"
+        "prefer-trailer"
     };
 
     private static readonly HashSet<string> ValidHoverModes = new(StringComparer.Ordinal)
@@ -105,11 +91,7 @@ internal static class PluginConfigurationNormalizer
             SeriesPreviewSource = NormalizeChoice(source.SeriesPreviewSource, ValidContentTypePreviewSources, "inherit"),
             EpisodePreviewSource = NormalizeChoice(source.EpisodePreviewSource, ValidContentTypePreviewSources, "inherit"),
             VideoPreviewSource = NormalizeChoice(source.VideoPreviewSource, ValidContentTypePreviewSources, "inherit"),
-            SmartMoviePrimarySource = NormalizeChoice(source.SmartMoviePrimarySource, ValidSmartPrimarySources, "trailer"),
-            SmartSeriesPrimarySource = NormalizeChoice(source.SmartSeriesPrimarySource, ValidSmartPrimarySources, "trickplay"),
-            SmartEpisodePrimarySource = NormalizeChoice(source.SmartEpisodePrimarySource, ValidSmartPrimarySources, "trickplay"),
-            SmartVideoPrimarySource = NormalizeChoice(source.SmartVideoPrimarySource, ValidSmartPrimarySources, "trickplay"),
-            SmartTrailerScope = NormalizeChoice(source.SmartTrailerScope, ValidSmartTrailerScopes, "local-and-remote"),
+            LibraryPreviewSourceOverrides = NormalizeLibraryPreviewSourceOverrides(source.LibraryPreviewSourceOverrides),
             MetadataOverlayEnabled = source.MetadataOverlayEnabled,
             MetadataOverlayPosition = NormalizeChoice(source.MetadataOverlayPosition, ValidTrailerExpandButtonPositions, "bottom-left"),
             MetadataOverlayShowTitle = source.MetadataOverlayShowTitle,
@@ -188,5 +170,30 @@ internal static class PluginConfigurationNormalizer
             "smooth-pingpong" => "ping-pong",
             _ => NormalizeChoice(value, ValidAutoScrubModes, "step")
         };
+    }
+
+    private static List<LibraryPreviewSourceOverride> NormalizeLibraryPreviewSourceOverrides(
+        IEnumerable<LibraryPreviewSourceOverride>? overrides)
+    {
+        Dictionary<string, LibraryPreviewSourceOverride> normalized = new(StringComparer.Ordinal);
+
+        foreach (LibraryPreviewSourceOverride? entry in overrides ?? [])
+        {
+            if (entry is null || string.IsNullOrWhiteSpace(entry.LibraryId))
+            {
+                continue;
+            }
+
+            string libraryId = entry.LibraryId.Trim();
+            string previewSource = NormalizeChoice(entry.PreviewSource, ValidContentTypePreviewSources, "inherit");
+
+            normalized[libraryId] = new LibraryPreviewSourceOverride
+            {
+                LibraryId = libraryId,
+                PreviewSource = previewSource
+            };
+        }
+
+        return [.. normalized.Values];
     }
 }

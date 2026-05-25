@@ -37,9 +37,6 @@ public sealed class MediaPreviewController : ControllerBase
             return NotFound();
         }
 
-        using StreamReader reader = new StreamReader(scriptStream, Encoding.UTF8);
-        string scriptBody = reader.ReadToEnd();
-
         PluginConfiguration config = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
         string serializedConfig = JsonSerializer.Serialize(new
         {
@@ -49,11 +46,11 @@ public sealed class MediaPreviewController : ControllerBase
             seriesPreviewSource = config.SeriesPreviewSource,
             episodePreviewSource = config.EpisodePreviewSource,
             videoPreviewSource = config.VideoPreviewSource,
-            smartMoviePrimarySource = config.SmartMoviePrimarySource,
-            smartSeriesPrimarySource = config.SmartSeriesPrimarySource,
-            smartEpisodePrimarySource = config.SmartEpisodePrimarySource,
-            smartVideoPrimarySource = config.SmartVideoPrimarySource,
-            smartTrailerScope = config.SmartTrailerScope,
+            libraryPreviewSourceOverrides = config.LibraryPreviewSourceOverrides.Select(entry => new
+            {
+                libraryId = entry.LibraryId,
+                previewSource = entry.PreviewSource
+            }),
             metadataOverlayEnabled = config.MetadataOverlayEnabled,
             metadataOverlayPosition = config.MetadataOverlayPosition,
             metadataOverlayShowTitle = config.MetadataOverlayShowTitle,
@@ -99,7 +96,13 @@ public sealed class MediaPreviewController : ControllerBase
             trailerExpandButtonPosition = config.TrailerExpandButtonPosition
         });
 
-        string script = "window.JellyfinMediaPreviewPluginConfig = " + serializedConfig + ";" + Environment.NewLine + scriptBody;
-        return Content(script, "application/javascript", Encoding.UTF8);
+        byte[] configBytes = Encoding.UTF8.GetBytes(
+            "window.JellyfinMediaPreviewPluginConfig = " + serializedConfig + ";" + Environment.NewLine);
+
+        using MemoryStream scriptBuffer = new MemoryStream();
+        scriptBuffer.Write(configBytes, 0, configBytes.Length);
+        scriptStream.CopyTo(scriptBuffer);
+
+        return File(scriptBuffer.ToArray(), "application/javascript; charset=utf-8");
     }
 }
