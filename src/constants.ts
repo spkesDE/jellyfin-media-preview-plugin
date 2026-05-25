@@ -28,6 +28,9 @@ export const PREVIEW_BACKDROP_VIGNETTE = 'vignette';
 export const PREVIEW_BACKDROP_DIM_VIGNETTE = 'dim-vignette';
 export const PREVIEW_BACKDROP_BLUR = 'blur';
 export const PREVIEW_BACKDROP_DIM_BLUR = 'dim-blur';
+export const PREVIEW_TRANSITION_OFF = 'off';
+export const PREVIEW_TRANSITION_FADE = 'fade';
+export const PREVIEW_TRANSITION_CROSSFADE = 'crossfade';
 export const YOUTUBE_CROP_OFF = 'off';
 export const YOUTUBE_CROP_LIGHT = 'light';
 export const YOUTUBE_CROP_MEDIUM = 'medium';
@@ -102,6 +105,12 @@ export const VALID_PREVIEW_BACKDROP_MODES = new Set([
   PREVIEW_BACKDROP_DIM_VIGNETTE,
   PREVIEW_BACKDROP_BLUR,
   PREVIEW_BACKDROP_DIM_BLUR
+] as const);
+
+export const VALID_PREVIEW_TRANSITION_MODES = new Set([
+  PREVIEW_TRANSITION_OFF,
+  PREVIEW_TRANSITION_FADE,
+  PREVIEW_TRANSITION_CROSSFADE
 ] as const);
 
 export const VALID_YOUTUBE_CROP_STRENGTHS = new Set([

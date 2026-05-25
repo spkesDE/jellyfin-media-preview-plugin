@@ -90,6 +90,10 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int PreviewBackdropIntensityPercent { get; set; } = 35;
 
+    public string PreviewTransitionMode { get; set; } = "fade";
+
+    public int PreviewTransitionDurationMs { get; set; } = 180;
+
     public string YouTubeCropStrength { get; set; } = "off";
 
     public bool TrailerExpandButtonEnabled { get; set; } = true;

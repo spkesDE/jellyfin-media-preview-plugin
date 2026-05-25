@@ -71,6 +71,13 @@ internal static class PluginConfigurationNormalizer
         "dim-blur"
     };
 
+    private static readonly HashSet<string> ValidPreviewTransitionModes = new(StringComparer.Ordinal)
+    {
+        "off",
+        "fade",
+        "crossfade"
+    };
+
     private static readonly HashSet<string> ValidYouTubeCropStrengths = new(StringComparer.Ordinal)
     {
         "off",
@@ -135,6 +142,8 @@ internal static class PluginConfigurationNormalizer
             BackdropCardPreviewMode = NormalizeChoice(source.BackdropCardPreviewMode, ValidPreviewModes, "cover"),
             PreviewBackdropMode = NormalizeChoice(source.PreviewBackdropMode, ValidPreviewBackdropModes, "dim-blur"),
             PreviewBackdropIntensityPercent = Clamp(source.PreviewBackdropIntensityPercent, 0, 100, 35),
+            PreviewTransitionMode = NormalizeChoice(source.PreviewTransitionMode, ValidPreviewTransitionModes, "fade"),
+            PreviewTransitionDurationMs = Math.Max(0, source.PreviewTransitionDurationMs),
             YouTubeCropStrength = NormalizeChoice(source.YouTubeCropStrength, ValidYouTubeCropStrengths, "medium"),
             TrailerExpandButtonEnabled = source.TrailerExpandButtonEnabled,
             TrailerExpandButtonPosition = NormalizeChoice(source.TrailerExpandButtonPosition, ValidTrailerExpandButtonPositions, "top-right")

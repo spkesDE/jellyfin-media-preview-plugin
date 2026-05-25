@@ -1,4 +1,10 @@
-import { ADMIN_NAV_LINK_ATTR, STATE_ATTR, STYLE_ID } from '../constants';
+import {
+  ADMIN_NAV_LINK_ATTR,
+  PREVIEW_TRANSITION_CROSSFADE,
+  PREVIEW_TRANSITION_OFF,
+  STATE_ATTR,
+  STYLE_ID
+} from '../constants';
 import { config } from '../config';
 import { getPreviewBackdropStyles } from './layout';
 import { getImageRenderHost } from './discovery';
@@ -49,6 +55,38 @@ function removeManagedNode<T extends HTMLElement>(state: CardState, key: keyof C
   }
 
   return node as T;
+}
+
+export function getPreviewTransitionDurationMs(): number {
+  return Math.max(0, Number(config.previewTransitionDurationMs) || 0);
+}
+
+export function hasPreviewTransition(): boolean {
+  return config.previewTransitionMode !== PREVIEW_TRANSITION_OFF && getPreviewTransitionDurationMs() > 0;
+}
+
+export function isCrossfadePreviewTransition(): boolean {
+  return config.previewTransitionMode === PREVIEW_TRANSITION_CROSSFADE && hasPreviewTransition();
+}
+
+function applyTransitionStyle(element: HTMLElement): void {
+  element.style.transition = hasPreviewTransition()
+    ? `opacity ${getPreviewTransitionDurationMs()}ms ease`
+    : 'none';
+}
+
+function clearPreviewTransitionTimer(state: CardState | null | undefined): void {
+  if (state?.previewTransitionTimer) {
+    window.clearTimeout(state.previewTransitionTimer);
+    state.previewTransitionTimer = null;
+  }
+}
+
+function clearTrailerTransitionTimer(state: CardState | null | undefined): void {
+  if (state?.trailerTransitionTimer) {
+    window.clearTimeout(state.trailerTransitionTimer);
+    state.trailerTransitionTimer = null;
+  }
 }
 
 export function ensureInjectedStyles(): void {
@@ -116,11 +154,60 @@ export function ensurePreviewFrame(state: CardState | null | undefined): HTMLDiv
     previewFrame.className = 'jmp-preview-layer';
     previewFrame.setAttribute('aria-hidden', 'true');
     previewFrame.style.display = 'none';
+    applyTransitionStyle(previewFrame);
     state.rootHost.appendChild(previewFrame);
     state.previewFrame = previewFrame;
   }
 
+  applyTransitionStyle(state.previewFrame);
   return state.previewFrame;
+}
+
+export function ensurePreviewFrameSecondary(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
+  }
+
+  if (!state.previewFrameSecondary) {
+    const previewFrame = document.createElement('div');
+    previewFrame.className = 'jmp-preview-layer';
+    previewFrame.setAttribute('aria-hidden', 'true');
+    previewFrame.style.display = 'none';
+    applyTransitionStyle(previewFrame);
+    state.rootHost.appendChild(previewFrame);
+    state.previewFrameSecondary = previewFrame;
+  }
+
+  applyTransitionStyle(state.previewFrameSecondary);
+  return state.previewFrameSecondary;
+}
+
+export function getActivePreviewFrame(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state) {
+    return null;
+  }
+
+  return state.activePreviewFrameSlot === 'secondary'
+    ? state.previewFrameSecondary || state.previewFrame
+    : state.previewFrame || state.previewFrameSecondary;
+}
+
+export function getInactivePreviewFrame(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state) {
+    return null;
+  }
+
+  return state.activePreviewFrameSlot === 'secondary'
+    ? ensurePreviewFrame(state)
+    : ensurePreviewFrameSecondary(state);
+}
+
+export function setActivePreviewFrameSlot(state: CardState | null | undefined, slot: 'primary' | 'secondary'): void {
+  if (!state) {
+    return;
+  }
+
+  state.activePreviewFrameSlot = slot;
 }
 
 export function ensureHoverCountdown(state: CardState | null | undefined): HTMLDivElement | null {
@@ -402,23 +489,164 @@ export function applyPreviewBackdrop(state: CardState | null | undefined): void 
   style.webkitBackdropFilter = backdropStyles.webkitBackdropFilter;
 }
 
-export function setTrailerLayerVisible(state: CardState | null | undefined, isVisible: boolean): void {
+export function setTrailerLayerVisible(
+  state: CardState | null | undefined,
+  isVisible: boolean,
+  options?: { immediate?: boolean }
+): void {
   if (!state?.trailerLayer) {
     return;
   }
 
-  state.trailerLayer.style.display = isVisible ? 'block' : 'none';
-  state.trailerLayer.style.visibility = isVisible ? 'visible' : 'hidden';
-  state.trailerLayer.style.opacity = isVisible ? '1' : '0';
-}
+  const immediate = options?.immediate === true;
+  clearTrailerTransitionTimer(state);
+  applyTransitionStyle(state.trailerLayer);
 
-export function hidePreviewFrame(state: CardState | null | undefined): void {
-  if (!state?.previewFrame) {
+  if (!isVisible) {
+    if (immediate || !hasPreviewTransition()) {
+      state.trailerLayer.style.display = 'none';
+      state.trailerLayer.style.visibility = 'hidden';
+      state.trailerLayer.style.opacity = '0';
+      return;
+    }
+
+    state.trailerLayer.style.visibility = 'hidden';
+    state.trailerLayer.style.opacity = '0';
+    state.trailerTransitionTimer = window.setTimeout(() => {
+      if (!state.trailerLayer) {
+        return;
+      }
+
+      state.trailerLayer.style.display = 'none';
+      state.trailerTransitionTimer = null;
+    }, getPreviewTransitionDurationMs());
     return;
   }
 
-  state.previewFrame.style.display = 'none';
-  state.previewFrame.style.backgroundImage = '';
+  state.trailerLayer.style.display = 'block';
+  state.trailerLayer.style.visibility = 'visible';
+  if (immediate || !hasPreviewTransition()) {
+    state.trailerLayer.style.opacity = '1';
+    return;
+  }
+
+  state.trailerLayer.style.opacity = '0';
+  window.requestAnimationFrame(() => {
+    if (!state.trailerLayer) {
+      return;
+    }
+
+    state.trailerLayer.style.opacity = '1';
+  });
+}
+
+export function showPreviewFrameLayer(
+  state: CardState | null | undefined,
+  frame: HTMLDivElement | null | undefined,
+  options?: { immediate?: boolean }
+): void {
+  if (!state || !frame) {
+    return;
+  }
+
+  const immediate = options?.immediate === true;
+  clearPreviewTransitionTimer(state);
+  applyTransitionStyle(frame);
+  frame.style.display = '';
+  frame.style.visibility = 'visible';
+  if (immediate || !hasPreviewTransition()) {
+    frame.style.opacity = '1';
+    return;
+  }
+
+  frame.style.opacity = '0';
+  window.requestAnimationFrame(() => {
+    frame.style.opacity = '1';
+  });
+}
+
+export function crossfadePreviewFrameLayers(
+  state: CardState | null | undefined,
+  currentFrame: HTMLDivElement | null | undefined,
+  nextFrame: HTMLDivElement | null | undefined
+): void {
+  if (!state || !currentFrame || !nextFrame) {
+    return;
+  }
+
+  clearPreviewTransitionTimer(state);
+  if (!isCrossfadePreviewTransition()) {
+    currentFrame.style.display = 'none';
+    currentFrame.style.visibility = 'hidden';
+    currentFrame.style.opacity = '0';
+    currentFrame.style.backgroundImage = '';
+    showPreviewFrameLayer(state, nextFrame, { immediate: false });
+    return;
+  }
+
+  applyTransitionStyle(currentFrame);
+  applyTransitionStyle(nextFrame);
+  nextFrame.style.display = '';
+  nextFrame.style.visibility = 'visible';
+  nextFrame.style.opacity = '0';
+  currentFrame.style.display = '';
+  currentFrame.style.visibility = 'visible';
+  currentFrame.style.opacity = '1';
+  window.requestAnimationFrame(() => {
+    currentFrame.style.opacity = '0';
+    nextFrame.style.opacity = '1';
+  });
+
+  state.previewTransitionTimer = window.setTimeout(() => {
+    currentFrame.style.display = 'none';
+    currentFrame.style.visibility = 'hidden';
+    currentFrame.style.opacity = '0';
+    currentFrame.style.backgroundImage = '';
+    state.previewTransitionTimer = null;
+  }, getPreviewTransitionDurationMs());
+}
+
+export function hidePreviewFrame(
+  state: CardState | null | undefined,
+  options?: { immediate?: boolean }
+): void {
+  if (!state?.previewFrame && !state?.previewFrameSecondary) {
+    return;
+  }
+
+  const immediate = options?.immediate === true;
+  clearPreviewTransitionTimer(state);
+  const frames = [state.previewFrame, state.previewFrameSecondary].filter(Boolean) as HTMLDivElement[];
+  frames.forEach((frame) => {
+    applyTransitionStyle(frame);
+  });
+
+  if (immediate || !hasPreviewTransition()) {
+    frames.forEach((frame) => {
+      frame.style.display = 'none';
+      frame.style.visibility = 'hidden';
+      frame.style.opacity = '0';
+      frame.style.backgroundImage = '';
+    });
+    state.activePreviewFrameSlot = 'primary';
+    return;
+  }
+
+  frames.forEach((frame) => {
+    if (frame.style.display !== 'none') {
+      frame.style.visibility = 'hidden';
+      frame.style.opacity = '0';
+    }
+  });
+
+  state.previewTransitionTimer = window.setTimeout(() => {
+    frames.forEach((frame) => {
+      frame.style.display = 'none';
+      frame.style.backgroundImage = '';
+    });
+    state.activePreviewFrameSlot = 'primary';
+    state.previewTransitionTimer = null;
+  }, getPreviewTransitionDurationMs());
 }
 
 export function showProgress(state: CardState | null | undefined, percent: number | null | undefined): void {
@@ -505,6 +733,8 @@ export function restoreCard(card: HTMLElement): void {
   clearLeaveHold(state);
   clearPendingMove(state);
   clearAutoScrub(state);
+  clearPreviewTransitionTimer(state);
+  clearTrailerTransitionTimer(state);
   state.latestRequestToken += 1;
   state.hoverIntentAnchorX = null;
   state.hoverIntentAnchorY = null;
@@ -561,6 +791,8 @@ export function destroyCardBindings(): void {
       state.previewBackdrop = null;
       removeManagedNode<HTMLDivElement>(state, 'previewFrame');
       state.previewFrame = null;
+      removeManagedNode<HTMLDivElement>(state, 'previewFrameSecondary');
+      state.previewFrameSecondary = null;
       removeManagedNode<HTMLDivElement>(state, 'hoverCountdown');
       state.hoverCountdown = null;
       state.hoverCountdownLabel = null;

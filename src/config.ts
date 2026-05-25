@@ -9,6 +9,7 @@ import {
   PREVIEW_BACKDROP_DIM_BLUR,
   PREVIEW_MODE_CONTAIN,
   PREVIEW_MODE_COVER,
+  PREVIEW_TRANSITION_FADE,
   SMART_TRAILER_SCOPE_LOCAL_AND_REMOTE,
   PREVIEW_SOURCE_TRICKPLAY,
   TRAILER_EXPAND_BUTTON_TOP_RIGHT,
@@ -19,6 +20,7 @@ import {
   VALID_PREVIEW_BACKDROP_MODES,
   VALID_PREVIEW_MODES,
   VALID_PREVIEW_SOURCES,
+  VALID_PREVIEW_TRANSITION_MODES,
   VALID_SMART_PRIMARY_SOURCES,
   VALID_SMART_TRAILER_SCOPES,
   VALID_TRAILER_EXPAND_BUTTON_POSITIONS,
@@ -63,6 +65,8 @@ const standaloneFallbackConfig: PluginConfig = {
   backdropCardPreviewMode: 'cover',
   previewBackdropMode: 'dim-blur',
   previewBackdropIntensityPercent: 35,
+  previewTransitionMode: PREVIEW_TRANSITION_FADE,
+  previewTransitionDurationMs: 180,
   youTubeCropStrength: 'medium',
   trailerExpandButtonEnabled: true,
   trailerExpandButtonPosition: 'top-right',
@@ -114,6 +118,8 @@ export const config: PluginConfig = {
   backdropCardPreviewMode: runtimeConfig?.backdropCardPreviewMode ?? standaloneFallbackConfig.backdropCardPreviewMode,
   previewBackdropMode: runtimeConfig?.previewBackdropMode ?? standaloneFallbackConfig.previewBackdropMode,
   previewBackdropIntensityPercent: runtimeConfig?.previewBackdropIntensityPercent ?? standaloneFallbackConfig.previewBackdropIntensityPercent,
+  previewTransitionMode: runtimeConfig?.previewTransitionMode ?? standaloneFallbackConfig.previewTransitionMode,
+  previewTransitionDurationMs: runtimeConfig?.previewTransitionDurationMs ?? standaloneFallbackConfig.previewTransitionDurationMs,
   youTubeCropStrength: runtimeConfig?.youTubeCropStrength ?? standaloneFallbackConfig.youTubeCropStrength,
   trailerExpandButtonEnabled: runtimeConfig?.trailerExpandButtonEnabled ?? standaloneFallbackConfig.trailerExpandButtonEnabled,
   trailerExpandButtonPosition: runtimeConfig?.trailerExpandButtonPosition ?? standaloneFallbackConfig.trailerExpandButtonPosition,
@@ -207,6 +213,10 @@ export function normalizeConfig(): void {
     config.previewBackdropMode = PREVIEW_BACKDROP_DIM_BLUR;
   }
 
+  if (!VALID_PREVIEW_TRANSITION_MODES.has(config.previewTransitionMode)) {
+    config.previewTransitionMode = PREVIEW_TRANSITION_FADE;
+  }
+
   if (!VALID_YOUTUBE_CROP_STRENGTHS.has(config.youTubeCropStrength)) {
     config.youTubeCropStrength = YOUTUBE_CROP_MEDIUM;
   }
@@ -232,6 +242,7 @@ export function normalizeConfig(): void {
   config.trickplayWidth = Math.max(1, Number(config.trickplayWidth) || 320);
   config.trailerVolumePercent = clamp(Number.isFinite(Number(config.trailerVolumePercent)) ? Number(config.trailerVolumePercent) : 35, 0, 100);
   config.previewBackdropIntensityPercent = clamp(Number.isFinite(Number(config.previewBackdropIntensityPercent)) ? Number(config.previewBackdropIntensityPercent) : 35, 0, 100);
+  config.previewTransitionDurationMs = Math.max(0, Number(config.previewTransitionDurationMs) || 180);
   config.autoScrubStartPercent = clamp(Number(config.autoScrubStartPercent) || 0, 0, 100);
   config.autoScrubIntervalMs = Math.max(50, Number(config.autoScrubIntervalMs) || 220);
   config.autoScrubDurationMs = Math.max(500, Number(config.autoScrubDurationMs) || 4000);

@@ -13,6 +13,9 @@ export interface CardState {
   previewActive: boolean;
   previewBackdrop: HTMLDivElement | null;
   previewFrame: HTMLDivElement | null;
+  previewFrameSecondary: HTMLDivElement | null;
+  activePreviewFrameSlot: 'primary' | 'secondary';
+  previewTransitionTimer: number | null;
   hoverCountdown: HTMLDivElement | null;
   hoverCountdownLabel: HTMLSpanElement | null;
   unavailableMessage: HTMLDivElement | null;
@@ -21,6 +24,7 @@ export interface CardState {
   trailerExpandButton: HTMLButtonElement | null;
   trailerMedia: HTMLVideoElement | HTMLIFrameElement | null;
   trailerMediaKind: 'video' | 'iframe' | null;
+  trailerTransitionTimer: number | null;
   currentTrailer: TrailerCandidate | null;
   trailerPlaybackStartedAt: number;
   metadataOverlay: HTMLDivElement | null;

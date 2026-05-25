@@ -86,6 +86,8 @@ public sealed class MediaPreviewController : ControllerBase
             backdropCardPreviewMode = config.BackdropCardPreviewMode,
             previewBackdropMode = config.PreviewBackdropMode,
             previewBackdropIntensityPercent = config.PreviewBackdropIntensityPercent,
+            previewTransitionMode = config.PreviewTransitionMode,
+            previewTransitionDurationMs = config.PreviewTransitionDurationMs,
             youTubeCropStrength = config.YouTubeCropStrength,
             trailerExpandButtonEnabled = config.TrailerExpandButtonEnabled,
             trailerExpandButtonPosition = config.TrailerExpandButtonPosition

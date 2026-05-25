@@ -471,6 +471,21 @@
                                 <input id="PreviewBackdropIntensityPercent" name="PreviewBackdropIntensityPercent" type="number" min="0" max="100" step="1" is="emby-input" />
                             </div>
 
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="PreviewTransitionMode">Preview Transition</label>
+                                <select id="PreviewTransitionMode" name="PreviewTransitionMode" is="emby-select">
+                                    <option value="off">Off</option>
+                                    <option value="fade">Fade</option>
+                                    <option value="crossfade">Crossfade</option>
+                                </select>
+                            </div>
+
+                            <div id="PreviewTransitionDurationSetting" class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="PreviewTransitionDurationMs">Transition Duration (ms)</label>
+                                <input id="PreviewTransitionDurationMs" name="PreviewTransitionDurationMs" type="number" min="0" step="10" is="emby-input" />
+                            </div>
+                            <p class="jmp-note">Fade uses a single layer. Crossfade blends Trickplay frame changes between two layers for softer motion.</p>
+
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
                                     <input id="ShowProgressIndicator" name="ShowProgressIndicator" type="checkbox" is="emby-checkbox" />
@@ -567,7 +582,7 @@
                 const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
-                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled'];
+                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#PreviewTransitionMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled'];
 
                 function getField(selector) {
                     return form.querySelector(selector);
@@ -642,6 +657,7 @@
                     const canUseTrailer = previewSource !== 'trickplay';
                     const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
+                    const previewTransitionMode = getStringValue('#PreviewTransitionMode', 'fade');
                     const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
                     const hoverIntentEnabled = getBooleanValue('#HoverIntentEnabled');
                     const metadataOverlayEnabled = getBooleanValue('#MetadataOverlayEnabled');
@@ -672,6 +688,7 @@
                     getField('#HoverIntentThresholdSetting').classList.toggle('jmp-hidden', !hoverIntentEnabled);
                     getField('#HoverCountdownPositionSetting').classList.toggle('jmp-hidden', !hoverCountdownEnabled);
                     getField('#PreviewBackdropIntensitySetting').classList.toggle('jmp-hidden', previewBackdropMode === 'off');
+                    getField('#PreviewTransitionDurationSetting').classList.toggle('jmp-hidden', previewTransitionMode === 'off');
                     getField('#MetadataOverlaySettings').classList.toggle('jmp-hidden', !metadataOverlayEnabled);
                     setDisabled([
                         '#AutoScrubIntervalMs'
@@ -737,6 +754,8 @@
                     getField('#BackdropCardPreviewMode').value = config.BackdropCardPreviewMode || 'cover';
                     getField('#PreviewBackdropMode').value = config.PreviewBackdropMode || 'dim-blur';
                     getField('#PreviewBackdropIntensityPercent').value = config.PreviewBackdropIntensityPercent ?? 35;
+                    getField('#PreviewTransitionMode').value = config.PreviewTransitionMode || 'fade';
+                    getField('#PreviewTransitionDurationMs').value = config.PreviewTransitionDurationMs ?? 180;
                     getField('#RestoreOnLeave').checked = config.RestoreOnLeave !== false;
                     getField('#ShowProgressIndicator').checked = config.ShowProgressIndicator !== false;
                     getField('#MetadataOverlayEnabled').checked = !!config.MetadataOverlayEnabled;
@@ -808,6 +827,8 @@
                         BackdropCardPreviewMode: getStringValue('#BackdropCardPreviewMode', 'cover'),
                         PreviewBackdropMode: getStringValue('#PreviewBackdropMode', 'dim-blur'),
                         PreviewBackdropIntensityPercent: getNumberValue('#PreviewBackdropIntensityPercent', 35),
+                        PreviewTransitionMode: getStringValue('#PreviewTransitionMode', 'fade'),
+                        PreviewTransitionDurationMs: getNumberValue('#PreviewTransitionDurationMs', 180),
                         RestoreOnLeave: getBooleanValue('#RestoreOnLeave'),
                         ShowProgressIndicator: getBooleanValue('#ShowProgressIndicator'),
                         MetadataOverlayEnabled: getBooleanValue('#MetadataOverlayEnabled'),

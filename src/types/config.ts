@@ -13,6 +13,7 @@ export type AutoScrubMode = 'step' | 'sweep' | 'ping-pong';
 export type AutoScrubPreset = 'custom' | 'snappy' | 'balanced' | 'cinematic';
 export type PreviewMode = 'cover' | 'contain' | 'stretch';
 export type PreviewBackdropMode = 'off' | 'dim' | 'vignette' | 'dim-vignette' | 'blur' | 'dim-blur';
+export type PreviewTransitionMode = 'off' | 'fade' | 'crossfade';
 export type YouTubeCropStrength = 'off' | 'light' | 'medium' | 'strong';
 export type TrailerExpandButtonPosition =
   | 'top-left'
@@ -52,6 +53,8 @@ export interface PluginConfig {
   backdropCardPreviewMode: PreviewMode;
   previewBackdropMode: PreviewBackdropMode;
   previewBackdropIntensityPercent: number;
+  previewTransitionMode: PreviewTransitionMode;
+  previewTransitionDurationMs: number;
   youTubeCropStrength: YouTubeCropStrength;
   trailerExpandButtonEnabled: boolean;
   trailerExpandButtonPosition: TrailerExpandButtonPosition;

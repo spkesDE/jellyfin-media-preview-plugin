@@ -1,6 +1,23 @@
-import { PREVIEW_MODE_CONTAIN, PREVIEW_MODE_STRETCH, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
+import {
+  PREVIEW_MODE_CONTAIN,
+  PREVIEW_MODE_STRETCH,
+  PREVIEW_SOURCE_TRICKPLAY
+} from '../constants';
 import { config } from '../config';
-import { applyPreviewBackdrop, ensurePreviewFrame, ensurePreviewHost, hideProgress, resetPreviewBackdrop, showProgress } from '../cards/lifecycle';
+import {
+  applyPreviewBackdrop,
+  crossfadePreviewFrameLayers,
+  ensurePreviewFrame,
+  ensurePreviewHost,
+  getActivePreviewFrame,
+  getInactivePreviewFrame,
+  hideProgress,
+  isCrossfadePreviewTransition,
+  resetPreviewBackdrop,
+  setActivePreviewFrameSlot,
+  showPreviewFrameLayer,
+  showProgress
+} from '../cards/lifecycle';
 import { getPreviewModeForCard } from '../cards/layout';
 import { getOrCreateCardState } from '../cards/state';
 import { clearTrailerMedia } from './renderTrailer';
@@ -13,12 +30,13 @@ export function applyTrickplayPreview(
   percent: number
 ): void {
   const state = getOrCreateCardState(card);
-  if (!ensurePreviewHost(card, state) || !preview?.tileUrl || !preview.info || !ensurePreviewFrame(state)) {
+  const primaryFrame = ensurePreviewFrame(state);
+  if (!ensurePreviewHost(card, state) || !preview?.tileUrl || !preview.info || !primaryFrame) {
     return;
   }
 
   const rootHost = state.rootHost;
-  if (!rootHost || !state.previewFrame) {
+  if (!rootHost) {
     return;
   }
 
@@ -77,6 +95,7 @@ export function applyTrickplayPreview(
     return;
   }
 
+  const previousPreviewKey = state.lastPreviewKey;
   state.lastPreviewKey = previewKey;
   state.previewActive = true;
   state.activePreviewSource = PREVIEW_SOURCE_TRICKPLAY;
@@ -86,35 +105,58 @@ export function applyTrickplayPreview(
   state.lastRequestedTrickplayFrameIndex = preview.frameIndex;
   state.lastTrickplayRenderAt = Date.now();
   clearTrailerMedia(state);
-  state.previewFrame.style.display = '';
-  state.previewFrame.style.backgroundImage = `url("${preview.tileUrl.replace(/"/g, '\\"')}")`;
-  state.previewFrame.style.backgroundSize = `${renderedTileWidth}px ${renderedTileHeight}px`;
-  state.previewFrame.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
-  state.previewFrame.style.borderRadius = window.getComputedStyle(rootHost).borderRadius;
-  state.previewFrame.style.left = '0';
-  state.previewFrame.style.top = '0';
-  state.previewFrame.style.width = `${hostRect.width}px`;
-  state.previewFrame.style.height = `${hostRect.height}px`;
-  state.previewFrame.classList.remove('jmp-contain');
-  state.previewFrame.style.removeProperty('--jmp-fade-size');
-  state.previewFrame.style.removeProperty('--jmp-fade-color');
-  state.previewFrame.style.filter = 'none';
+  const applyFrameStyles = (frame: HTMLDivElement) => {
+    frame.style.backgroundImage = `url("${preview.tileUrl.replace(/"/g, '\\"')}")`;
+    frame.style.backgroundSize = `${renderedTileWidth}px ${renderedTileHeight}px`;
+    frame.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
+    frame.style.borderRadius = window.getComputedStyle(rootHost).borderRadius;
+    frame.style.left = '0';
+    frame.style.top = '0';
+    frame.style.width = `${hostRect.width}px`;
+    frame.style.height = `${hostRect.height}px`;
+    frame.classList.remove('jmp-contain');
+    frame.style.removeProperty('--jmp-fade-size');
+    frame.style.removeProperty('--jmp-fade-color');
+    frame.style.filter = 'none';
+
+    if (previewMode === PREVIEW_MODE_CONTAIN) {
+      frame.style.left = `${(hostRect.width - renderedFrameWidth) / 2}px`;
+      frame.style.top = `${(hostRect.height - renderedFrameHeight) / 2}px`;
+      frame.style.width = `${renderedFrameWidth}px`;
+      frame.style.height = `${renderedFrameHeight}px`;
+      frame.style.borderRadius = '0';
+      frame.classList.add('jmp-contain');
+    }
+  };
+
+  const currentFrame = getActivePreviewFrame(state) || primaryFrame;
+  const targetFrame = isCrossfadePreviewTransition() && previousPreviewKey
+    ? (getInactivePreviewFrame(state) || primaryFrame)
+    : primaryFrame;
+
+  applyFrameStyles(targetFrame);
   resetPreviewBackdrop(state);
   applyPreviewBackdrop(state);
 
-  if (previewMode === PREVIEW_MODE_CONTAIN) {
-    state.previewFrame.style.left = `${(hostRect.width - renderedFrameWidth) / 2}px`;
-    state.previewFrame.style.top = `${(hostRect.height - renderedFrameHeight) / 2}px`;
-    state.previewFrame.style.width = `${renderedFrameWidth}px`;
-    state.previewFrame.style.height = `${renderedFrameHeight}px`;
-    state.previewFrame.style.borderRadius = '0';
-    state.previewFrame.classList.add('jmp-contain');
+  if (targetFrame === currentFrame) {
+    showPreviewFrameLayer(state, targetFrame);
+    setActivePreviewFrameSlot(state, targetFrame === state.previewFrameSecondary ? 'secondary' : 'primary');
+  } else {
+    crossfadePreviewFrameLayers(state, currentFrame, targetFrame);
+    setActivePreviewFrameSlot(state, targetFrame === state.previewFrameSecondary ? 'secondary' : 'primary');
   }
 
   if (config.showProgressIndicator) {
     showProgress(state, percent);
   } else {
     hideProgress(state);
+  }
+
+  if (state.previewFrameSecondary && !isCrossfadePreviewTransition()) {
+    state.previewFrameSecondary.style.display = 'none';
+    state.previewFrameSecondary.style.visibility = 'hidden';
+    state.previewFrameSecondary.style.opacity = '0';
+    state.previewFrameSecondary.style.backgroundImage = '';
   }
 
   preloadTileUrls(preview);
