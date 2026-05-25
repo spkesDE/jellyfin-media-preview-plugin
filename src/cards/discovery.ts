@@ -1,15 +1,23 @@
 import { SUPPORTED_TYPES } from '../constants';
 
+const CANDIDATE_SELECTORS = [
+  '.card[data-id]',
+  '.listItemImage[data-action="link"]',
+  '.listItemImage.itemAction',
+  'a.cardImageContainer[href*="#/details?id="]',
+  '.cardImageContainer[item-id]',
+  '.cardImageContainer[itemid]'
+] as const;
+
 export function findCandidateCards(rootNode?: ParentNode | Node | null): HTMLElement[] {
   const rootElement =
     rootNode && 'nodeType' in rootNode && rootNode.nodeType === 1
       ? (rootNode as Element)
       : document;
   const candidates = new Set<HTMLElement>();
-  const selectors = ['.card[data-id]'];
 
   if ('matches' in rootElement && typeof rootElement.matches === 'function') {
-    selectors.forEach((selector) => {
+    CANDIDATE_SELECTORS.forEach((selector) => {
       if (rootElement.matches(selector)) {
         const card = normalizeCardElement(rootElement);
         if (card) {
@@ -19,7 +27,7 @@ export function findCandidateCards(rootNode?: ParentNode | Node | null): HTMLEle
     });
   }
 
-  selectors.forEach((selector) => {
+  CANDIDATE_SELECTORS.forEach((selector) => {
     rootElement.querySelectorAll(selector).forEach((element) => {
       const card = normalizeCardElement(element);
       if (card) {
@@ -29,7 +37,13 @@ export function findCandidateCards(rootNode?: ParentNode | Node | null): HTMLEle
   });
 
   return Array.from(candidates).filter((card) => {
-    return !!getItemIdFromCard(card) && SUPPORTED_TYPES.has(getItemTypeFromCard(card) || '');
+    const itemId = getItemIdFromCard(card);
+    if (!itemId) {
+      return false;
+    }
+
+    const itemType = getItemTypeFromCard(card);
+    return !itemType || SUPPORTED_TYPES.has(itemType);
   });
 }
 
@@ -38,7 +52,13 @@ export function normalizeCardElement(element: Element | null): HTMLElement | nul
     return null;
   }
 
-  return (element.closest('.card[data-id]') as HTMLElement | null) || (element as HTMLElement);
+  return (
+    (element.closest('.card[data-id]') as HTMLElement | null) ||
+    (element.closest('.listItem') as HTMLElement | null) ||
+    (element.closest('.listItemWrapper') as HTMLElement | null) ||
+    (element.closest('.cardImageContainer') as HTMLElement | null) ||
+    (element as HTMLElement)
+  );
 }
 
 export function getItemTypeFromCard(card: Element | null): string | null {
@@ -46,7 +66,22 @@ export function getItemTypeFromCard(card: Element | null): string | null {
     return null;
   }
 
-  return card.getAttribute('data-type') || (card instanceof HTMLElement ? card.dataset.type || card.dataset.itemtype || null : null);
+  const ownType = card.getAttribute('data-type') || (card instanceof HTMLElement ? card.dataset.type || card.dataset.itemtype || null : null);
+  if (ownType) {
+    return ownType;
+  }
+
+  const ancestor = card.closest('[data-type], [data-itemtype]') as HTMLElement | null;
+  if (ancestor) {
+    return ancestor.getAttribute('data-type') || ancestor.dataset.type || ancestor.dataset.itemtype || null;
+  }
+
+  const descendant = card.querySelector('[data-type], [data-itemtype]') as HTMLElement | null;
+  if (descendant) {
+    return descendant.getAttribute('data-type') || descendant.dataset.type || descendant.dataset.itemtype || null;
+  }
+
+  return null;
 }
 
 function parseItemIdFromHref(href: string | null): string | null {
@@ -71,6 +106,15 @@ function parseItemIdFromHref(href: string | null): string | null {
     const directMatch = href.match(/[?&]id=([^&]+)/i);
     return directMatch ? decodeURIComponent(directMatch[1]) : null;
   }
+}
+
+function parseItemIdFromBackgroundImage(styleValue: string | null): string | null {
+  if (!styleValue) {
+    return null;
+  }
+
+  const match = styleValue.match(/\/Items\/([a-f0-9]+)\/Images\//i);
+  return match ? match[1] : null;
 }
 
 export function getItemIdFromCard(card: Element | null): string | null {
@@ -116,6 +160,21 @@ export function getItemIdFromCard(card: Element | null): string | null {
     return ownHrefId;
   }
 
+  if (htmlCard) {
+    const ownBackgroundImageId = parseItemIdFromBackgroundImage(htmlCard.style.backgroundImage || htmlCard.getAttribute('style'));
+    if (ownBackgroundImageId) {
+      return ownBackgroundImageId;
+    }
+  }
+
+  const backgroundImageHost = card.querySelector('[style*="/Items/"]') as HTMLElement | null;
+  if (backgroundImageHost) {
+    const backgroundImageId = parseItemIdFromBackgroundImage(backgroundImageHost.style.backgroundImage || backgroundImageHost.getAttribute('style'));
+    if (backgroundImageId) {
+      return backgroundImageId;
+    }
+  }
+
   return null;
 }
 
@@ -126,6 +185,7 @@ export function getCardImageElement(card: Element | null): HTMLElement | null {
 
   const selectors = [
     '.cardImageContainer',
+    '.listItemImage',
     '.cardPadder',
     '.cardImage',
     'img',
@@ -175,8 +235,15 @@ export function getHoverCardFromEventTarget(target: EventTarget | null): HTMLEle
     return null;
   }
 
-  const card = normalizeCardElement(target.closest('.card[data-id]'));
-  if (!card || !SUPPORTED_TYPES.has(getItemTypeFromCard(card) || '')) {
+  const card = normalizeCardElement(
+    target.closest('.card[data-id], .listItemImage, .listItem, .listItemWrapper, .cardImageContainer')
+  );
+  if (!card || !getItemIdFromCard(card)) {
+    return null;
+  }
+
+  const itemType = getItemTypeFromCard(card);
+  if (itemType && !SUPPORTED_TYPES.has(itemType)) {
     return null;
   }
 
@@ -193,8 +260,15 @@ export function getSupportedCardFromEventTarget(target: EventTarget | null): HTM
     return null;
   }
 
-  const card = normalizeCardElement(target.closest('.card[data-id]'));
-  if (!card || !SUPPORTED_TYPES.has(getItemTypeFromCard(card) || '')) {
+  const card = normalizeCardElement(
+    target.closest('.card[data-id], .listItemImage, .listItem, .listItemWrapper, .cardImageContainer')
+  );
+  if (!card || !getItemIdFromCard(card)) {
+    return null;
+  }
+
+  const itemType = getItemTypeFromCard(card);
+  if (itemType && !SUPPORTED_TYPES.has(itemType)) {
     return null;
   }
 

@@ -539,7 +539,8 @@ export function bindCard(card: HTMLElement): void {
     return;
   }
 
-  if (!SUPPORTED_TYPES.has((card.getAttribute('data-type') || card.dataset.type || card.dataset.itemtype || ''))) {
+  const itemType = card.getAttribute('data-type') || card.dataset.type || card.dataset.itemtype || '';
+  if (itemType && !SUPPORTED_TYPES.has(itemType)) {
     return;
   }
 
