@@ -10,6 +10,14 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrickplayWidth { get; set; } = 320;
 
+    public string MoviePreviewSource { get; set; } = "inherit";
+
+    public string SeriesPreviewSource { get; set; } = "inherit";
+
+    public string EpisodePreviewSource { get; set; } = "inherit";
+
+    public string VideoPreviewSource { get; set; } = "inherit";
+
     public bool RestoreOnLeave { get; set; } = true;
 
     public bool ShowProgressIndicator { get; set; } = true;

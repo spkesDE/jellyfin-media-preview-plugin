@@ -151,6 +151,51 @@
                             </div>
                             <p id="PreviewSourceNote" class="jmp-note">Choose between native Trickplay scrub files and trailer playback. Trailer mode currently supports local Jellyfin trailers and YouTube remote trailers when available.</p>
 
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="MoviePreviewSource">Movie Source Override</label>
+                                <select id="MoviePreviewSource" name="MoviePreviewSource" is="emby-select">
+                                    <option value="inherit">Use Global Setting</option>
+                                    <option value="trickplay">Trickplay / Scrub File</option>
+                                    <option value="trailer">Trailer</option>
+                                    <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
+                                    <option value="prefer-trailer">Prefer Trailer</option>
+                                </select>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="SeriesPreviewSource">Series Source Override</label>
+                                <select id="SeriesPreviewSource" name="SeriesPreviewSource" is="emby-select">
+                                    <option value="inherit">Use Global Setting</option>
+                                    <option value="trickplay">Trickplay / Scrub File</option>
+                                    <option value="trailer">Trailer</option>
+                                    <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
+                                    <option value="prefer-trailer">Prefer Trailer</option>
+                                </select>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="EpisodePreviewSource">Episode Source Override</label>
+                                <select id="EpisodePreviewSource" name="EpisodePreviewSource" is="emby-select">
+                                    <option value="inherit">Use Global Setting</option>
+                                    <option value="trickplay">Trickplay / Scrub File</option>
+                                    <option value="trailer">Trailer</option>
+                                    <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
+                                    <option value="prefer-trailer">Prefer Trailer</option>
+                                </select>
+                            </div>
+
+                            <div class="selectContainer">
+                                <label class="selectLabel" for="VideoPreviewSource">Video Source Override</label>
+                                <select id="VideoPreviewSource" name="VideoPreviewSource" is="emby-select">
+                                    <option value="inherit">Use Global Setting</option>
+                                    <option value="trickplay">Trickplay / Scrub File</option>
+                                    <option value="trailer">Trailer</option>
+                                    <option value="prefer-trickplay">Prefer Trickplay / Scrub File</option>
+                                    <option value="prefer-trailer">Prefer Trailer</option>
+                                </select>
+                            </div>
+                            <p class="jmp-note">Lets you keep one global default while overriding the source strategy for movies, series, episodes, or generic video items.</p>
+
                             <div class="inputContainer">
                                 <label class="inputLabel inputLabelUnfocused" for="HoverDelayMs">Hover Delay (ms)</label>
                                 <input id="HoverDelayMs" name="HoverDelayMs" type="number" min="0" step="50" is="emby-input" />
@@ -521,6 +566,10 @@
                 function setValues(config) {
                     getField('#Enabled').checked = !!config.Enabled;
                     getField('#PreviewSource').value = config.PreviewSource || 'trickplay';
+                    getField('#MoviePreviewSource').value = config.MoviePreviewSource || 'inherit';
+                    getField('#SeriesPreviewSource').value = config.SeriesPreviewSource || 'inherit';
+                    getField('#EpisodePreviewSource').value = config.EpisodePreviewSource || 'inherit';
+                    getField('#VideoPreviewSource').value = config.VideoPreviewSource || 'inherit';
                     getField('#ShowNoPreviewMessage').checked = !!config.ShowNoPreviewMessage;
                     getField('#TrailerAudioEnabled').checked = !!config.TrailerAudioEnabled;
                     getField('#TrailerVolumePercent').value = config.TrailerVolumePercent ?? 35;
@@ -573,6 +622,10 @@
                     const config = {
                         Enabled: getBooleanValue('#Enabled'),
                         PreviewSource: getStringValue('#PreviewSource', 'trickplay'),
+                        MoviePreviewSource: getStringValue('#MoviePreviewSource', 'inherit'),
+                        SeriesPreviewSource: getStringValue('#SeriesPreviewSource', 'inherit'),
+                        EpisodePreviewSource: getStringValue('#EpisodePreviewSource', 'inherit'),
+                        VideoPreviewSource: getStringValue('#VideoPreviewSource', 'inherit'),
                         ShowNoPreviewMessage: getBooleanValue('#ShowNoPreviewMessage'),
                         TrailerAudioEnabled: getBooleanValue('#TrailerAudioEnabled'),
                         TrailerVolumePercent: getNumberValue('#TrailerVolumePercent', 35),

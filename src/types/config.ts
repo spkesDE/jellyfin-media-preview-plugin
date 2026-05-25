@@ -3,6 +3,7 @@ export type PreviewSource =
   | 'trailer'
   | 'prefer-trickplay'
   | 'prefer-trailer';
+export type ContentTypePreviewSource = PreviewSource | 'inherit';
 
 export type HoverMode = 'scrub' | 'auto';
 export type AutoScrubMode = 'step' | 'sweep' | 'ping-pong';
@@ -19,6 +20,10 @@ export type TrailerExpandButtonPosition =
 export interface PluginConfig {
   enabled: boolean;
   previewSource: PreviewSource;
+  moviePreviewSource: ContentTypePreviewSource;
+  seriesPreviewSource: ContentTypePreviewSource;
+  episodePreviewSource: ContentTypePreviewSource;
+  videoPreviewSource: ContentTypePreviewSource;
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;

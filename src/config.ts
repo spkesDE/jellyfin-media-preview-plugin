@@ -4,11 +4,13 @@ import {
   AUTO_SCRUB_MODE_SWEEP,
   AUTO_SCRUB_PRESET_BALANCED,
   HOVER_MODE_SCRUB,
+  PREVIEW_SOURCE_INHERIT,
   PREVIEW_BACKDROP_DIM_BLUR,
   PREVIEW_MODE_CONTAIN,
   PREVIEW_MODE_COVER,
   PREVIEW_SOURCE_TRICKPLAY,
   TRAILER_EXPAND_BUTTON_TOP_RIGHT,
+  VALID_CONTENT_TYPE_PREVIEW_SOURCES,
   VALID_AUTO_SCRUB_MODES,
   VALID_AUTO_SCRUB_PRESETS,
   VALID_HOVER_MODES,
@@ -28,6 +30,10 @@ import type { PluginConfig, RuntimePluginConfig } from './types/config';
 const standaloneFallbackConfig: PluginConfig = {
   enabled: true,
   previewSource: PREVIEW_SOURCE_TRICKPLAY,
+  moviePreviewSource: PREVIEW_SOURCE_INHERIT,
+  seriesPreviewSource: PREVIEW_SOURCE_INHERIT,
+  episodePreviewSource: PREVIEW_SOURCE_INHERIT,
+  videoPreviewSource: PREVIEW_SOURCE_INHERIT,
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
@@ -60,6 +66,10 @@ const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPrevi
 export const config: PluginConfig = {
   enabled: runtimeConfig?.enabled ?? standaloneFallbackConfig.enabled,
   previewSource: runtimeConfig?.previewSource ?? standaloneFallbackConfig.previewSource,
+  moviePreviewSource: runtimeConfig?.moviePreviewSource ?? standaloneFallbackConfig.moviePreviewSource,
+  seriesPreviewSource: runtimeConfig?.seriesPreviewSource ?? standaloneFallbackConfig.seriesPreviewSource,
+  episodePreviewSource: runtimeConfig?.episodePreviewSource ?? standaloneFallbackConfig.episodePreviewSource,
+  videoPreviewSource: runtimeConfig?.videoPreviewSource ?? standaloneFallbackConfig.videoPreviewSource,
   showNoPreviewMessage: runtimeConfig?.showNoPreviewMessage ?? standaloneFallbackConfig.showNoPreviewMessage,
   trailerAudioEnabled: runtimeConfig?.trailerAudioEnabled ?? standaloneFallbackConfig.trailerAudioEnabled,
   trailerVolumePercent: runtimeConfig?.trailerVolumePercent ?? standaloneFallbackConfig.trailerVolumePercent,
@@ -97,6 +107,22 @@ export function normalizeConfig(): void {
 
   if (!VALID_PREVIEW_SOURCES.has(config.previewSource)) {
     config.previewSource = PREVIEW_SOURCE_TRICKPLAY;
+  }
+
+  if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.moviePreviewSource)) {
+    config.moviePreviewSource = PREVIEW_SOURCE_INHERIT;
+  }
+
+  if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.seriesPreviewSource)) {
+    config.seriesPreviewSource = PREVIEW_SOURCE_INHERIT;
+  }
+
+  if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.episodePreviewSource)) {
+    config.episodePreviewSource = PREVIEW_SOURCE_INHERIT;
+  }
+
+  if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.videoPreviewSource)) {
+    config.videoPreviewSource = PREVIEW_SOURCE_INHERIT;
   }
 
   if (!VALID_HOVER_MODES.has(config.hoverMode)) {

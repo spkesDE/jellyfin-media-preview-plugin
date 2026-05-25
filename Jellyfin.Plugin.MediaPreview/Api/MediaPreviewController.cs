@@ -45,6 +45,10 @@ public sealed class MediaPreviewController : ControllerBase
         {
             enabled = config.Enabled,
             previewSource = config.PreviewSource,
+            moviePreviewSource = config.MoviePreviewSource,
+            seriesPreviewSource = config.SeriesPreviewSource,
+            episodePreviewSource = config.EpisodePreviewSource,
+            videoPreviewSource = config.VideoPreviewSource,
             showNoPreviewMessage = config.ShowNoPreviewMessage,
             trailerAudioEnabled = config.TrailerAudioEnabled,
             trailerVolumePercent = config.TrailerVolumePercent,

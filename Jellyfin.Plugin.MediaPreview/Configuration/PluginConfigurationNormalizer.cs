@@ -10,6 +10,15 @@ internal static class PluginConfigurationNormalizer
         "prefer-trailer"
     };
 
+    private static readonly HashSet<string> ValidContentTypePreviewSources = new(StringComparer.Ordinal)
+    {
+        "inherit",
+        "trickplay",
+        "trailer",
+        "prefer-trickplay",
+        "prefer-trailer"
+    };
+
     private static readonly HashSet<string> ValidHoverModes = new(StringComparer.Ordinal)
     {
         "scrub",
@@ -71,6 +80,10 @@ internal static class PluginConfigurationNormalizer
         {
             Enabled = source.Enabled,
             PreviewSource = NormalizeChoice(source.PreviewSource, ValidPreviewSources, "trickplay"),
+            MoviePreviewSource = NormalizeChoice(source.MoviePreviewSource, ValidContentTypePreviewSources, "inherit"),
+            SeriesPreviewSource = NormalizeChoice(source.SeriesPreviewSource, ValidContentTypePreviewSources, "inherit"),
+            EpisodePreviewSource = NormalizeChoice(source.EpisodePreviewSource, ValidContentTypePreviewSources, "inherit"),
+            VideoPreviewSource = NormalizeChoice(source.VideoPreviewSource, ValidContentTypePreviewSources, "inherit"),
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),

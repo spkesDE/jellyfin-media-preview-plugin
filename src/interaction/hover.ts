@@ -13,7 +13,7 @@ import {
   SUPPORTED_TYPES
 } from '../constants';
 import { debugCardSummary, debugLog } from '../core/logger';
-import { getItemIdFromCard, findCandidateCards, getImageRenderHost } from '../cards/discovery';
+import { getItemIdFromCard, getItemTypeFromCard, findCandidateCards, getImageRenderHost } from '../cards/discovery';
 import {
   clearLeaveHold,
   clearPendingMove,
@@ -100,12 +100,13 @@ export function runPreviewUpdate(card: HTMLElement, percent: number): void {
   if (!itemId) {
     return;
   }
+  const itemType = getItemTypeFromCard(card);
 
   const state = getOrCreateCardState(card);
   state.latestRequestToken += 1;
   const requestToken = state.latestRequestToken;
 
-  getPreviewUrl(itemId, percent).then((preview) => {
+  getPreviewUrl(itemId, percent, itemType).then((preview) => {
     if (!preview) {
       return;
     }
@@ -211,12 +212,13 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
       resetHoverCountdown(state);
       return;
     }
+    const itemType = getItemTypeFromCard(card);
 
     const initialPercent = config.hoverMode === HOVER_MODE_AUTO
       ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
       : getRelativePercent(card, event);
 
-    getPreviewUrl(itemId, initialPercent).then((preview) => {
+    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
       if (!state.previewActive || requestToken !== state.latestRequestToken) {
         resetHoverCountdown(state);
         return;
