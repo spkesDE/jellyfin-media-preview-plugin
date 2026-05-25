@@ -31,6 +31,9 @@ export interface PluginConfig {
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
   hoverDelayMs: number;
+  hoverIntentEnabled: boolean;
+  hoverIntentThresholdPx: number;
+  hoverCooldownMs: number;
   hoverCountdownEnabled: boolean;
   hoverCountdownPosition: TrailerExpandButtonPosition;
   trickplayWidth: number;

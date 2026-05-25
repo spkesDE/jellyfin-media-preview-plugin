@@ -8,6 +8,12 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int HoverDelayMs { get; set; } = 300;
 
+    public bool HoverIntentEnabled { get; set; } = false;
+
+    public int HoverIntentThresholdPx { get; set; } = 18;
+
+    public int HoverCooldownMs { get; set; } = 0;
+
     public int TrickplayWidth { get; set; } = 320;
 
     public string MoviePreviewSource { get; set; } = "inherit";

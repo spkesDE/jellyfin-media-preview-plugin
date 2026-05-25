@@ -252,6 +252,25 @@
 
                             <div class="inputContainer">
                                 <label class="checkboxContainer">
+                                    <input id="HoverIntentEnabled" name="HoverIntentEnabled" type="checkbox" is="emby-checkbox" />
+                                    <span>Enable Hover Intent</span>
+                                </label>
+                            </div>
+
+                            <div id="HoverIntentThresholdSetting" class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="HoverIntentThresholdPx">Hover Intent Movement Threshold (px)</label>
+                                <input id="HoverIntentThresholdPx" name="HoverIntentThresholdPx" type="number" min="0" step="1" is="emby-input" />
+                            </div>
+                            <p class="jmp-note">When enabled, the hover delay restarts if the pointer keeps moving too far across the card. This helps avoid accidental preview starts while you are just passing over items.</p>
+
+                            <div class="inputContainer">
+                                <label class="inputLabel inputLabelUnfocused" for="HoverCooldownMs">Hover Cooldown (ms)</label>
+                                <input id="HoverCooldownMs" name="HoverCooldownMs" type="number" min="0" step="50" is="emby-input" />
+                            </div>
+                            <p class="jmp-note">Adds a short re-entry cooldown per card before another preview may start again.</p>
+
+                            <div class="inputContainer">
+                                <label class="checkboxContainer">
                                     <input id="HoverCountdownEnabled" name="HoverCountdownEnabled" type="checkbox" is="emby-checkbox" />
                                     <span>Show Hover Countdown</span>
                                 </label>
@@ -494,7 +513,7 @@
                 const pluginId = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
-                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled'];
+                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled'];
 
                 function getField(selector) {
                     return form.querySelector(selector);
@@ -570,6 +589,7 @@
                     const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
                     const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
+                    const hoverIntentEnabled = getBooleanValue('#HoverIntentEnabled');
                     const usesSmartSource = previewSource === 'smart'
                         || moviePreviewSource === 'smart'
                         || seriesPreviewSource === 'smart'
@@ -594,6 +614,7 @@
                     getField('#TrailerSettingsSection').classList.toggle('jmp-hidden', !canUseTrailer);
                     getField('#SmartSourceSettings').classList.toggle('jmp-hidden', !usesSmartSource);
                     getField('#TrailerVolumeSetting').classList.toggle('jmp-hidden', !canUseTrailer || !trailerAudioEnabled);
+                    getField('#HoverIntentThresholdSetting').classList.toggle('jmp-hidden', !hoverIntentEnabled);
                     getField('#HoverCountdownPositionSetting').classList.toggle('jmp-hidden', !hoverCountdownEnabled);
                     getField('#PreviewBackdropIntensitySetting').classList.toggle('jmp-hidden', previewBackdropMode === 'off');
                     setDisabled([
@@ -643,6 +664,9 @@
                     getField('#TrailerExpandButtonPosition').value = config.TrailerExpandButtonPosition || 'top-right';
                     getField('#HoverMode').value = config.HoverMode || 'scrub';
                     getField('#HoverDelayMs').value = config.HoverDelayMs ?? 300;
+                    getField('#HoverIntentEnabled').checked = !!config.HoverIntentEnabled;
+                    getField('#HoverIntentThresholdPx').value = config.HoverIntentThresholdPx ?? 18;
+                    getField('#HoverCooldownMs').value = config.HoverCooldownMs ?? 0;
                     getField('#HoverCountdownEnabled').checked = !!config.HoverCountdownEnabled;
                     getField('#HoverCountdownPosition').value = config.HoverCountdownPosition || 'top-right';
                     getField('#TrickplayWidth').value = config.TrickplayWidth ?? 320;
@@ -704,6 +728,9 @@
                         TrailerExpandButtonPosition: getStringValue('#TrailerExpandButtonPosition', 'top-right'),
                         HoverMode: getStringValue('#HoverMode', 'scrub'),
                         HoverDelayMs: getNumberValue('#HoverDelayMs', 300),
+                        HoverIntentEnabled: getBooleanValue('#HoverIntentEnabled'),
+                        HoverIntentThresholdPx: getNumberValue('#HoverIntentThresholdPx', 18),
+                        HoverCooldownMs: getNumberValue('#HoverCooldownMs', 0),
                         HoverCountdownEnabled: getBooleanValue('#HoverCountdownEnabled'),
                         HoverCountdownPosition: getStringValue('#HoverCountdownPosition', 'top-right'),
                         TrickplayWidth: getNumberValue('#TrickplayWidth', 320),

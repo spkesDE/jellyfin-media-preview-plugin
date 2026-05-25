@@ -42,6 +42,17 @@ export function getRelativePercent(card: HTMLElement, event: MouseEvent | Pointe
   return Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
 }
 
+function getEffectiveHoverDelayMs(state: ReturnType<typeof getOrCreateCardState>): number {
+  const baseDelayMs = Math.max(0, Number(config.hoverDelayMs) || 0);
+  const cooldownMs = Math.max(0, Number(config.hoverCooldownMs) || 0);
+  if (!cooldownMs || !state.lastPreviewEndedAt) {
+    return baseDelayMs;
+  }
+
+  const cooldownRemainingMs = Math.max(0, cooldownMs - (Date.now() - state.lastPreviewEndedAt));
+  return Math.max(baseDelayMs, cooldownRemainingMs);
+}
+
 function getNoPreviewMessage(): string {
   if (config.previewSource === PREVIEW_SOURCE_TRAILER) {
     return NO_PREVIEW_MESSAGE_TRAILER;
@@ -58,10 +69,14 @@ function getNoPreviewMessage(): string {
   return NO_PREVIEW_MESSAGE_ANY;
 }
 
-function startHoverCountdown(card: HTMLElement, state: ReturnType<typeof getOrCreateCardState>): void {
+function startHoverCountdown(
+  card: HTMLElement,
+  state: ReturnType<typeof getOrCreateCardState>,
+  totalDelayMs: number
+): void {
   resetHoverCountdown(state);
 
-  if (!config.hoverCountdownEnabled || config.hoverDelayMs <= 0) {
+  if (!config.hoverCountdownEnabled || totalDelayMs <= 0) {
     return;
   }
 
@@ -71,7 +86,7 @@ function startHoverCountdown(card: HTMLElement, state: ReturnType<typeof getOrCr
 
   const startedAt = window.performance.now();
   state.hoverCountdownStartedAt = startedAt;
-  state.hoverCountdownDurationMs = config.hoverDelayMs;
+  state.hoverCountdownDurationMs = totalDelayMs;
 
   const tick = (timestamp: number) => {
     if (!state.pointerInside || state.hoverCountdownStartedAt === null) {
@@ -80,8 +95,8 @@ function startHoverCountdown(card: HTMLElement, state: ReturnType<typeof getOrCr
     }
 
     const elapsedMs = Math.max(0, timestamp - startedAt);
-    const remainingMs = Math.max(0, config.hoverDelayMs - elapsedMs);
-    updateHoverCountdown(state, remainingMs, config.hoverDelayMs);
+    const remainingMs = Math.max(0, totalDelayMs - elapsedMs);
+    updateHoverCountdown(state, remainingMs, totalDelayMs);
 
     if (remainingMs <= 0) {
       state.hoverCountdownFrame = null;
@@ -91,8 +106,89 @@ function startHoverCountdown(card: HTMLElement, state: ReturnType<typeof getOrCr
     state.hoverCountdownFrame = window.requestAnimationFrame(tick);
   };
 
-  updateHoverCountdown(state, config.hoverDelayMs, config.hoverDelayMs);
+  updateHoverCountdown(state, totalDelayMs, totalDelayMs);
   state.hoverCountdownFrame = window.requestAnimationFrame(tick);
+}
+
+function clearHoverActivationTimer(state: ReturnType<typeof getOrCreateCardState>): void {
+  if (state.hoverTimer) {
+    window.clearTimeout(state.hoverTimer);
+    state.hoverTimer = null;
+  }
+}
+
+function scheduleHoverActivation(
+  card: HTMLElement,
+  state: ReturnType<typeof getOrCreateCardState>,
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+): void {
+  const effectiveDelayMs = getEffectiveHoverDelayMs(state);
+  state.hoverIntentAnchorX = event.clientX;
+  state.hoverIntentAnchorY = event.clientY ?? null;
+  clearHoverActivationTimer(state);
+
+  state.hoverTimer = window.setTimeout(() => {
+    state.hoverTimer = null;
+    state.previewActive = true;
+    state.latestRequestToken += 1;
+    const requestToken = state.latestRequestToken;
+    if (state.hoverCountdownFrame) {
+      window.cancelAnimationFrame(state.hoverCountdownFrame);
+      state.hoverCountdownFrame = null;
+    }
+    updateHoverCountdown(state, 0, effectiveDelayMs || 1);
+
+    const itemId = getItemIdFromCard(card);
+    if (!itemId) {
+      resetHoverCountdown(state);
+      return;
+    }
+    const itemType = getItemTypeFromCard(card);
+
+    const initialPercent = config.hoverMode === HOVER_MODE_AUTO
+      ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
+      : getRelativePercent(card, event);
+
+    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
+      if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        resetHoverCountdown(state);
+        return;
+      }
+
+      if (!state.previewActive || !preview) {
+        resetHoverCountdown(state);
+        debugCardSummary(card, 'Hover activation found no preview source.', {
+          itemId,
+          previewSource: config.previewSource
+        });
+        if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
+          showUnavailableMessage(state, getNoPreviewMessage());
+        }
+        return;
+      }
+
+      resetHoverCountdown(state);
+      hideUnavailableMessage(state);
+      applyPreview(card, preview, initialPercent);
+
+      if (preview.source === PREVIEW_SOURCE_TRAILER) {
+        return;
+      }
+
+      if (config.hoverMode === HOVER_MODE_AUTO) {
+        startAutoScrub(card);
+      }
+    }).catch((error) => {
+      if (requestToken !== state.latestRequestToken) {
+        return;
+      }
+
+      resetHoverCountdown(state);
+      debugLog('Hover activation failed.', itemId, error);
+    });
+  }, effectiveDelayMs);
+
+  startHoverCountdown(card, state, effectiveDelayMs);
 }
 
 export function runPreviewUpdate(card: HTMLElement, percent: number): void {
@@ -176,7 +272,7 @@ export function schedulePreviewUpdate(card: HTMLElement, percent: number): void 
   }, Math.max(0, minHoldMs - elapsedSinceLastRender));
 }
 
-export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number }): void {
+export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }): void {
   if (!config.enabled || event.pointerType !== 'mouse' || runtimeState.expandedTrailerSession) {
     return;
   }
@@ -195,77 +291,28 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   restoreCard(card);
   hideUnavailableMessage(state);
   debugCardSummary(card, 'Pointer entered card.');
-
-  state.hoverTimer = window.setTimeout(() => {
-    state.hoverTimer = null;
-    state.previewActive = true;
-    state.latestRequestToken += 1;
-    const requestToken = state.latestRequestToken;
-    if (state.hoverCountdownFrame) {
-      window.cancelAnimationFrame(state.hoverCountdownFrame);
-      state.hoverCountdownFrame = null;
-    }
-    updateHoverCountdown(state, 0, config.hoverDelayMs);
-
-    const itemId = getItemIdFromCard(card);
-    if (!itemId) {
-      resetHoverCountdown(state);
-      return;
-    }
-    const itemType = getItemTypeFromCard(card);
-
-    const initialPercent = config.hoverMode === HOVER_MODE_AUTO
-      ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
-      : getRelativePercent(card, event);
-
-    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
-      if (!state.previewActive || requestToken !== state.latestRequestToken) {
-        resetHoverCountdown(state);
-        return;
-      }
-
-      if (!state.previewActive || !preview) {
-        resetHoverCountdown(state);
-        debugCardSummary(card, 'Hover activation found no preview source.', {
-          itemId,
-          previewSource: config.previewSource
-        });
-        if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
-          showUnavailableMessage(state, getNoPreviewMessage());
-        }
-        return;
-      }
-
-      resetHoverCountdown(state);
-      hideUnavailableMessage(state);
-      applyPreview(card, preview, initialPercent);
-
-      if (preview.source === PREVIEW_SOURCE_TRAILER) {
-        return;
-      }
-
-      if (config.hoverMode === HOVER_MODE_AUTO) {
-        startAutoScrub(card);
-      }
-    }).catch((error) => {
-      if (requestToken !== state.latestRequestToken) {
-        return;
-      }
-
-      resetHoverCountdown(state);
-      debugLog('Hover activation failed.', itemId, error);
-    });
-  }, config.hoverDelayMs);
-
-  startHoverCountdown(card, state);
+  scheduleHoverActivation(card, state, event);
 }
 
-export function handlePointerMove(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number }): void {
+export function handlePointerMove(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }): void {
   if (runtimeState.expandedTrailerSession || (event.pointerType && event.pointerType !== 'mouse')) {
     return;
   }
 
   const state = getOrCreateCardState(card);
+  if (!state.previewActive && state.pointerInside && state.hoverTimer && config.hoverIntentEnabled) {
+    const thresholdPx = Math.max(0, Number(config.hoverIntentThresholdPx) || 0);
+    const anchorX = state.hoverIntentAnchorX ?? event.clientX;
+    const anchorY = state.hoverIntentAnchorY ?? event.clientY ?? 0;
+    const nextY = event.clientY ?? anchorY;
+    const distance = Math.hypot(event.clientX - anchorX, nextY - anchorY);
+
+    if (distance > thresholdPx) {
+      scheduleHoverActivation(card, state, event);
+      return;
+    }
+  }
+
   if (!state.previewActive || state.activePreviewSource === PREVIEW_SOURCE_TRAILER || config.hoverMode === HOVER_MODE_AUTO) {
     return;
   }
@@ -280,6 +327,7 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
 
   const state = getOrCreateCardState(card);
   state.pointerInside = false;
+  state.lastPreviewEndedAt = Date.now();
   if (config.debug) {
     clearLeaveHold(state);
     state.leaveHoldTimer = window.setTimeout(() => {
@@ -297,6 +345,7 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
 export function resetPointerTracking(card: HTMLElement, reason?: string): void {
   const state = getOrCreateCardState(card);
   state.pointerInside = false;
+  state.lastPreviewEndedAt = Date.now();
   clearLeaveHold(state);
   debugCardSummary(card, 'Reset pointer tracking.', { reason: reason || 'unknown' });
   if (runtimeState.expandedTrailerSession && runtimeState.expandedTrailerSession.card === card) {
@@ -317,7 +366,8 @@ export function handleMouseEnter(card: HTMLElement, event: MouseEvent): void {
 
   handlePointerEnter(card, {
     pointerType: 'mouse',
-    clientX: event.clientX
+    clientX: event.clientX,
+    clientY: event.clientY
   });
 }
 
@@ -328,7 +378,8 @@ export function handleMouseMove(card: HTMLElement, event: MouseEvent): void {
 
   handlePointerMove(card, {
     pointerType: 'mouse',
-    clientX: event.clientX
+    clientX: event.clientX,
+    clientY: event.clientY
   });
 }
 

@@ -5,7 +5,10 @@ export interface CardState {
   hoverCountdownFrame: number | null;
   hoverCountdownStartedAt: number | null;
   hoverCountdownDurationMs: number;
+  hoverIntentAnchorX: number | null;
+  hoverIntentAnchorY: number | null;
   leaveHoldTimer: number | null;
+  lastPreviewEndedAt: number;
   pointerInside: boolean;
   previewActive: boolean;
   previewBackdrop: HTMLDivElement | null;

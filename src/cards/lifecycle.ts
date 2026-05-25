@@ -439,6 +439,8 @@ export function restoreCard(card: HTMLElement): void {
   clearPendingMove(state);
   clearAutoScrub(state);
   state.latestRequestToken += 1;
+  state.hoverIntentAnchorX = null;
+  state.hoverIntentAnchorY = null;
   state.previewActive = false;
   state.lastPreviewKey = null;
   state.activePreviewSource = null;

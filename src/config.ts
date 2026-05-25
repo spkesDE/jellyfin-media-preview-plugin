@@ -42,6 +42,9 @@ const standaloneFallbackConfig: PluginConfig = {
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
   hoverDelayMs: 300,
+  hoverIntentEnabled: false,
+  hoverIntentThresholdPx: 18,
+  hoverCooldownMs: 0,
   hoverCountdownEnabled: false,
   hoverCountdownPosition: 'top-right',
   trickplayWidth: 320,
@@ -83,6 +86,9 @@ export const config: PluginConfig = {
   trailerAudioEnabled: runtimeConfig?.trailerAudioEnabled ?? standaloneFallbackConfig.trailerAudioEnabled,
   trailerVolumePercent: runtimeConfig?.trailerVolumePercent ?? standaloneFallbackConfig.trailerVolumePercent,
   hoverDelayMs: runtimeConfig?.hoverDelayMs ?? standaloneFallbackConfig.hoverDelayMs,
+  hoverIntentEnabled: runtimeConfig?.hoverIntentEnabled ?? standaloneFallbackConfig.hoverIntentEnabled,
+  hoverIntentThresholdPx: runtimeConfig?.hoverIntentThresholdPx ?? standaloneFallbackConfig.hoverIntentThresholdPx,
+  hoverCooldownMs: runtimeConfig?.hoverCooldownMs ?? standaloneFallbackConfig.hoverCooldownMs,
   hoverCountdownEnabled: runtimeConfig?.hoverCountdownEnabled ?? standaloneFallbackConfig.hoverCountdownEnabled,
   hoverCountdownPosition: runtimeConfig?.hoverCountdownPosition ?? standaloneFallbackConfig.hoverCountdownPosition,
   trickplayWidth: runtimeConfig?.trickplayWidth ?? standaloneFallbackConfig.trickplayWidth,
@@ -196,6 +202,9 @@ export function normalizeConfig(): void {
   }
 
   config.hoverDelayMs = Math.max(0, Number(config.hoverDelayMs) || 300);
+  config.hoverIntentEnabled = config.hoverIntentEnabled === true;
+  config.hoverIntentThresholdPx = Math.max(0, Number(config.hoverIntentThresholdPx) || 18);
+  config.hoverCooldownMs = Math.max(0, Number(config.hoverCooldownMs) || 0);
   config.trickplayWidth = Math.max(1, Number(config.trickplayWidth) || 320);
   config.trailerVolumePercent = clamp(Number.isFinite(Number(config.trailerVolumePercent)) ? Number(config.trailerVolumePercent) : 35, 0, 100);
   config.previewBackdropIntensityPercent = clamp(Number.isFinite(Number(config.previewBackdropIntensityPercent)) ? Number(config.previewBackdropIntensityPercent) : 35, 0, 100);
