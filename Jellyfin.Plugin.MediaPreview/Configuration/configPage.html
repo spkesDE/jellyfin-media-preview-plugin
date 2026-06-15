@@ -69,7 +69,8 @@
                     gap: 1.5rem;
                 }
 
-                #MediaPreviewConfigPage .jmp-generalSelectionGrid > .jmp-subsection:first-child {
+                #MediaPreviewConfigPage .jmp-selectionIntro,
+                #MediaPreviewConfigPage .jmp-selectionFallback {
                     grid-column: 1 / -1;
                 }
 
@@ -92,6 +93,48 @@
                     font-size: 1rem;
                     font-weight: 600;
                     color: rgba(255, 255, 255, 0.96);
+                }
+
+                #MediaPreviewConfigPage .jmp-titleRow {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 0.75rem;
+                    margin-bottom: 0.2rem;
+                }
+
+                #MediaPreviewConfigPage .jmp-titleRow .jmp-subsectionTitle {
+                    margin-bottom: 0;
+                }
+
+                #MediaPreviewConfigPage .jmp-badge {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    flex: 0 0 auto;
+                    padding: 0.28rem 0.55rem;
+                    border-radius: 999px;
+                    border: 1px solid rgba(0, 164, 220, 0.34);
+                    background: rgba(0, 164, 220, 0.14);
+                    color: rgba(226, 247, 255, 0.98);
+                    font-size: 0.72rem;
+                    font-weight: 700;
+                    line-height: 1;
+                    letter-spacing: 0.02em;
+                    text-transform: uppercase;
+                    white-space: nowrap;
+                }
+
+                #MediaPreviewConfigPage .jmp-badge-muted {
+                    border-color: rgba(255, 255, 255, 0.12);
+                    background: rgba(255, 255, 255, 0.06);
+                    color: rgba(255, 255, 255, 0.78);
+                }
+
+                #MediaPreviewConfigPage .jmp-badge-wip {
+                    border-color: rgba(244, 184, 75, 0.38);
+                    background: rgba(244, 184, 75, 0.14);
+                    color: #ffd992;
                 }
 
                 #MediaPreviewConfigPage .jmp-subsectionHelp {
@@ -176,6 +219,10 @@
                 }
 
                 #MediaPreviewConfigPage .jmp-tabButton {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 0.4rem;
                     border: 1px solid rgba(255, 255, 255, 0.08);
                     border-radius: 999px;
                     background: rgba(255, 255, 255, 0.04);
@@ -197,6 +244,17 @@
                     background: rgba(255, 255, 255, 0.12);
                     border-color: rgba(255, 255, 255, 0.14);
                     color: rgba(255, 255, 255, 0.98);
+                }
+
+                #MediaPreviewConfigPage .jmp-tabButton .jmp-badge {
+                    margin: 0;
+                    box-sizing: border-box;
+                    width: auto;
+                    height: 1.1rem;
+                    padding: 0 0.4rem;
+                    font-size: 0.62rem;
+                    line-height: normal;
+                    text-indent: 0.02em;
                 }
 
                 #MediaPreviewConfigPage .jmp-saveButton {
@@ -335,6 +393,177 @@
                     line-height: 1.35;
                 }
 
+                #MediaPreviewConfigPage .jmp-appearancePreviewGrid {
+                    display: grid;
+                    grid-template-columns: minmax(0, 340px);
+                    justify-items: center;
+                    justify-content: start;
+                    gap: 1.25rem;
+                    max-width: 340px;
+                    margin: 0 0 0.75rem;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearancePreviewItem {
+                    display: grid;
+                    gap: 0.5rem;
+                    width: 100%;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearancePreviewItem:first-child {
+                    width: min(100%, 235px);
+                }
+
+                #MediaPreviewConfigPage .jmp-appearancePreviewLabel {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 0.5rem;
+                    color: rgba(255, 255, 255, 0.82);
+                    font-size: 0.82rem;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceCard {
+                    position: relative;
+                    width: 100%;
+                    overflow: hidden;
+                    border-radius: 0.75rem;
+                    background: #111820;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 0.65rem 1.5rem rgba(0, 0, 0, 0.28);
+                    isolation: isolate;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceCard-portrait {
+                    width: min(100%, 235px);
+                    aspect-ratio: 2 / 3;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceCard-backdrop {
+                    width: min(100%, 340px);
+                    aspect-ratio: 16 / 9;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearancePoster,
+                #MediaPreviewConfigPage .jmp-appearanceBackdrop,
+                #MediaPreviewConfigPage .jmp-appearanceMedia {
+                    position: absolute;
+                    inset: 0;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearancePoster {
+                    z-index: 0;
+                    background:
+                        radial-gradient(circle at 72% 25%, rgba(62, 188, 220, 0.58), transparent 24%),
+                        linear-gradient(145deg, #18283b 5%, #315a75 48%, #111820 100%);
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: cover;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceBackdrop {
+                    z-index: 1;
+                    pointer-events: none;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceMedia {
+                    z-index: 2;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 90'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%2300a4dc'/%3E%3Cstop offset='1' stop-color='%232b315e'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='160' height='90' fill='url(%23g)'/%3E%3Ccircle cx='118' cy='27' r='15' fill='%23f4b84b'/%3E%3Cpath d='M0 78L38 42L67 68L91 38L160 90H0Z' fill='%23101820' fill-opacity='.72'/%3E%3C/svg%3E");
+                    transition-property: opacity, filter;
+                    transition-timing-function: ease;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceMedia.is-alt {
+                    filter: hue-rotate(72deg) saturate(1.18);
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceCard.has-library-artwork .jmp-appearanceMedia.is-alt {
+                    filter: none;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceMedia.fit-contain {
+                    background-size: contain;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceMedia.fit-cover {
+                    background-size: cover;
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceMedia.fit-stretch {
+                    background-size: 100% 100%;
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-overlay {
+                    position: absolute;
+                    z-index: 80;
+                    display: none;
+                    flex-direction: column;
+                    gap: 4px;
+                    max-width: calc(100% - 16px);
+                    padding: 8px 10px;
+                    pointer-events: none;
+                    border-radius: 10px;
+                    background: linear-gradient(180deg, rgba(8, 10, 14, 0.86), rgba(8, 10, 14, 0.72));
+                    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.32);
+                    color: #fff;
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-overlay.pos-top-left {
+                    top: 8px;
+                    left: 8px;
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-overlay.pos-top-right {
+                    top: 8px;
+                    right: 8px;
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-overlay.pos-bottom-left {
+                    bottom: 8px;
+                    left: 8px;
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-overlay.pos-bottom-right {
+                    right: 8px;
+                    bottom: 8px;
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-title {
+                    font-size: 0.88rem;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+                }
+
+                #MediaPreviewConfigPage .jmp-metadata-meta {
+                    font-size: 0.76rem;
+                    line-height: 1.25;
+                    opacity: 0.88;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+                }
+
+                #MediaPreviewConfigPage .jmp-progress {
+                    position: absolute;
+                    right: 8px;
+                    bottom: 8px;
+                    left: 8px;
+                    z-index: 90;
+                    display: none;
+                    height: 3px;
+                    overflow: hidden;
+                    pointer-events: none;
+                    border-radius: 999px;
+                    background: rgba(255, 255, 255, 0.18);
+                }
+
+                #MediaPreviewConfigPage .jmp-progress-bar {
+                    width: 58%;
+                    height: 100%;
+                    background: rgba(255, 255, 255, 0.88);
+                    transform-origin: left center;
+                }
+
                 @media (max-width: 1100px) {
 
                     #MediaPreviewConfigPage .jmp-generalGrid,
@@ -342,7 +571,8 @@
                         grid-template-columns: 1fr;
                     }
 
-                    #MediaPreviewConfigPage .jmp-generalSelectionGrid > .jmp-subsection:first-child {
+                    #MediaPreviewConfigPage .jmp-selectionIntro,
+                    #MediaPreviewConfigPage .jmp-selectionFallback {
                         grid-column: auto;
                     }
 
@@ -363,6 +593,7 @@
                         grid-template-columns: 1fr;
                     }
                 }
+
             </style>
 
             <div class="content-primary">
@@ -381,7 +612,7 @@
                     <div class="jmp-toolbar">
                         <div class="jmp-tabBar" role="tablist" aria-label="Media Preview settings">
                             <button type="button" class="jmp-tabButton is-active" data-tab-target="general" role="tab" aria-selected="true">General</button>
-                            <button type="button" class="jmp-tabButton" data-tab-target="keyboard" role="tab" aria-selected="false">Keyboard</button>
+                            <button type="button" class="jmp-tabButton" data-tab-target="keyboard" role="tab" aria-selected="false">Keyboard <span class="jmp-badge jmp-badge-wip">WIP</span></button>
                             <button type="button" class="jmp-tabButton" data-tab-target="trickplay" role="tab" aria-selected="false">Trickplay</button>
                             <button type="button" class="jmp-tabButton" data-tab-target="trailer" role="tab" aria-selected="false">Trailer</button>
                             <button type="button" class="jmp-tabButton" data-tab-target="appearance" role="tab" aria-selected="false">Appearance</button>
@@ -471,37 +702,28 @@
                                 </div>
 
                                 <div class="jmp-generalSelectionGrid">
-                                    <div class="jmp-subsection">
+                                    <div class="jmp-subsection jmp-selectionIntro">
                                         <p class="jmp-subsectionTitle">Preview Selection</p>
-                                        <p class="jmp-subsectionHelp">Start with one default. Then only add a library or type rule if something should behave differently.</p>
-                                        <p class="jmp-note">Order: 1. Library rule, 2. Type rule, 3. Default fallback.</p>
-
-                                        <p class="jmp-flowTitle">Default Fallback</p>
-                                        <p class="jmp-flowHelp">This is only used if there is no matching library rule and no matching type rule.</p>
-
-                                        <div class="selectContainer">
-                                            <label class="selectLabel" for="PreviewSource">Default Preview Mode</label>
-                                            <select id="PreviewSource" name="PreviewSource" is="emby-select">
-                                                <option value="trickplay">Only Trickplay</option>
-                                                <option value="trailer">Only Trailer</option>
-                                                <option value="prefer-trickplay">Prefer Trickplay</option>
-                                                <option value="prefer-trailer">Prefer Trailer</option>
-                                            </select>
-                                        </div>
-                                        <p id="PreviewSourceNote" class="jmp-note">Pick whether the default should use only one source or prefer one source and fall back to the other.</p>
+                                        <p class="jmp-subsectionHelp">Rules are evaluated from highest to lowest priority. Leave a rule on inherit to continue down the chain.</p>
                                     </div>
 
                                     <div class="jmp-subsection">
-                                        <p class="jmp-subsectionTitle">Library Rule</p>
-                                        <p class="jmp-subsectionHelp">Highest priority. If a library is set here, everything in that library uses this rule first. Leave it on "Use Type / Default Chain" to fall through.</p>
+                                        <div class="jmp-titleRow">
+                                            <p class="jmp-subsectionTitle">Library Rule</p>
+                                            <span class="jmp-badge">Priority 1</span>
+                                        </div>
+                                        <p class="jmp-subsectionHelp">Everything in a configured library uses this rule first. "Use Type / Default Chain" falls through.</p>
 
                                         <div id="LibraryPreviewSourceOverrides"></div>
                                         <p id="LibraryPreviewSourceOverridesEmpty" class="jmp-note jmp-hidden">No accessible libraries were returned for the current user.</p>
                                     </div>
 
                                     <div class="jmp-subsection">
-                                        <p class="jmp-subsectionTitle">Type Rule</p>
-                                        <p class="jmp-subsectionHelp">Second priority. These are only used when the current library does not have its own rule.</p>
+                                        <div class="jmp-titleRow">
+                                            <p class="jmp-subsectionTitle">Type Rule</p>
+                                            <span class="jmp-badge">Priority 2</span>
+                                        </div>
+                                        <p class="jmp-subsectionHelp">Used only when the current library has no explicit rule.</p>
 
                                         <div class="jmp-compactGrid">
                                             <div class="selectContainer">
@@ -549,6 +771,25 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="jmp-subsection jmp-selectionFallback">
+                                        <div class="jmp-titleRow">
+                                            <p class="jmp-subsectionTitle">Default Fallback</p>
+                                            <span class="jmp-badge jmp-badge-muted">Priority 3</span>
+                                        </div>
+                                        <p class="jmp-subsectionHelp">Used only when neither a library rule nor a type rule matches.</p>
+
+                                        <div class="selectContainer">
+                                            <label class="selectLabel" for="PreviewSource">Default Preview Mode</label>
+                                            <select id="PreviewSource" name="PreviewSource" is="emby-select">
+                                                <option value="trickplay">Only Trickplay</option>
+                                                <option value="trailer">Only Trailer</option>
+                                                <option value="prefer-trickplay">Prefer Trickplay</option>
+                                                <option value="prefer-trailer">Prefer Trailer</option>
+                                            </select>
+                                        </div>
+                                        <p id="PreviewSourceNote" class="jmp-note">Pick whether the default should use only one source or prefer one source and fall back to the other.</p>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -556,8 +797,11 @@
                         <section class="jmp-section jmp-section-plain" data-tab-section="keyboard">
                             <div class="jmp-subgrid">
                                 <div class="jmp-subsection">
-                                    <p class="jmp-subsectionTitle">Activation</p>
-                                    <p class="jmp-subsectionHelp">Let focus-based navigation trigger previews even without a mouse.</p>
+                                    <div class="jmp-titleRow">
+                                        <p class="jmp-subsectionTitle">Activation</p>
+                                        <span class="jmp-badge jmp-badge-wip">Work in progress</span>
+                                    </div>
+                                    <p class="jmp-subsectionHelp">Experimental focus-based navigation. Behavior may still vary between Jellyfin views and clients.</p>
 
                                     <div class="inputContainer">
                                         <label class="checkboxContainer">
@@ -756,6 +1000,49 @@
 
                         <section class="jmp-section jmp-section-plain" data-tab-section="appearance">
                             <div class="jmp-subgrid">
+                                <div class="jmp-subsection jmp-appearancePreviewSection">
+                                    <p class="jmp-subsectionTitle">Live Preview</p>
+                                    <p class="jmp-subsectionHelp">Updates immediately from the controls below.</p>
+
+                                    <div class="jmp-appearancePreviewGrid">
+                                        <div class="jmp-appearancePreviewItem">
+                                            <div class="jmp-appearancePreviewLabel">
+                                                <span>Portrait card</span>
+                                                <span class="jmp-badge jmp-badge-muted" data-preview-mode-label>Contain</span>
+                                            </div>
+                                            <div class="jmp-appearanceCard jmp-appearanceCard-portrait" data-appearance-card="portrait">
+                                                <div class="jmp-appearancePoster"></div>
+                                                <div class="jmp-appearanceBackdrop"></div>
+                                                <div class="jmp-appearanceMedia"></div>
+                                                <div class="jmp-appearanceMedia"></div>
+                                                <div class="jmp-metadata-overlay pos-bottom-left">
+                                                    <div class="jmp-metadata-title">Example Movie</div>
+                                                    <div class="jmp-metadata-meta">2026 &bull; 1h 42m &bull; PG-13 &bull; 8.2&#9733;</div>
+                                                </div>
+                                                <div class="jmp-progress"><div class="jmp-progress-bar"></div></div>
+                                            </div>
+                                        </div>
+
+                                        <div class="jmp-appearancePreviewItem">
+                                            <div class="jmp-appearancePreviewLabel">
+                                                <span>Backdrop card</span>
+                                                <span class="jmp-badge jmp-badge-muted" data-preview-mode-label>Cover</span>
+                                            </div>
+                                            <div class="jmp-appearanceCard jmp-appearanceCard-backdrop" data-appearance-card="backdrop">
+                                                <div class="jmp-appearancePoster"></div>
+                                                <div class="jmp-appearanceBackdrop"></div>
+                                                <div class="jmp-appearanceMedia"></div>
+                                                <div class="jmp-appearanceMedia"></div>
+                                                <div class="jmp-metadata-overlay pos-bottom-left">
+                                                    <div class="jmp-metadata-title">Example Movie</div>
+                                                    <div class="jmp-metadata-meta">2026 &bull; 1h 42m &bull; PG-13 &bull; 8.2&#9733;</div>
+                                                </div>
+                                                <div class="jmp-progress"><div class="jmp-progress-bar"></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="jmp-subsection">
                                     <p class="jmp-subsectionTitle">Card Framing</p>
                                     <p class="jmp-subsectionHelp">Choose how previews should sit inside portrait and backdrop cards.</p>
@@ -780,8 +1067,8 @@
                                 </div>
 
                                 <div class="jmp-subsection">
-                                    <p class="jmp-subsectionTitle">Backdrop & Motion</p>
-                                    <p class="jmp-subsectionHelp">Style the poster backdrop behind the preview and how frame changes blend.</p>
+                                    <p class="jmp-subsectionTitle">Backdrop</p>
+                                    <p class="jmp-subsectionHelp">Style the poster backdrop behind the preview.</p>
 
                                     <div class="selectContainer">
                                         <label class="selectLabel" for="PreviewBackdropMode">Poster Backdrop</label>
@@ -801,20 +1088,8 @@
                                         <input id="PreviewBackdropIntensityPercent" name="PreviewBackdropIntensityPercent" type="number" min="0" max="100" step="1" is="emby-input" />
                                     </div>
 
-                                    <div class="selectContainer">
-                                        <label class="selectLabel" for="PreviewTransitionMode">Preview Transition</label>
-                                        <select id="PreviewTransitionMode" name="PreviewTransitionMode" is="emby-select">
-                                            <option value="off">Off</option>
-                                            <option value="fade">Fade</option>
-                                            <option value="crossfade">Crossfade</option>
-                                        </select>
-                                    </div>
-
-                                    <div id="PreviewTransitionDurationSetting" class="inputContainer">
-                                        <label class="inputLabel inputLabelUnfocused" for="PreviewTransitionDurationMs">Transition Duration (ms)</label>
-                                        <input id="PreviewTransitionDurationMs" name="PreviewTransitionDurationMs" type="number" min="0" step="10" is="emby-input" />
-                                    </div>
-                                    <p class="jmp-note">Fade uses a single layer. Crossfade blends Trickplay frame changes between two layers for softer motion.</p>
+                                    <input id="PreviewTransitionMode" name="PreviewTransitionMode" type="hidden" value="fade" />
+                                    <input id="PreviewTransitionDurationMs" name="PreviewTransitionDurationMs" type="hidden" value="180" />
                                 </div>
 
                                 <div class="jmp-subsection">
@@ -924,13 +1199,21 @@
                 const page = document.querySelector('#MediaPreviewConfigPage');
                 const form = page.querySelector('#MediaPreviewConfigForm');
                 const saveButton = page.querySelector('#SaveButton');
-                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#PreviewTransitionMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled', '#KeyboardPreviewEnabled', '#KeyboardArrowScrubEnabled'];
+                const visibilitySelectors = ['#PreviewSource', '#MoviePreviewSource', '#SeriesPreviewSource', '#EpisodePreviewSource', '#VideoPreviewSource', '#TrailerAudioEnabled', '#PreviewBackdropMode', '#HoverMode', '#AutoScrubMode', '#AutoScrubPreset', '#PortraitCardPreviewMode', '#BackdropCardPreviewMode', '#HoverCountdownEnabled', '#HoverIntentEnabled', '#MetadataOverlayEnabled', '#KeyboardPreviewEnabled', '#KeyboardArrowScrubEnabled'];
                 const tabButtons = Array.from(page.querySelectorAll('[data-tab-target]'));
                 const tabSections = Array.from(page.querySelectorAll('[data-tab-section]'));
                 let activeTab = 'general';
                 let lastSavedConfigSnapshot = '';
                 let saveButtonState = 'clean';
                 let saveButtonTimer = null;
+                let appearancePreviewVariant = false;
+                let appearancePreviewMetadata = {
+                    title: 'Example Movie',
+                    year: '2026',
+                    runtime: '1h 42m',
+                    officialRating: 'PG-13',
+                    communityRating: '8.2\u2605'
+                };
 
                 function getField(selector) {
                     return form.querySelector(selector) || page.querySelector(selector);
@@ -979,6 +1262,166 @@
                     if (field) {
                         field.textContent = value;
                     }
+                }
+
+                function clampValue(value, min, max) {
+                    return Math.max(min, Math.min(max, value));
+                }
+
+                function formatPreviewMode(mode) {
+                    if (mode === 'stretch') {
+                        return 'Stretch / Fill';
+                    }
+
+                    return mode === 'cover' ? 'Cover' : 'Contain';
+                }
+
+                function getAppearanceBackdropStyles(mode, intensityPercent) {
+                    const intensity = clampValue(Number(intensityPercent) || 0, 0, 100) / 100;
+                    const styles = {
+                        background: 'transparent',
+                        backdropFilter: 'none'
+                    };
+
+                    if (mode === 'off') {
+                        return styles;
+                    }
+
+                    if (mode === 'dim' || mode === 'dim-blur' || mode === 'dim-vignette') {
+                        const alpha = Math.max(0, Math.min(0.8, intensity * 0.75));
+                        styles.background = 'rgba(0, 0, 0, ' + alpha.toFixed(3) + ')';
+                    }
+
+                    if (mode === 'vignette' || mode === 'dim-vignette') {
+                        const innerAlpha = Math.max(0, Math.min(0.45, intensity * 0.18));
+                        const outerAlpha = Math.max(0.16, Math.min(0.92, 0.22 + (intensity * 0.62)));
+                        const vignette = 'radial-gradient(circle at center, rgba(0, 0, 0, '
+                            + innerAlpha.toFixed(3)
+                            + ') 22%, rgba(0, 0, 0, '
+                            + outerAlpha.toFixed(3)
+                            + ') 100%)';
+                        styles.background = mode === 'dim-vignette' && styles.background !== 'transparent'
+                            ? vignette + ', ' + styles.background
+                            : vignette;
+                    }
+
+                    if (mode === 'blur' || mode === 'dim-blur') {
+                        styles.backdropFilter = 'blur(' + Math.max(1, Math.round(4 + (intensity * 12))) + 'px)';
+                    }
+
+                    return styles;
+                }
+
+                function updateAppearanceMetadata(card) {
+                    const metadata = card.querySelector('.jmp-metadata-overlay');
+                    const title = card.querySelector('.jmp-metadata-title');
+                    const meta = card.querySelector('.jmp-metadata-meta');
+                    const enabled = getBooleanValue('#MetadataOverlayEnabled');
+                    const titleText = getBooleanValue('#MetadataOverlayShowTitle') ? appearancePreviewMetadata.title : '';
+                    const metaParts = [
+                        getBooleanValue('#MetadataOverlayShowYear') ? appearancePreviewMetadata.year : '',
+                        getBooleanValue('#MetadataOverlayShowRuntime') ? appearancePreviewMetadata.runtime : '',
+                        getBooleanValue('#MetadataOverlayShowOfficialRating') ? appearancePreviewMetadata.officialRating : '',
+                        getBooleanValue('#MetadataOverlayShowCommunityRating') ? appearancePreviewMetadata.communityRating : ''
+                    ].filter(Boolean);
+
+                    metadata.className = 'jmp-metadata-overlay pos-'
+                        + getStringValue('#MetadataOverlayPosition', 'bottom-left');
+                    title.textContent = titleText;
+                    title.style.display = titleText ? 'block' : 'none';
+                    meta.textContent = metaParts.join(' \u2022 ');
+                    meta.style.display = metaParts.length ? 'block' : 'none';
+                    metadata.style.display = enabled && (titleText || metaParts.length) ? 'flex' : 'none';
+                }
+
+                function replayAppearanceTransition(card, transitionMode, transitionDurationMs) {
+                    const mediaLayers = Array.from(card.querySelectorAll('.jmp-appearanceMedia'));
+                    const currentIndex = Number(card.getAttribute('data-active-layer') || 0);
+                    const nextIndex = currentIndex === 0 ? 1 : 0;
+                    const currentLayer = mediaLayers[currentIndex];
+                    const nextLayer = mediaLayers[nextIndex];
+                    const duration = Math.max(0, Number(transitionDurationMs) || 0);
+
+                    mediaLayers.forEach(function (layer) {
+                        layer.style.transitionDuration = duration + 'ms';
+                    });
+
+                    if (transitionMode === 'off' || duration === 0) {
+                        currentLayer.classList.toggle('is-alt', appearancePreviewVariant);
+                        currentLayer.style.opacity = '1';
+                        nextLayer.style.opacity = '0';
+                        return;
+                    }
+
+                    if (transitionMode === 'crossfade') {
+                        nextLayer.classList.toggle('is-alt', appearancePreviewVariant);
+                        nextLayer.style.opacity = '0';
+                        currentLayer.style.opacity = '1';
+                        window.requestAnimationFrame(function () {
+                            currentLayer.style.opacity = '0';
+                            nextLayer.style.opacity = '1';
+                        });
+                        card.setAttribute('data-active-layer', String(nextIndex));
+                        return;
+                    }
+
+                    currentLayer.style.opacity = '0.18';
+                    currentLayer.classList.toggle('is-alt', appearancePreviewVariant);
+                    window.requestAnimationFrame(function () {
+                        currentLayer.style.opacity = '1';
+                    });
+                    nextLayer.style.opacity = '0';
+                }
+
+                function syncAppearancePreview(animate) {
+                    const portraitMode = getStringValue('#PortraitCardPreviewMode', 'contain');
+                    const backdropCardMode = getStringValue('#BackdropCardPreviewMode', 'cover');
+                    const backdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
+                    const backdropIntensity = getNumberValue('#PreviewBackdropIntensityPercent', 35);
+                    const transitionMode = getStringValue('#PreviewTransitionMode', 'fade');
+                    const transitionDuration = getNumberValue('#PreviewTransitionDurationMs', 180);
+                    const backdropStyles = getAppearanceBackdropStyles(backdropMode, backdropIntensity);
+                    const cards = Array.from(page.querySelectorAll('[data-appearance-card]'));
+
+                    if (animate) {
+                        appearancePreviewVariant = !appearancePreviewVariant;
+                    }
+
+                    cards.forEach(function (card) {
+                        const mode = card.getAttribute('data-appearance-card') === 'portrait'
+                            ? portraitMode
+                            : backdropCardMode;
+                        const label = card.closest('.jmp-appearancePreviewItem').querySelector('[data-preview-mode-label]');
+                        const mediaLayers = Array.from(card.querySelectorAll('.jmp-appearanceMedia'));
+                        const backdrop = card.querySelector('.jmp-appearanceBackdrop');
+                        const progress = card.querySelector('.jmp-progress');
+
+                        label.textContent = formatPreviewMode(mode);
+                        mediaLayers.forEach(function (layer, index) {
+                            layer.classList.remove('fit-contain', 'fit-cover', 'fit-stretch');
+                            layer.classList.add('fit-' + mode);
+                            layer.style.transitionDuration = Math.max(0, transitionDuration) + 'ms';
+                            if (!animate) {
+                                layer.classList.toggle('is-alt', index === 0 ? appearancePreviewVariant : !appearancePreviewVariant);
+                                layer.style.opacity = index === 0 ? '1' : '0';
+                            }
+                        });
+
+                        if (!animate) {
+                            card.setAttribute('data-active-layer', '0');
+                        }
+
+                        backdrop.style.background = backdropStyles.background;
+                        backdrop.style.backdropFilter = backdropStyles.backdropFilter;
+                        backdrop.style.webkitBackdropFilter = backdropStyles.backdropFilter;
+                        progress.style.display = getBooleanValue('#ShowProgressIndicator') ? 'block' : 'none';
+                        updateAppearanceMetadata(card);
+
+                        if (animate) {
+                            replayAppearanceTransition(card, transitionMode, transitionDuration);
+                        }
+                    });
+
                 }
 
                 function setSaveButtonState(state) {
@@ -1229,6 +1672,166 @@
                     return Array.isArray(payload) ? payload : [];
                 }
 
+                function formatAppearanceRuntime(runtimeTicks) {
+                    const totalMinutes = Math.round((Number(runtimeTicks) || 0) / 600000000);
+                    if (!totalMinutes) {
+                        return '';
+                    }
+
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    if (hours > 0 && minutes > 0) {
+                        return hours + 'h ' + minutes + 'm';
+                    }
+
+                    return hours > 0 ? hours + 'h' : minutes + 'm';
+                }
+
+                function getAppearanceImageUrl(item, imageType, maxWidth) {
+                    const apiClient = getApiClient();
+                    if (!apiClient || !item || !item.Id) {
+                        return '';
+                    }
+
+                    const isBackdrop = imageType === 'Backdrop';
+                    const tag = isBackdrop
+                        ? (Array.isArray(item.BackdropImageTags) ? item.BackdropImageTags[0] : '')
+                        : (item.ImageTags && item.ImageTags.Primary ? item.ImageTags.Primary : '');
+                    if (!tag) {
+                        return '';
+                    }
+
+                    if (typeof apiClient.getImageUrl === 'function') {
+                        const options = {
+                            type: imageType,
+                            tag: tag,
+                            maxWidth: maxWidth,
+                            quality: 90
+                        };
+                        if (isBackdrop) {
+                            options.index = 0;
+                        }
+
+                        return apiClient.getImageUrl(item.Id, options);
+                    }
+
+                    const path = 'Items/'
+                        + encodeURIComponent(item.Id)
+                        + '/Images/'
+                        + imageType
+                        + (isBackdrop ? '/0' : '')
+                        + '?tag='
+                        + encodeURIComponent(tag)
+                        + '&maxWidth='
+                        + encodeURIComponent(maxWidth)
+                        + '&quality=90';
+                    return typeof apiClient.getUrl === 'function' ? apiClient.getUrl(path) : path;
+                }
+
+                function preloadAppearanceImage(url) {
+                    if (!url) {
+                        return Promise.resolve('');
+                    }
+
+                    return new Promise(function (resolve) {
+                        const image = new Image();
+                        const timeout = window.setTimeout(function () {
+                            image.onload = null;
+                            image.onerror = null;
+                            resolve('');
+                        }, 5000);
+                        image.onload = function () {
+                            window.clearTimeout(timeout);
+                            resolve(url);
+                        };
+                        image.onerror = function () {
+                            window.clearTimeout(timeout);
+                            resolve('');
+                        };
+                        image.src = url;
+                    });
+                }
+
+                function loadAppearancePreviewMovie() {
+                    const userId = getCurrentUserId();
+                    if (!userId) {
+                        return Promise.resolve(null);
+                    }
+
+                    const query = [
+                        'IncludeItemTypes=Movie',
+                        'Recursive=true',
+                        'Fields=ProductionYear,RunTimeTicks,OfficialRating,CommunityRating',
+                        'EnableImages=true',
+                        'EnableImageTypes=Primary,Backdrop',
+                        'ImageTypeLimit=1',
+                        'Limit=100'
+                    ].join('&');
+
+                    return requestPageJson('Users/' + encodeURIComponent(userId) + '/Items?' + query).then(function (payload) {
+                        const movies = normalizeItemsPayload(payload).filter(function (item) {
+                            const hasPrimary = !!(item && item.ImageTags && item.ImageTags.Primary);
+                            const hasBackdrop = !!(item && Array.isArray(item.BackdropImageTags) && item.BackdropImageTags.length);
+                            return !!item && !!item.Id && (hasPrimary || hasBackdrop);
+                        });
+                        if (!movies.length) {
+                            return null;
+                        }
+
+                        const movie = movies[Math.floor(Math.random() * movies.length)];
+                        const primaryUrl = getAppearanceImageUrl(movie, 'Primary', 600);
+                        const backdropUrl = getAppearanceImageUrl(movie, 'Backdrop', 800);
+
+                        return Promise.all([
+                            preloadAppearanceImage(primaryUrl),
+                            preloadAppearanceImage(backdropUrl)
+                        ]).then(function (urls) {
+                            const posterUrl = urls[0] || urls[1];
+                            const previewUrl = urls[1] || urls[0];
+                            if (!posterUrl && !previewUrl) {
+                                return null;
+                            }
+
+                            return {
+                                title: movie.Name || 'Example Movie',
+                                year: movie.ProductionYear ? String(movie.ProductionYear) : '',
+                                runtime: formatAppearanceRuntime(movie.RunTimeTicks),
+                                officialRating: movie.OfficialRating || '',
+                                communityRating: Number.isFinite(Number(movie.CommunityRating))
+                                    ? Number(movie.CommunityRating).toFixed(1) + '\u2605'
+                                    : '',
+                                posterUrl: posterUrl,
+                                previewUrl: previewUrl
+                            };
+                        });
+                    }).catch(function () {
+                        return null;
+                    });
+                }
+
+                function applyAppearancePreviewMovie(movie) {
+                    if (!movie) {
+                        return;
+                    }
+
+                    appearancePreviewMetadata = movie;
+                    Array.from(page.querySelectorAll('[data-appearance-card]')).forEach(function (card) {
+                        const posterUrl = movie.posterUrl || movie.previewUrl;
+                        const previewUrl = movie.previewUrl || movie.posterUrl;
+                        if (!posterUrl || !previewUrl) {
+                            return;
+                        }
+
+                        const posterImage = 'url("' + posterUrl.replace(/"/g, '%22') + '")';
+                        const previewImage = 'url("' + previewUrl.replace(/"/g, '%22') + '")';
+                        card.classList.add('has-library-artwork');
+                        card.querySelector('.jmp-appearancePoster').style.backgroundImage = posterImage;
+                        Array.from(card.querySelectorAll('.jmp-appearanceMedia')).forEach(function (layer) {
+                            layer.style.backgroundImage = previewImage;
+                        });
+                    });
+                }
+
                 function formatCollectionType(collectionType) {
                     switch (String(collectionType || '').toLowerCase()) {
                         case 'movies':
@@ -1427,7 +2030,6 @@
                     const canUseTrickplay = configuredModes.some(modeUsesTrickplay);
                     const trailerAudioEnabled = getBooleanValue('#TrailerAudioEnabled');
                     const previewBackdropMode = getStringValue('#PreviewBackdropMode', 'dim-blur');
-                    const previewTransitionMode = getStringValue('#PreviewTransitionMode', 'fade');
                     const hoverCountdownEnabled = getBooleanValue('#HoverCountdownEnabled');
                     const hoverIntentEnabled = getBooleanValue('#HoverIntentEnabled');
                     const metadataOverlayEnabled = getBooleanValue('#MetadataOverlayEnabled');
@@ -1455,7 +2057,6 @@
                     toggleHidden('#HoverIntentThresholdSetting', !hoverIntentEnabled);
                     toggleHidden('#HoverCountdownPositionSetting', !hoverCountdownEnabled);
                     toggleHidden('#PreviewBackdropIntensitySetting', previewBackdropMode === 'off');
-                    toggleHidden('#PreviewTransitionDurationSetting', previewTransitionMode === 'off');
                     toggleHidden('#MetadataOverlaySettings', !metadataOverlayEnabled);
                     toggleHidden('#KeyboardPreviewSettings', !keyboardPreviewEnabled);
                     toggleHidden('#KeyboardArrowStepSetting', !keyboardPreviewEnabled || !keyboardArrowScrubEnabled);
@@ -1484,6 +2085,7 @@
                     setText('#AutoScrubPresetMin', values.min + ' ms');
                     setText('#AutoScrubPresetMax', values.max + ' ms');
                     setText('#AutoScrubPresetDuration', values.duration + ' ms');
+                    syncAppearancePreview(false);
                     syncTabs();
                 }
 
@@ -1603,8 +2205,14 @@
                     button.tabIndex = index === 0 ? 0 : -1;
                 });
 
-                form.addEventListener('input', syncSaveButtonState);
-                form.addEventListener('change', syncSaveButtonState);
+                form.addEventListener('input', function () {
+                    syncAppearancePreview(true);
+                    syncSaveButtonState();
+                });
+                form.addEventListener('change', function () {
+                    syncAppearancePreview(true);
+                    syncSaveButtonState();
+                });
 
                 page.addEventListener('pageshow', function () {
                     Dashboard.showLoadingMsg();
@@ -1617,6 +2225,10 @@
                         renderLibraryPreviewSourceOverrides(libraries, config);
                         setValues(config);
                         Dashboard.hideLoadingMsg();
+                        loadAppearancePreviewMovie().then(function (previewMovie) {
+                            applyAppearancePreviewMovie(previewMovie);
+                            syncAppearancePreview(false);
+                        });
                     }).catch(function () {
                         Dashboard.hideLoadingMsg();
                     });
