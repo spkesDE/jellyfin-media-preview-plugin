@@ -85,6 +85,15 @@ const standaloneFallbackConfig: PluginConfig = {
 
 const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPreviewPluginConfig;
 
+function numberOrFallback(value: unknown, fallback: number): number {
+  if (value === null || value === undefined || value === '') {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
 export const config: PluginConfig = {
   enabled: runtimeConfig?.enabled ?? standaloneFallbackConfig.enabled,
   previewSource: runtimeConfig?.previewSource ?? standaloneFallbackConfig.previewSource,
@@ -214,15 +223,15 @@ export function normalizeConfig(): void {
     config.hoverCountdownPosition = TRAILER_EXPAND_BUTTON_TOP_RIGHT;
   }
 
-  config.hoverDelayMs = Math.max(0, Number(config.hoverDelayMs) || 300);
+  config.hoverDelayMs = Math.max(0, numberOrFallback(config.hoverDelayMs, 300));
   config.hoverIntentEnabled = config.hoverIntentEnabled === true;
-  config.hoverIntentThresholdPx = Math.max(0, Number(config.hoverIntentThresholdPx) || 18);
-  config.hoverCooldownMs = Math.max(0, Number(config.hoverCooldownMs) || 0);
+  config.hoverIntentThresholdPx = Math.max(0, numberOrFallback(config.hoverIntentThresholdPx, 18));
+  config.hoverCooldownMs = Math.max(0, numberOrFallback(config.hoverCooldownMs, 0));
   config.keyboardPreviewEnabled = config.keyboardPreviewEnabled === true;
-  config.keyboardPreviewDelayMs = Math.max(0, Number(config.keyboardPreviewDelayMs) || 300);
-  config.keyboardPreviewStartPercent = clamp(Number(config.keyboardPreviewStartPercent) || 0, 0, 100);
+  config.keyboardPreviewDelayMs = Math.max(0, numberOrFallback(config.keyboardPreviewDelayMs, 300));
+  config.keyboardPreviewStartPercent = clamp(numberOrFallback(config.keyboardPreviewStartPercent, 0), 0, 100);
   config.keyboardArrowScrubEnabled = config.keyboardArrowScrubEnabled !== false;
-  config.keyboardArrowStepPercent = clamp(Number(config.keyboardArrowStepPercent) || 8, 1, 100);
+  config.keyboardArrowStepPercent = clamp(numberOrFallback(config.keyboardArrowStepPercent, 8), 1, 100);
   config.keyboardEscapeClosesPreview = config.keyboardEscapeClosesPreview !== false;
   config.metadataOverlayEnabled = config.metadataOverlayEnabled === true;
   config.metadataOverlayShowTitle = config.metadataOverlayShowTitle !== false;
@@ -230,15 +239,15 @@ export function normalizeConfig(): void {
   config.metadataOverlayShowRuntime = config.metadataOverlayShowRuntime !== false;
   config.metadataOverlayShowOfficialRating = config.metadataOverlayShowOfficialRating !== false;
   config.metadataOverlayShowCommunityRating = config.metadataOverlayShowCommunityRating !== false;
-  config.trickplayWidth = Math.max(1, Number(config.trickplayWidth) || 320);
-  config.trailerVolumePercent = clamp(Number.isFinite(Number(config.trailerVolumePercent)) ? Number(config.trailerVolumePercent) : 35, 0, 100);
-  config.previewBackdropIntensityPercent = clamp(Number.isFinite(Number(config.previewBackdropIntensityPercent)) ? Number(config.previewBackdropIntensityPercent) : 35, 0, 100);
-  config.previewTransitionDurationMs = Math.max(0, Number(config.previewTransitionDurationMs) || 180);
-  config.autoScrubStartPercent = clamp(Number(config.autoScrubStartPercent) || 0, 0, 100);
-  config.autoScrubIntervalMs = Math.max(50, Number(config.autoScrubIntervalMs) || 220);
-  config.autoScrubDurationMs = Math.max(500, Number(config.autoScrubDurationMs) || 4000);
-  config.autoScrubMinDelayMs = Math.max(16, Number(config.autoScrubMinDelayMs) || 40);
-  config.autoScrubMaxDelayMs = Math.max(config.autoScrubMinDelayMs, Number(config.autoScrubMaxDelayMs) || 1000);
+  config.trickplayWidth = Math.max(1, numberOrFallback(config.trickplayWidth, 320));
+  config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.previewBackdropIntensityPercent = clamp(numberOrFallback(config.previewBackdropIntensityPercent, 35), 0, 100);
+  config.previewTransitionDurationMs = Math.max(0, numberOrFallback(config.previewTransitionDurationMs, 180));
+  config.autoScrubStartPercent = clamp(numberOrFallback(config.autoScrubStartPercent, 0), 0, 100);
+  config.autoScrubIntervalMs = Math.max(50, numberOrFallback(config.autoScrubIntervalMs, 220));
+  config.autoScrubDurationMs = Math.max(500, numberOrFallback(config.autoScrubDurationMs, 4000));
+  config.autoScrubMinDelayMs = Math.max(16, numberOrFallback(config.autoScrubMinDelayMs, 40));
+  config.autoScrubMaxDelayMs = Math.max(config.autoScrubMinDelayMs, numberOrFallback(config.autoScrubMaxDelayMs, 1000));
   config.showNoPreviewMessage = config.showNoPreviewMessage === true;
   config.hoverCountdownEnabled = config.hoverCountdownEnabled === true;
   config.trailerExpandButtonEnabled = config.trailerExpandButtonEnabled !== false;

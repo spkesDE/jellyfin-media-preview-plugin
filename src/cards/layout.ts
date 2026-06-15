@@ -64,7 +64,8 @@ export function getPreviewBackdropStyles(): {
   webkitBackdropFilter: string;
 } {
   const mode = getPreviewBackdropMode();
-  const intensity = clamp(Number(config.previewBackdropIntensityPercent) || 35, 0, 100) / 100;
+  const configuredIntensity = Number(config.previewBackdropIntensityPercent);
+  const intensity = clamp(Number.isFinite(configuredIntensity) ? configuredIntensity : 35, 0, 100) / 100;
   const styles = {
     background: 'transparent',
     backdropFilter: 'none',

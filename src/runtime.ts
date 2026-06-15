@@ -28,5 +28,6 @@ export const runtimeState = {
   historyPatched: false,
   pageHasUserActivation: false,
   expandedTrailerSession: null as ExpandedTrailerSession | null,
-  expandedTrailerDom: null as ExpandedTrailerDom | null
+  expandedTrailerDom: null as ExpandedTrailerDom | null,
+  expandedTrailerCollapseTimer: null as number | null
 };

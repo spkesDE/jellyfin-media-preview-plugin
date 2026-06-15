@@ -39,6 +39,7 @@ export function applyTrickplayPreview(
   if (!rootHost) {
     return;
   }
+  const tileUrl = preview.tileUrl;
 
   const hostRect = rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
@@ -80,7 +81,7 @@ export function applyTrickplayPreview(
   }
 
   const previewKey = [
-    preview.tileUrl,
+    tileUrl,
     preview.frameColumn,
     preview.frameRow,
     Math.round(renderedFrameWidth),
@@ -106,7 +107,7 @@ export function applyTrickplayPreview(
   state.lastTrickplayRenderAt = Date.now();
   clearTrailerMedia(state);
   const applyFrameStyles = (frame: HTMLDivElement) => {
-    frame.style.backgroundImage = `url("${preview.tileUrl.replace(/"/g, '\\"')}")`;
+    frame.style.backgroundImage = `url("${tileUrl.replace(/"/g, '\\"')}")`;
     frame.style.backgroundSize = `${renderedTileWidth}px ${renderedTileHeight}px`;
     frame.style.backgroundPosition = `${offsetX}px ${offsetY}px`;
     frame.style.borderRadius = window.getComputedStyle(rootHost).borderRadius;

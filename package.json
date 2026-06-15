@@ -4,11 +4,13 @@
   "version": "0.1.0.0",
   "description": "TypeScript build for the Jellyfin Media Preview client bundle.",
   "scripts": {
-    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "bundle": "node scripts/build.mjs",
+    "build": "npm run typecheck && npm run bundle",
     "dev": "node scripts/build.mjs --watch"
   },
   "devDependencies": {
-    "esbuild": "^0.25.12",
+    "esbuild": "^0.28.1",
     "typescript": "^5.9.3"
   }
 }

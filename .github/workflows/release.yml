@@ -32,6 +32,25 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           persist-credentials: true
 
+      - name: Verify release commit is on main
+        shell: bash
+        run: |
+          git fetch origin main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "Release tags must point to a commit contained in main."
+            exit 1
+          fi
+
+      - name: Verify tag matches project version
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content "Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj"
+          $version = [string]($project.Project.PropertyGroup | Select-Object -First 1).Version
+          $expectedTag = "v$version"
+          if ("${{ github.ref_name }}" -ne $expectedTag) {
+            throw "Release tag '${{ github.ref_name }}' does not match project version '$version'. Expected '$expectedTag'."
+          }
+
       - name: Generate manifest changelog
         uses: orhun/git-cliff-action@v4
         id: manifest_changelog
@@ -53,6 +72,12 @@ jobs:
         env:
           OUTPUT: release-notes.md
           GITHUB_REPO: ${{ github.repository }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4

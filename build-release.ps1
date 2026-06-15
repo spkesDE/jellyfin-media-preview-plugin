@@ -30,6 +30,12 @@ if ([string]::IsNullOrWhiteSpace($pluginVersion)) {
     throw "Could not determine plugin version from $projectFile"
 }
 
+$assemblyVersion = [string]$propertyGroup.AssemblyVersion
+$fileVersion = [string]$propertyGroup.FileVersion
+if ($assemblyVersion -ne $pluginVersion -or $fileVersion -ne $pluginVersion) {
+    throw "Project versions must match before packaging. Version=$pluginVersion AssemblyVersion=$assemblyVersion FileVersion=$fileVersion"
+}
+
 $jellyfinControllerReference = $packageReferences | Where-Object { $_.Include -eq "Jellyfin.Controller" } | Select-Object -First 1
 if (-not $jellyfinControllerReference) {
     throw "Could not determine Jellyfin.Controller package version from $projectFile"
@@ -67,6 +73,17 @@ if ($LASTEXITCODE -ne 0) {
 dotnet build $projectFile -c $Configuration -p:UseSharedCompilation=false
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet build failed with exit code $LASTEXITCODE"
+}
+
+$builtAssemblyPath = Join-Path $buildOutput "Jellyfin.Plugin.MediaPreview.dll"
+if (-not (Test-Path $builtAssemblyPath)) {
+    throw "Built plugin assembly was not found at $builtAssemblyPath"
+}
+
+$builtAssemblyVersion = [System.Reflection.AssemblyName]::GetAssemblyName($builtAssemblyPath).Version.ToString()
+$builtFileVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($builtAssemblyPath).FileVersion
+if ($builtAssemblyVersion -ne $pluginVersion -or $builtFileVersion -ne $pluginVersion) {
+    throw "Built plugin versions do not match package version. Package=$pluginVersion Assembly=$builtAssemblyVersion File=$builtFileVersion"
 }
 
 if (Test-Path $stageDir) {

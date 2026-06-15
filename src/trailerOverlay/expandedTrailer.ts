@@ -241,7 +241,16 @@ export function collapseExpandedTrailer(options?: { immediate?: boolean }): void
   const immediate = !!options?.immediate;
   const targetRect = state.trailerLayer ? state.trailerLayer.getBoundingClientRect() : session.sourceRect;
 
+  if (runtimeState.expandedTrailerCollapseTimer !== null) {
+    window.clearTimeout(runtimeState.expandedTrailerCollapseTimer);
+    runtimeState.expandedTrailerCollapseTimer = null;
+  }
+
   function finalizeCollapse(): void {
+    if (runtimeState.expandedTrailerSession !== session) {
+      return;
+    }
+
     runtimeState.expandedTrailerSession = null;
     overlayState.overlay.classList.remove('is-open');
     overlayState.overlay.style.display = 'none';
@@ -303,5 +312,8 @@ export function collapseExpandedTrailer(options?: { immediate?: boolean }): void
     });
   }
 
-  window.setTimeout(finalizeCollapse, EXPANDED_TRAILER_TRANSITION_MS);
+  runtimeState.expandedTrailerCollapseTimer = window.setTimeout(() => {
+    runtimeState.expandedTrailerCollapseTimer = null;
+    finalizeCollapse();
+  }, EXPANDED_TRAILER_TRANSITION_MS);
 }

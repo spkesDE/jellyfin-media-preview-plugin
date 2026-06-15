@@ -27,6 +27,9 @@ $branch = (git branch --show-current).Trim()
 if ([string]::IsNullOrWhiteSpace($branch)) {
     throw "Could not determine current branch."
 }
+if ($branch -ne "main") {
+    throw "Releases must be created from the main branch. Current branch: $branch"
+}
 
 function Test-TagExists {
     param(
@@ -50,6 +53,8 @@ function Set-ProjectVersion {
     )
 
     $propertyGroup.Version = $NewVersion
+    $propertyGroup.AssemblyVersion = $NewVersion
+    $propertyGroup.FileVersion = $NewVersion
     $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
     $stringWriter = New-Object System.IO.StringWriter
     $xmlWriter = [System.Xml.XmlWriter]::Create($stringWriter, (New-Object System.Xml.XmlWriterSettings -Property @{ Indent = $true; OmitXmlDeclaration = $true }))
@@ -148,6 +153,17 @@ function Read-VersionInteractively {
     }
 }
 
+if (
+    [string]$propertyGroup.AssemblyVersion -ne $version -or
+    [string]$propertyGroup.FileVersion -ne $version
+) {
+    Set-ProjectVersion -NewVersion $version
+    git add $projectFile
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to stage synchronized project versions."
+    }
+}
+
 if ([string]::IsNullOrWhiteSpace($Tag)) {
     $Tag = "v$version"
 }
@@ -160,6 +176,11 @@ while (Test-TagExists -CandidateTag $Tag) {
         throw "Failed to stage updated project version."
     }
     $Tag = "v$version"
+}
+
+$expectedTag = "v$version"
+if ($Tag -ne $expectedTag) {
+    throw "Release tag '$Tag' does not match project version '$version'. Expected '$expectedTag'."
 }
 
 Write-Host ""
