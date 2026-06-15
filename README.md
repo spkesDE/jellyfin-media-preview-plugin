@@ -49,7 +49,7 @@ Remote trailer support is currently limited to YouTube.
 - File Transformation plugin
 - Preview content requires Trickplay data, trailer metadata, or both, depending on the preview mode you choose
 
-The plugin is currently built against Jellyfin `10.11.9`.
+The plugin is currently built against Jellyfin `10.11.11`.
 
 ## Installation
 

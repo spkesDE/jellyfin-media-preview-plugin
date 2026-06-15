@@ -17,7 +17,7 @@ Thanks for contributing to `Jellyfin Media Preview`.
 Please check:
 
 - is there already an issue or discussion for this?
-- is the change compatible with Jellyfin `10.11.9`?
+- is the change compatible with Jellyfin `10.11.11`?
 - does normal card behavior still work?
 
 ## Local Development
@@ -52,7 +52,7 @@ fix: restore hover preview on series cards
 feat: add trailer fallback for missing trickplay
 docs: rewrite README for end users
 refactor: simplify preview source selection
-build: update Jellyfin packages to 10.11.9
+build: update Jellyfin packages to 10.11.11
 ```
 
 Also fine if you do not want strict conventional commits, as long as the message is readable:
