@@ -15,7 +15,6 @@ $pluginOwner = "spkesDE"
 $pluginCategory = "General"
 $pluginOverview = "Hover previews for Jellyfin Web using Trickplay and trailers."
 $pluginDescription = "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers."
-$framework = "net9.0"
 $releaseRoot = Join-Path $repoRoot "release"
 $buildOutput = Join-Path $releaseRoot (".build-" + [Guid]::NewGuid().ToString("N"))
 $stageDir = Join-Path $releaseRoot $pluginName
@@ -59,7 +58,7 @@ if (Test-Path (Join-Path $repoRoot "package-lock.json")) {
     npm --prefix $repoRoot ci
     if ($LASTEXITCODE -ne 0) {
         $nodeModulesPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "node_modules"))
-        $expectedNodeModulesPath = [System.IO.Path]::GetFullPath("$repoRoot\node_modules")
+        $expectedNodeModulesPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "node_modules"))
         if ($nodeModulesPath -ne $expectedNodeModulesPath -or -not $nodeModulesPath.StartsWith($repoRoot, [StringComparison]::OrdinalIgnoreCase)) {
             throw "Refusing to clean unexpected node_modules path: $nodeModulesPath"
         }
@@ -83,7 +82,7 @@ if ($LASTEXITCODE -ne 0) {
     throw "npm run build failed with exit code $LASTEXITCODE"
 }
 
-$bundlePath = Join-Path $repoRoot "dist\mediapreview.bundle.js"
+$bundlePath = Join-Path $repoRoot "dist" "mediapreview.bundle.js"
 node --check $bundlePath
 if ($LASTEXITCODE -ne 0) {
     throw "Frontend bundle syntax validation failed with exit code $LASTEXITCODE"
@@ -105,11 +104,8 @@ if ($builtAssemblyVersion -ne $pluginVersion -or $builtFileVersion -ne $pluginVe
     throw "Built plugin versions do not match package version. Package=$pluginVersion Assembly=$builtAssemblyVersion File=$builtFileVersion"
 }
 
-$verifyScript = Join-Path $repoRoot "scripts\verify-embedded-bundle.ps1"
-& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $verifyScript -AssemblyPath $builtAssemblyPath -BundlePath $bundlePath
-if ($LASTEXITCODE -ne 0) {
-    throw "Embedded frontend bundle verification failed with exit code $LASTEXITCODE"
-}
+$verifyScript = Join-Path $repoRoot "scripts" "verify-embedded-bundle.ps1"
+& $verifyScript -AssemblyPath $builtAssemblyPath -BundlePath $bundlePath
 
 if (Test-Path $stageDir) {
     Remove-Item -LiteralPath $stageDir -Recurse -Force
