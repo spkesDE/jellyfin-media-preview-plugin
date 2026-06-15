@@ -11,18 +11,18 @@ namespace Jellyfin.Plugin.MediaPreview.Api;
 [Route("media-preview")]
 public sealed class MediaPreviewController : ControllerBase
 {
+    private const string ScriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.mediapreview.bundle.js";
+    private static readonly Lazy<byte[]> ClientScript = new(LoadClientScript, LazyThreadSafetyMode.ExecutionAndPublication);
     private readonly ILogger<MediaPreviewController> _logger;
-    private readonly string _scriptResourcePath;
 
     public MediaPreviewController(ILogger<MediaPreviewController> logger)
     {
         _logger = logger;
-        _scriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.mediapreview.bundle.js";
     }
 
     [HttpGet("script")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [Produces("application/javascript")]
     public ActionResult GetClientScript()
     {
@@ -30,11 +30,17 @@ public sealed class MediaPreviewController : ControllerBase
         Response.Headers.Pragma = "no-cache";
         Response.Headers.Expires = "0";
 
-        Stream? scriptStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(_scriptResourcePath);
-        if (scriptStream is null)
+        byte[] scriptBytes;
+        try
         {
-            _logger.LogWarning("Could not find embedded media preview script resource at {ResourcePath}.", _scriptResourcePath);
-            return NotFound();
+            scriptBytes = ClientScript.Value;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Could not load the embedded media preview client script.");
+            return Problem(
+                statusCode: StatusCodes.Status500InternalServerError,
+                title: "The embedded media preview client script is invalid.");
         }
 
         PluginConfiguration config = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
@@ -101,8 +107,33 @@ public sealed class MediaPreviewController : ControllerBase
 
         using MemoryStream scriptBuffer = new MemoryStream();
         scriptBuffer.Write(configBytes, 0, configBytes.Length);
-        scriptStream.CopyTo(scriptBuffer);
+        scriptBuffer.Write(scriptBytes, 0, scriptBytes.Length);
 
         return File(scriptBuffer.ToArray(), "application/javascript; charset=utf-8");
+    }
+
+    private static byte[] LoadClientScript()
+    {
+        Assembly assembly = typeof(MediaPreviewController).Assembly;
+        using Stream scriptStream = assembly.GetManifestResourceStream(ScriptResourcePath)
+            ?? throw new InvalidDataException($"Embedded resource '{ScriptResourcePath}' was not found.");
+
+        if (scriptStream.Length <= 0 || scriptStream.Length > 5 * 1024 * 1024)
+        {
+            throw new InvalidDataException($"Embedded client script has an invalid length of {scriptStream.Length} bytes.");
+        }
+
+        int scriptLength = checked((int)scriptStream.Length);
+        byte[] scriptBytes = new byte[scriptLength];
+        scriptStream.ReadExactly(scriptBytes);
+
+        string scriptText = new UTF8Encoding(false, true).GetString(scriptBytes).TrimEnd();
+        if (!scriptText.StartsWith("\"use strict\";", StringComparison.Ordinal)
+            || !scriptText.EndsWith("})();", StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("Embedded client script failed its content boundary validation.");
+        }
+
+        return scriptBytes;
     }
 }

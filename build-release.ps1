@@ -16,8 +16,8 @@ $pluginCategory = "General"
 $pluginOverview = "Hover previews for Jellyfin Web using Trickplay and trailers."
 $pluginDescription = "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers."
 $framework = "net9.0"
-$buildOutput = Join-Path $projectDir ("bin\" + $Configuration + "\" + $framework)
 $releaseRoot = Join-Path $repoRoot "release"
+$buildOutput = Join-Path $releaseRoot (".build-" + [Guid]::NewGuid().ToString("N"))
 $stageDir = Join-Path $releaseRoot $pluginName
 $zipPath = Join-Path $releaseRoot ($pluginName + ".zip")
 
@@ -57,6 +57,19 @@ Write-Host "Building frontend bundle..."
 if (Test-Path (Join-Path $repoRoot "package-lock.json")) {
     Write-Host "Installing frontend dependencies with npm ci..."
     npm --prefix $repoRoot ci
+    if ($LASTEXITCODE -ne 0) {
+        $nodeModulesPath = [System.IO.Path]::GetFullPath((Join-Path $repoRoot "node_modules"))
+        $expectedNodeModulesPath = [System.IO.Path]::GetFullPath("$repoRoot\node_modules")
+        if ($nodeModulesPath -ne $expectedNodeModulesPath -or -not $nodeModulesPath.StartsWith($repoRoot, [StringComparison]::OrdinalIgnoreCase)) {
+            throw "Refusing to clean unexpected node_modules path: $nodeModulesPath"
+        }
+
+        Write-Warning "npm ci failed. Cleaning workspace node_modules and retrying once..."
+        if (Test-Path -LiteralPath $nodeModulesPath) {
+            Remove-Item -LiteralPath $nodeModulesPath -Recurse -Force
+        }
+        npm --prefix $repoRoot ci
+    }
 } else {
     Write-Host "Installing frontend dependencies with npm install..."
     npm --prefix $repoRoot install
@@ -70,7 +83,13 @@ if ($LASTEXITCODE -ne 0) {
     throw "npm run build failed with exit code $LASTEXITCODE"
 }
 
-dotnet build $projectFile -c $Configuration -p:UseSharedCompilation=false
+$bundlePath = Join-Path $repoRoot "dist\mediapreview.bundle.js"
+node --check $bundlePath
+if ($LASTEXITCODE -ne 0) {
+    throw "Frontend bundle syntax validation failed with exit code $LASTEXITCODE"
+}
+
+dotnet build $projectFile -c $Configuration -p:UseSharedCompilation=false --output $buildOutput
 if ($LASTEXITCODE -ne 0) {
     throw "dotnet build failed with exit code $LASTEXITCODE"
 }
@@ -84,6 +103,12 @@ $builtAssemblyVersion = [System.Reflection.AssemblyName]::GetAssemblyName($built
 $builtFileVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($builtAssemblyPath).FileVersion
 if ($builtAssemblyVersion -ne $pluginVersion -or $builtFileVersion -ne $pluginVersion) {
     throw "Built plugin versions do not match package version. Package=$pluginVersion Assembly=$builtAssemblyVersion File=$builtFileVersion"
+}
+
+$verifyScript = Join-Path $repoRoot "scripts\verify-embedded-bundle.ps1"
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $verifyScript -AssemblyPath $builtAssemblyPath -BundlePath $bundlePath
+if ($LASTEXITCODE -ne 0) {
+    throw "Embedded frontend bundle verification failed with exit code $LASTEXITCODE"
 }
 
 if (Test-Path $stageDir) {
@@ -138,6 +163,13 @@ $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($metaJsonPath, $metaJson, $utf8NoBom)
 
 Compress-Archive -Path (Join-Path $stageDir "*") -DestinationPath $zipPath
+
+$resolvedBuildOutput = [System.IO.Path]::GetFullPath($buildOutput)
+$resolvedReleaseRoot = [System.IO.Path]::GetFullPath($releaseRoot)
+if (-not $resolvedBuildOutput.StartsWith($resolvedReleaseRoot + [System.IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+    throw "Refusing to clean unexpected temporary build path: $resolvedBuildOutput"
+}
+Remove-Item -LiteralPath $resolvedBuildOutput -Recurse -Force
 
 Write-Host ""
 Write-Host "Release folder:"

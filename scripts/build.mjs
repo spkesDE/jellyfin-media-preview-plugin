@@ -1,5 +1,5 @@
 import * as esbuild from 'esbuild';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
 
 const isWatch = process.argv.includes('--watch');
 const isProduction = !isWatch;
@@ -29,7 +29,7 @@ const ctx = await esbuild.context({
   globalName: 'JellyfinMediaPreviewBundle',
   target: 'es2020',
   minify: isProduction,
-  sourcemap: true,
+  sourcemap: !isProduction,
   outfile: 'dist/mediapreview.bundle.js',
   plugins: [cssTextPlugin]
 });
@@ -39,4 +39,5 @@ if (isWatch) {
 } else {
   await ctx.rebuild();
   await ctx.dispose();
+  await rm('dist/mediapreview.bundle.js.map', { force: true });
 }
