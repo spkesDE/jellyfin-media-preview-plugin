@@ -1,10 +1,29 @@
 [changelog]
 header = ""
 body = """
-{% for group, commits in commits | group_by(attribute="group") -%}
-{% for commit in commits -%}
+{% set features = commits | filter(attribute="group", value="Features") -%}
+{% set fixes = commits | filter(attribute="group", value="Fixes") -%}
+{% set builds = commits | filter(attribute="group", value="Build") -%}
+{% set docs = commits | filter(attribute="group", value="Documentation") -%}
+{% set refactors = commits | filter(attribute="group", value="Refactoring") -%}
+{% set other = commits | filter(attribute="group", value="Other") -%}
+{% for commit in features -%}
 - {{ commit.message }}
 {% endfor -%}
+{% for commit in fixes -%}
+- {{ commit.message }}
+{% endfor -%}
+{% for commit in builds -%}
+- {{ commit.message }}
+{% endfor -%}
+{% for commit in docs -%}
+- {{ commit.message }}
+{% endfor -%}
+{% for commit in refactors -%}
+- {{ commit.message }}
+{% endfor -%}
+{% for commit in other -%}
+- {{ commit.message }}
 {% endfor -%}
 """
 trim = true
