@@ -161,6 +161,7 @@ $buildOutput = Join-RepoPath @($releaseRoot, ".build-$([Guid]::NewGuid().ToStrin
 $stageDir = Join-RepoPath @($releaseRoot, $pluginName)
 $zipPath = Join-RepoPath @($releaseRoot, "$pluginName.zip")
 $bundlePath = Join-RepoPath @($repoRoot, "dist", "mediapreview.bundle.js")
+$configBundlePath = Join-RepoPath @($repoRoot, "dist", "config.bundle.js")
 $verifyScript = Join-RepoPath @($repoRoot, "scripts", "verify-embedded-bundle.ps1")
 
 try {
@@ -234,7 +235,12 @@ try {
         throw "Frontend bundle not found: $bundlePath"
     }
 
+    if (-not (Test-Path -LiteralPath $configBundlePath)) {
+        throw "Configuration bundle not found: $configBundlePath"
+    }
+
     Run "node" @("--check", $bundlePath) "Frontend bundle syntax check failed."
+    Run "node" @("--check", $configBundlePath) "Configuration bundle syntax check failed."
 
     Step "Building plugin"
 
@@ -281,7 +287,9 @@ try {
             "-AssemblyPath",
             $builtAssemblyPath,
             "-BundlePath",
-            $bundlePath
+            $bundlePath,
+            "-ConfigBundlePath",
+            $configBundlePath
         ) "Embedded frontend bundle verification failed."
     } else {
         Run $powerShellExe @(
@@ -291,7 +299,9 @@ try {
             "-AssemblyPath",
             $builtAssemblyPath,
             "-BundlePath",
-            $bundlePath
+            $bundlePath,
+            "-ConfigBundlePath",
+            $configBundlePath
         ) "Embedded frontend bundle verification failed."
     }
 

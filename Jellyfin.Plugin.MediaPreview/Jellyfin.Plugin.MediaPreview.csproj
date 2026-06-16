@@ -19,5 +19,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Configuration\configPage.html" />
     <EmbeddedResource Include="..\dist\mediapreview.bundle.js" Link="dist\mediapreview.bundle.js" LogicalName="Jellyfin.Plugin.MediaPreview.dist.mediapreview.bundle.js" />
+    <EmbeddedResource Include="..\dist\config.bundle.js" Link="dist\config.bundle.js" LogicalName="Jellyfin.Plugin.MediaPreview.dist.config.bundle.js" />
   </ItemGroup>
 </Project>

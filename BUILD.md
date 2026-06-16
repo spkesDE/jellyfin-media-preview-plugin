@@ -12,13 +12,33 @@ Build the deployable client bundle:
 
 1. `npm run build`
 
-Watch during refactor work:
+Run the Vue configuration UI with HMR and local Jellyfin fixtures:
 
 1. `npm run dev`
+
+Watch the production IIFE bundles:
+
+1. `npm run dev:bundle`
 
 Build output:
 
 - `dist/mediapreview.bundle.js`
+- `dist/config.bundle.js`
+
+## Adding Configuration Fields
+
+The Vue configuration UI uses a generic store. For a new plugin setting such as
+`HiddenFeature`:
+
+1. Add the property to `Jellyfin.Plugin.MediaPreview/Configuration/PluginConfiguration.cs`.
+2. Add validation or migration in `PluginConfigurationNormalizer.cs` only if the value needs it.
+3. Bind it in the Vue UI, for example:
+
+   ```vue
+   <ConfigCheckbox v-model="store.config.HiddenFeature" label="Hidden Feature" />
+   ```
+
+`store.loadConfig()` loads the plugin configuration and keeps unknown server fields. `store.saveConfig()` serializes the current store back to Jellyfin automatically. Add the field to `src/config/libs/defaults.ts` only when the UI needs a frontend fallback before the server has returned the plugin config.
 
 The `File Transformation` plugin injects one deferred external script tag into Jellyfin Web:
 
@@ -32,7 +52,7 @@ For normal plugin development and release packaging:
 2. Run `dotnet build Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj`
 3. Install or package the resulting plugin assembly as usual
 
-`File Transformation` continues to inject the external `/media-preview/script` URL. The served script body now comes from the embedded `dist/mediapreview.bundle.js` bundle.
+`File Transformation` continues to inject the external `/media-preview/script` URL. The served script body comes from the embedded `dist/mediapreview.bundle.js` bundle. The plugin configuration page loads its Vue app from the embedded `dist/config.bundle.js` bundle through `/media-preview/config-script`.
 
 ## Release Packaging
 

@@ -7,6 +7,11 @@ declare global {
     JellyfinMediaPreviewPluginConfig?: RuntimePluginConfig;
     ApiClient?: JellyfinApiClient;
     apiClient?: JellyfinApiClient;
+    Dashboard?: {
+      showLoadingMsg(): void;
+      hideLoadingMsg(): void;
+      processPluginConfigurationUpdateResult(result: unknown): void;
+    };
   }
 }
 

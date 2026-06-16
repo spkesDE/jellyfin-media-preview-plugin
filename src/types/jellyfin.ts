@@ -24,6 +24,10 @@ export interface JellyfinItem {
   RunTimeTicks?: number;
   OfficialRating?: string;
   CommunityRating?: number;
+  ImageTags?: {
+    Primary?: string;
+  };
+  BackdropImageTags?: string[];
   LocalTrailerCount?: number;
   RemoteTrailers?: JellyfinRemoteTrailer[];
   MediaSources?: JellyfinMediaSource[];
@@ -64,4 +68,16 @@ export interface JellyfinApiClient {
   getUrl?: (path: string, query?: Record<string, string | number | boolean | null | undefined>) => string | null;
   serverAddress?: () => string | null | undefined;
   ajax?: (request: JellyfinAjaxRequest) => Promise<unknown> | unknown;
+  getPluginConfiguration?: (pluginId: string) => Promise<unknown>;
+  updatePluginConfiguration?: (pluginId: string, config: unknown) => Promise<unknown>;
+  getImageUrl?: (
+    itemId: string,
+    options: {
+      type: string;
+      tag: string;
+      maxWidth: number;
+      quality: number;
+      index?: number;
+    }
+  ) => string | null;
 }

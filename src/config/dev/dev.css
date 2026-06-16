@@ -1,0 +1,57 @@
+:root {
+  color: rgba(255, 255, 255, 0.92);
+  background: #101820;
+  font-family: Arial, Helvetica, sans-serif;
+  font-synthesis: none;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+#MediaPreviewConfigPage {
+  box-sizing: border-box;
+  max-width: 1400px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+button,
+input,
+select {
+  color: inherit;
+  font: inherit;
+}
+
+input[type='number'],
+select {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.35rem;
+  background: #18232e;
+}
+
+.inputContainer,
+.selectContainer {
+  margin-bottom: 1rem;
+}
+
+.inputLabel,
+.selectLabel {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.sectionTitle {
+  margin-top: 0;
+}
