@@ -6,6 +6,7 @@
   "description": "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers.",
   "owner": "spkesDE",
   "category": "General",
+  "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
   "versions": [
     {
       "version": "0.2.1.0",

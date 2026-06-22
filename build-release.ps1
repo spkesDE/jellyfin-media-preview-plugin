@@ -155,6 +155,7 @@ $pluginOwner = "spkesDE"
 $pluginCategory = "General"
 $pluginOverview = "Hover previews for Jellyfin Web using Trickplay and trailers."
 $pluginDescription = "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers."
+$pluginImageUrl = "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png"
 
 $releaseRoot = Join-RepoPath @($repoRoot, "release")
 $buildOutput = Join-RepoPath @($releaseRoot, ".build-$([Guid]::NewGuid().ToString("N"))")
@@ -352,6 +353,7 @@ try {
         changelog = $Changelog
         description = $pluginDescription
         guid = $pluginGuid
+        imageUrl = $pluginImageUrl
         name = $pluginDisplayName
         overview = $pluginOverview
         owner = $pluginOwner

@@ -52,6 +52,7 @@ if (-not $pluginEntry) {
         description = $meta.description
         owner = $meta.owner
         category = $meta.category
+        imageUrl = $meta.imageUrl
         versions = @()
     }
     $manifest = @($pluginEntry) + @($manifest)
@@ -63,6 +64,13 @@ $pluginEntry.overview = $meta.overview
 $pluginEntry.description = $meta.description
 $pluginEntry.owner = $meta.owner
 $pluginEntry.category = $meta.category
+if ($meta.imageUrl) {
+    if ($pluginEntry.PSObject.Properties.Name -contains "imageUrl") {
+        $pluginEntry.imageUrl = $meta.imageUrl
+    } else {
+        $pluginEntry | Add-Member -NotePropertyName "imageUrl" -NotePropertyValue $meta.imageUrl
+    }
+}
 
 $existingVersions = @($pluginEntry.versions | Where-Object { $_.version -ne $meta.version })
 $pluginEntry.versions = @($versionEntry) + $existingVersions
