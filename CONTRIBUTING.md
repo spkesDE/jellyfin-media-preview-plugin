@@ -6,11 +6,15 @@ Thanks for contributing to `Jellyfin Media Preview`.
 
 ## Where Help Is Welcome
 
-- bug fixes
+All kinds of contributions are welcome, whether that is code, documentation, testing, bug reports, ideas, or feedback from real Jellyfin setups.
+
+Examples include:
+
+- preview behavior fixes
+- Jellyfin Web compatibility updates
 - hover preview and UX improvements
-- Jellyfin compatibility updates
-- documentation
-- testing on real Jellyfin instances
+- clearer install, setup, and troubleshooting notes
+- manual test reports from different browsers, clients, and device types
 
 ## Before You Start
 
