@@ -19,6 +19,7 @@ export interface CardState {
   previewTransitionTimer: number | null;
   hoverCountdown: HTMLDivElement | null;
   hoverCountdownLabel: HTMLSpanElement | null;
+  loadingIndicator: HTMLDivElement | null;
   unavailableMessage: HTMLDivElement | null;
   trailerLayer: HTMLDivElement | null;
   trailerActions: HTMLDivElement | null;

@@ -3,10 +3,26 @@ import { PREVIEW_SOURCE_TRICKPLAY, SUPPORTED_TYPES, VALID_AUTO_SCRUB_PRESETS, AU
 import { buildApiUrl, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
-import { itemInfoCache } from '../core/storage';
+import { itemInfoCache, missingTrickplayCache } from '../core/storage';
 import { requestJson } from '../core/request';
 import type { JellyfinItem, JellyfinTrickplayManifest } from '../types/jellyfin';
 import type { TrickplayInfo, TrickplayPreview } from '../types/preview';
+
+const missingTrickplayCacheCooldownMs = 10 * 60 * 1000;
+
+function isMissingTrickplayCached(itemId: string): boolean {
+  const cachedAt = missingTrickplayCache.get(itemId);
+  if (!cachedAt) {
+    return false;
+  }
+
+  if (Date.now() - cachedAt < missingTrickplayCacheCooldownMs) {
+    return true;
+  }
+
+  missingTrickplayCache.delete(itemId);
+  return false;
+}
 
 export function getTrickplayFrameIndex(info: TrickplayInfo | null | undefined, percent: number | null | undefined): number {
   if (!info || !info.thumbnailCount) {
@@ -164,6 +180,11 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
     return Promise.resolve(null);
   }
 
+  if (isMissingTrickplayCached(itemId)) {
+    debugLog('Skipping trickplay fetch because a recent lookup found no usable manifest.', itemId);
+    return Promise.resolve(null);
+  }
+
   if (itemInfoCache.has(itemId)) {
     return itemInfoCache.get(itemId)!;
   }
@@ -197,10 +218,12 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
     }
 
     debugLog('Resolved trickplay info.', normalized);
+    missingTrickplayCache.delete(itemId);
     return normalized;
   }).catch((error) => {
     debugLog('Failed to load trickplay metadata for item.', itemId, error);
     itemInfoCache.delete(itemId);
+    missingTrickplayCache.set(itemId, Date.now());
     return null;
   });
 
@@ -208,6 +231,7 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
   return request.then((result) => {
     if (!result) {
       itemInfoCache.delete(itemId);
+      missingTrickplayCache.set(itemId, Date.now());
     }
 
     return result;

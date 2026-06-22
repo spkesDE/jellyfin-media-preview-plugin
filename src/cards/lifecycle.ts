@@ -10,6 +10,7 @@ import { getPreviewBackdropStyles } from './layout';
 import { getImageRenderHost } from './discovery';
 import { getOrCreateCardState } from './state';
 import { clearTrailerMedia } from '../preview/renderTrailer';
+import { cancelScheduledTrickplayPreload, disconnectTrickplayPreloadObserver } from '../preview/preload';
 import { expandTrailer } from '../trailerOverlay/expandedTrailer';
 import { clearAutoScrub } from '../interaction/autoScrub';
 import { runtimeState } from '../runtime';
@@ -255,6 +256,28 @@ export function ensureUnavailableMessage(state: CardState | null | undefined): H
   return state.unavailableMessage;
 }
 
+export function ensureLoadingIndicator(state: CardState | null | undefined): HTMLDivElement | null {
+  if (!state?.rootHost) {
+    return null;
+  }
+
+  if (!state.loadingIndicator) {
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.className = 'jmp-loading-indicator';
+    loadingIndicator.setAttribute('aria-hidden', 'true');
+    loadingIndicator.style.display = 'none';
+
+    const spinner = document.createElement('span');
+    spinner.className = 'jmp-loading-spinner';
+    loadingIndicator.appendChild(spinner);
+
+    state.rootHost.appendChild(loadingIndicator);
+    state.loadingIndicator = loadingIndicator;
+  }
+
+  return state.loadingIndicator;
+}
+
 export function ensureTrailerLayer(state: CardState | null | undefined): HTMLDivElement | null {
   if (!state?.rootHost) {
     return null;
@@ -437,6 +460,27 @@ export function hideUnavailableMessage(state: CardState | null | undefined): voi
 
   state.unavailableMessage.style.display = 'none';
   state.unavailableMessage.textContent = '';
+}
+
+export function showLoadingIndicator(state: CardState | null | undefined): void {
+  if (!config.trickplayLoadingIndicatorEnabled) {
+    return;
+  }
+
+  const loadingIndicator = ensureLoadingIndicator(state);
+  if (!loadingIndicator) {
+    return;
+  }
+
+  loadingIndicator.style.display = 'flex';
+}
+
+export function hideLoadingIndicator(state: CardState | null | undefined): void {
+  if (!state?.loadingIndicator) {
+    return;
+  }
+
+  state.loadingIndicator.style.display = 'none';
 }
 
 export function setTrailerExpandVisible(state: CardState | null | undefined, isVisible: boolean): void {
@@ -734,6 +778,7 @@ export function restoreCard(card: HTMLElement): void {
 
   clearLeaveHold(state);
   clearPendingMove(state);
+  cancelScheduledTrickplayPreload(card);
   clearAutoScrub(state);
   clearPreviewTransitionTimer(state);
   clearTrailerTransitionTimer(state);
@@ -751,6 +796,7 @@ export function restoreCard(card: HTMLElement): void {
   state.lastTrickplayRenderAt = 0;
   resetHoverCountdown(state);
   hideUnavailableMessage(state);
+  hideLoadingIndicator(state);
   hideMetadataOverlay(state);
 
   if (config.restoreOnLeave) {
@@ -771,6 +817,8 @@ export function destroyCardBindings(): void {
   document.querySelectorAll(`[${ADMIN_NAV_LINK_ATTR}="true"]`).forEach((entry) => {
     entry.remove();
   });
+
+  disconnectTrickplayPreloadObserver();
 
   document.querySelectorAll(`[${STATE_ATTR}="true"]`).forEach((card) => {
     if (card instanceof HTMLElement) {
@@ -798,6 +846,8 @@ export function destroyCardBindings(): void {
       removeManagedNode<HTMLDivElement>(state, 'hoverCountdown');
       state.hoverCountdown = null;
       state.hoverCountdownLabel = null;
+      removeManagedNode<HTMLDivElement>(state, 'loadingIndicator');
+      state.loadingIndicator = null;
       removeManagedNode<HTMLDivElement>(state, 'unavailableMessage');
       state.unavailableMessage = null;
       removeManagedNode<HTMLDivElement>(state, 'trailerLayer');

@@ -75,3 +75,37 @@
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
+
+.jmp-loading-indicator {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 25;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  pointer-events: none;
+  border-radius: 999px;
+  background: rgba(10, 14, 20, 0.54);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.24);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.jmp-loading-spinner {
+  width: 13px;
+  height: 13px;
+  box-sizing: border-box;
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  border-top-color: rgba(255, 255, 255, 0.88);
+  border-radius: 999px;
+  animation: jmp-loading-spin 0.8s linear infinite;
+}
+
+@keyframes jmp-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

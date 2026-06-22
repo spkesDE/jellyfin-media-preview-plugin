@@ -20,15 +20,18 @@ import {
   ensureHoverCountdown,
   ensurePreviewHost,
   hideUnavailableMessage,
+  hideLoadingIndicator,
   resetHoverCountdown,
   restoreCard,
+  showLoadingIndicator,
   showUnavailableMessage,
   updateHoverCountdown
 } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { runtimeState } from '../runtime';
 import { applyPreview } from '../preview';
-import { getPreviewUrl } from '../preview/source';
+import { cancelScheduledTrickplayPreload, observeTrickplayPreload, scheduleTrickplayPreload } from '../preview/preload';
+import { getContentTypePreviewSource, getPreviewUrl } from '../preview/source';
 import { clamp } from '../core/dom';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
 import { clearAutoScrub, startAutoScrub } from './autoScrub';
@@ -117,6 +120,39 @@ function clearHoverActivationTimer(state: ReturnType<typeof getOrCreateCardState
   }
 }
 
+function getInitialHoverPercent(
+  card: HTMLElement,
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+): number {
+  return config.hoverMode === HOVER_MODE_AUTO
+    ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
+    : getRelativePercent(card, event);
+}
+
+function getDefaultPreloadPercent(): number {
+  return config.hoverMode === HOVER_MODE_AUTO
+    ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
+    : 0.5;
+}
+
+function previewSourceUsesTrickplay(source: string): boolean {
+  return source === PREVIEW_SOURCE_TRICKPLAY
+    || source === PREVIEW_SOURCE_PREFER_TRICKPLAY
+    || source === PREVIEW_SOURCE_PREFER_TRAILER;
+}
+
+function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {
+  if (!config.trickplayLoadingIndicatorEnabled) {
+    return false;
+  }
+
+  if (config.libraryPreviewSourceOverrides.length) {
+    return true;
+  }
+
+  return previewSourceUsesTrickplay(getContentTypePreviewSource(itemType));
+}
+
 function scheduleHoverActivation(
   card: HTMLElement,
   state: ReturnType<typeof getOrCreateCardState>,
@@ -145,17 +181,20 @@ function scheduleHoverActivation(
     }
     const itemType = getItemTypeFromCard(card);
 
-    const initialPercent = config.hoverMode === HOVER_MODE_AUTO
-      ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
-      : getRelativePercent(card, event);
+    const initialPercent = getInitialHoverPercent(card, event);
+    if (shouldShowTrickplayLoadingIndicator(itemType)) {
+      showLoadingIndicator(state);
+    }
 
     getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
       if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        hideLoadingIndicator(state);
         resetHoverCountdown(state);
         return;
       }
 
       if (!state.previewActive || !preview) {
+        hideLoadingIndicator(state);
         resetHoverCountdown(state);
         debugCardSummary(card, 'Hover activation found no preview source.', {
           itemId,
@@ -169,6 +208,7 @@ function scheduleHoverActivation(
 
       resetHoverCountdown(state);
       hideUnavailableMessage(state);
+      hideLoadingIndicator(state);
       applyPreview(card, preview, initialPercent);
 
       if (preview.source === PREVIEW_SOURCE_TRAILER) {
@@ -184,6 +224,7 @@ function scheduleHoverActivation(
       }
 
       resetHoverCountdown(state);
+      hideLoadingIndicator(state);
       debugLog('Hover activation failed.', itemId, error);
     });
   }, effectiveDelayMs);
@@ -209,13 +250,18 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
 
     const itemType = getItemTypeFromCard(card);
     const initialPercent = clamp((Number(config.keyboardPreviewStartPercent) || 0) / 100, 0, 1);
+    if (shouldShowTrickplayLoadingIndicator(itemType)) {
+      showLoadingIndicator(state);
+    }
 
     getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
       if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        hideLoadingIndicator(state);
         return;
       }
 
       if (!preview) {
+        hideLoadingIndicator(state);
         if (config.showNoPreviewMessage && state.focusInside) {
           showUnavailableMessage(state, getNoPreviewMessage());
         }
@@ -223,12 +269,14 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
       }
 
       hideUnavailableMessage(state);
+      hideLoadingIndicator(state);
       applyPreview(card, preview, initialPercent);
     }).catch((error) => {
       if (requestToken !== state.latestRequestToken) {
         return;
       }
 
+      hideLoadingIndicator(state);
       debugLog('Keyboard preview activation failed.', itemId, error);
     });
   }, delayMs);
@@ -334,6 +382,8 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   restoreCard(card);
   hideUnavailableMessage(state);
   debugCardSummary(card, 'Pointer entered card.');
+  const itemId = getItemIdFromCard(card);
+  scheduleTrickplayPreload(card, itemId, getInitialHoverPercent(card, event), getItemTypeFromCard(card));
   scheduleHoverActivation(card, state, event);
 }
 
@@ -369,6 +419,7 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
   }
 
   const state = getOrCreateCardState(card);
+  cancelScheduledTrickplayPreload(card);
   state.pointerInside = false;
   state.lastPreviewEndedAt = Date.now();
   if (state.focusInside) {
@@ -391,6 +442,7 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
 
 export function resetPointerTracking(card: HTMLElement, reason?: string): void {
   const state = getOrCreateCardState(card);
+  cancelScheduledTrickplayPreload(card);
   state.pointerInside = false;
   state.lastPreviewEndedAt = Date.now();
   clearLeaveHold(state);
@@ -422,6 +474,12 @@ export function handleFocusEnter(card: HTMLElement): void {
   restoreCard(card);
   hideUnavailableMessage(state);
   debugCardSummary(card, 'Keyboard focus entered card.');
+  scheduleTrickplayPreload(
+    card,
+    getItemIdFromCard(card),
+    clamp((Number(config.keyboardPreviewStartPercent) || 0) / 100, 0, 1),
+    getItemTypeFromCard(card)
+  );
   scheduleKeyboardActivation(card, state);
 }
 
@@ -431,6 +489,7 @@ export function handleFocusLeave(card: HTMLElement): void {
   }
 
   const state = getOrCreateCardState(card);
+  cancelScheduledTrickplayPreload(card);
   state.focusInside = false;
   state.lastPreviewEndedAt = Date.now();
   if (state.pointerInside) {
@@ -535,7 +594,8 @@ export function bindCard(card: HTMLElement): void {
     return;
   }
 
-  if (!getItemIdFromCard(card)) {
+  const itemId = getItemIdFromCard(card);
+  if (!itemId) {
     return;
   }
 
@@ -603,6 +663,7 @@ export function bindCard(card: HTMLElement): void {
     onContextMenu
   };
   card.setAttribute(STATE_ATTR, 'true');
+  observeTrickplayPreload(card, itemId, getDefaultPreloadPercent(), itemType);
   debugCardSummary(card, 'Bound card.');
 }
 

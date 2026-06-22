@@ -47,6 +47,9 @@ export interface PluginConfig {
   hoverCountdownEnabled: boolean;
   hoverCountdownPosition: TrailerExpandButtonPosition;
   trickplayWidth: number;
+  trickplayPreloadEnabled: boolean;
+  trickplayPreloadLimit: number;
+  trickplayLoadingIndicatorEnabled: boolean;
   restoreOnLeave: boolean;
   showProgressIndicator: boolean;
   debug: boolean;

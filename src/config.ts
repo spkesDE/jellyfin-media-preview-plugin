@@ -54,6 +54,9 @@ const standaloneFallbackConfig: PluginConfig = {
   hoverCountdownEnabled: false,
   hoverCountdownPosition: 'top-right',
   trickplayWidth: 320,
+  trickplayPreloadEnabled: false,
+  trickplayPreloadLimit: 2,
+  trickplayLoadingIndicatorEnabled: true,
   restoreOnLeave: true,
   showProgressIndicator: true,
   debug: false,
@@ -192,6 +195,9 @@ export function normalizeConfig(): void {
   config.metadataOverlayShowOfficialRating = config.metadataOverlayShowOfficialRating !== false;
   config.metadataOverlayShowCommunityRating = config.metadataOverlayShowCommunityRating !== false;
   config.trickplayWidth = Math.max(1, numberOrFallback(config.trickplayWidth, 320));
+  config.trickplayPreloadEnabled = config.trickplayPreloadEnabled === true;
+  config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
+  config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
   config.previewBackdropIntensityPercent = clamp(numberOrFallback(config.previewBackdropIntensityPercent, 35), 0, 100);
   config.previewTransitionDurationMs = Math.max(0, numberOrFallback(config.previewTransitionDurationMs, 180));

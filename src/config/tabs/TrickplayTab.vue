@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useConfigStore } from '../libs/store';
+import ConfigCheckbox from '../components/ConfigCheckbox.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
 
@@ -31,6 +32,18 @@ const isContinuous = computed(() => !isStep.value);
     <p class="jmp-help">Control how Trickplay previews move when you hover a card.</p>
 
     <ConfigSelect v-model="store.config.HoverMode" label="Hover Mode" :options="hoverModeOptions" />
+    <ConfigCheckbox v-model="store.config.TrickplayPreloadEnabled" label="Preload Trickplay before hover" />
+    <p class="jmp-note">
+      Warms Trickplay metadata and the likely first scrub tile for cards near the viewport, with a small request queue.
+    </p>
+    <ConfigNumber
+      v-if="store.config.TrickplayPreloadEnabled"
+      v-model="store.config.TrickplayPreloadLimit"
+      label="Max Parallel Preloads"
+      :min="1"
+      :step="1"
+    />
+    <ConfigCheckbox v-model="store.config.TrickplayLoadingIndicatorEnabled" label="Show Trickplay loading indicator" />
 
     <p v-if="store.config.HoverMode === 'scrub'" class="jmp-note">
       Scrub pacing is adaptive automatically. Dense Trickplay sets react quickly, while sparse sets hold each frame a bit longer so the preview feels calmer instead of jumpy.

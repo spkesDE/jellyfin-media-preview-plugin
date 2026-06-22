@@ -28,6 +28,12 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrickplayWidth { get; set; } = 320;
 
+    public bool TrickplayPreloadEnabled { get; set; } = false;
+
+    public int TrickplayPreloadLimit { get; set; } = 2;
+
+    public bool TrickplayLoadingIndicatorEnabled { get; set; } = true;
+
     public string MoviePreviewSource { get; set; } = "inherit";
 
     public string SeriesPreviewSource { get; set; } = "inherit";

@@ -23,6 +23,7 @@ export const runtimeState = {
   scanScheduled: false,
   scanFrame: null as number | null,
   pendingScanRoots: new Set<ParentNode | Node>(),
+  trickplayPreloadObserver: null as IntersectionObserver | null,
   adminNavRefreshScheduled: false,
   adminNavRefreshFrame: null as number | null,
   historyPatched: false,
