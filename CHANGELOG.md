@@ -1,5 +1,38 @@
 # Changelog
 
+## v0.2.2.0 - 2026-06-22
+
+
+
+
+
+
+
+
+
+
+### Features
+
+- feat(trickplay): preload preview thumbnails
+
+
+
+
+### Build
+
+- build: add plugin catalog image
+
+
+
+### Documentation
+
+- docs: simplify README for users
+
+- docs: clarify contribution welcome note
+
+
+
+
 ## v0.2.1.0 - 2026-06-16
 
 

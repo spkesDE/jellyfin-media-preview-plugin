@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
   "versions": [
     {
+      "version": "0.2.2.0",
+      "changelog": "- feat(trickplay): preload preview thumbnails\n- build: add plugin catalog image\n- docs: simplify README for users\n- docs: clarify contribution welcome note\n",
+      "targetAbi": "10.11.11.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.2.0/MediaPreview.zip",
+      "checksum": "fa7095b512d24cb5fc79ac106c65c1ae",
+      "timestamp": "2026-06-22 19:28:24"
+    },
+    {
       "version": "0.2.1.0",
       "changelog": "- feat(config): migrate settings UI to Vue\n- build(changelog): order feature entries first\n",
       "targetAbi": "10.11.11.0",
