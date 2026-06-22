@@ -1,24 +1,40 @@
 # Changelog
 
-## v0.2.0.1 - 2026-06-15
+## v0.2.1.0 - 2026-06-16
+
+
+
+
+
+
+
+
+
+
+### Features
+
+- feat(config): migrate settings UI to Vue
+
 
 
 
 ### Build
 
-- build: automate manifest changelog generation with git-cliff
+- build(changelog): order feature entries first
 
-- build: remove manual manifest changelog override
 
-- build: align manifest changelog with git-cliff output
 
-- build: refresh bundled frontend output
 
-- build: refresh bundled frontend output
 
-- build: refresh bundled frontend output
+## v0.2.0.1 - 2026-06-15
 
-- build: update Jellyfin packages to 10.11.11
+
+
+
+
+
+
+
 
 
 ### Features
@@ -40,6 +56,7 @@
 - feat: refine configuration page and live preview
 
 
+
 ### Fixes
 
 - fix: guard initial hover preview requests
@@ -57,9 +74,24 @@
 - fix: streamline CI workflow and update paths in build script
 
 
-### Other
 
-- perf: skip library lookups without overrides
+### Build
+
+- build: automate manifest changelog generation with git-cliff
+
+- build: remove manual manifest changelog override
+
+- build: align manifest changelog with git-cliff output
+
+- build: refresh bundled frontend output
+
+- build: refresh bundled frontend output
+
+- build: refresh bundled frontend output
+
+- build: update Jellyfin packages to 10.11.11
+
+
 
 
 ### Refactoring
@@ -75,7 +107,20 @@
 - refactor: enhance build script with modular functions and improved error handling
 
 
+
+### Other
+
+- perf: skip library lookups without overrides
+
+
 ## v0.1.1.0 - 2026-05-24
+
+
+
+
+
+
+
 
 
 
@@ -84,6 +129,7 @@
 - feat: extend preview backdrop and hover settings
 
 - feat: add hover countdown and preview availability overlays
+
 
 
 ### Fixes
@@ -95,13 +141,7 @@
 - fix: restore reliable hover preview lifecycle
 
 
-### Other
 
-- chore: rebuild media preview bundle
-
-- chore: minify css in bundled styles
-
-- chore: move manifest updater into scripts
 
 
 ### Refactoring
@@ -113,7 +153,29 @@
 - refactor: lazily inject preview dom
 
 
+
+### Other
+
+- chore: rebuild media preview bundle
+
+- chore: minify css in bundled styles
+
+- chore: move manifest updater into scripts
+
+
 ## v0.1.0.0 - 2026-05-24
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

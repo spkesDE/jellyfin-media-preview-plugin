@@ -8,6 +8,14 @@
   "category": "General",
   "versions": [
     {
+      "version": "0.2.1.0",
+      "changelog": "- feat(config): migrate settings UI to Vue\n- build(changelog): order feature entries first\n",
+      "targetAbi": "10.11.11.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.1.0/MediaPreview.zip",
+      "checksum": "563902dfef35c14ed2774654f7fe5e59",
+      "timestamp": "2026-06-16 13:59:31"
+    },
+    {
       "version": "0.2.0.1",
       "changelog": "- build: automate manifest changelog generation with git-cliff\n- build: remove manual manifest changelog override\n- build: align manifest changelog with git-cliff output\n- build: refresh bundled frontend output\n- build: refresh bundled frontend output\n- build: refresh bundled frontend output\n- build: update Jellyfin packages to 10.11.11\n- feat: add per-content-type preview source overrides\n- feat: add configurable smart preview source selection\n- feat: add configurable hover intent and cooldown\n- feat: add configurable preview metadata overlay\n- feat: add configurable preview fade and crossfade transitions\n- feat: add configurable keyboard preview support\n- feat: add library preview source rules\n- feat: refine configuration page and live preview\n- fix: guard initial hover preview requests\n- fix: clean up preview DOM on destroy\n- fix: support previews in season and episode overviews\n- fix: tighten card discovery and binding\n- fix: harden release and preview behavior\n- fix: validate embedded client bundle\n- fix: streamline CI workflow and update paths in build script\n- perf: skip library lookups without overrides\n- refactor: simplify auto scrub and trailer helpers\n- refactor: extract metadata overlay styles\n- refactor: unify plugin configuration page layout\n- refactor: unify remaining configuration tabs\n- refactor: enhance build script with modular functions and improved error handling\n",
       "targetAbi": "10.11.11.0",
