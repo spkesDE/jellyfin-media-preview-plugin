@@ -12,6 +12,11 @@ const previewModeOptions: SelectOption[] = [
   { value: 'cover', label: 'Cover' },
   { value: 'stretch', label: 'Stretch / Fill' }
 ];
+const portraitExpansionOptions: SelectOption[] = [
+  { value: 'off', label: 'Normal' },
+  { value: '3:2', label: 'Wide (3:2)' },
+  { value: '16:9', label: 'Wide (16:9)' }
+];
 const backdropOptions: SelectOption[] = [
   { value: 'off', label: 'Off' },
   { value: 'dim', label: 'Dim' },
@@ -40,6 +45,12 @@ const positionOptions: SelectOption[] = [
 
       <ConfigCard title="Card Framing" help="Choose how previews should sit inside portrait and backdrop cards.">
         <ConfigSelect v-model="store.config.PortraitCardPreviewMode" label="Portrait Card Preview Mode" :options="previewModeOptions" />
+        <ConfigSelect
+          v-model="store.config.PortraitCardExpansionMode"
+          label="Portrait Card Expansion"
+          :options="portraitExpansionOptions"
+        />
+        <p class="jmp-note">Wide modes smoothly expand portrait cards when a preview starts and move neighboring cards aside.</p>
         <ConfigSelect v-model="store.config.BackdropCardPreviewMode" label="Backdrop Card Preview Mode" :options="previewModeOptions" />
       </ConfigCard>
 

@@ -94,6 +94,8 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string PortraitCardPreviewMode { get; set; } = "contain";
 
+    public string PortraitCardExpansionMode { get; set; } = "off";
+
     public string BackdropCardPreviewMode { get; set; } = "cover";
 
     public string PreviewBackdropMode { get; set; } = "dim-blur";

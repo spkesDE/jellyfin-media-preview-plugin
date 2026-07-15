@@ -20,6 +20,7 @@ import {
 } from '../cards/lifecycle';
 import { getPreviewModeForCard } from '../cards/layout';
 import { getOrCreateCardState } from '../cards/state';
+import { expandPortraitCardForPreview } from '../cards/widePreview';
 import { clearTrailerMedia } from './renderTrailer';
 import { preloadTileUrls } from './preload';
 import type { TrickplayPreview } from '../types/preview';
@@ -30,8 +31,12 @@ export function applyTrickplayPreview(
   percent: number
 ): void {
   const state = getOrCreateCardState(card);
+  if (!ensurePreviewHost(card, state) || !preview?.tileUrl || !preview.info) {
+    return;
+  }
+
   const primaryFrame = ensurePreviewFrame(state);
-  if (!ensurePreviewHost(card, state) || !preview?.tileUrl || !preview.info || !primaryFrame) {
+  if (!primaryFrame) {
     return;
   }
 
@@ -41,7 +46,7 @@ export function applyTrickplayPreview(
   }
   const tileUrl = preview.tileUrl;
 
-  const hostRect = rootHost.getBoundingClientRect();
+  const hostRect = expandPortraitCardForPreview(card, state) || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }

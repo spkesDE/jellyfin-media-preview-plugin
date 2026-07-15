@@ -14,6 +14,7 @@ export type HoverMode = 'scrub' | 'auto';
 export type AutoScrubMode = 'step' | 'sweep' | 'ping-pong';
 export type AutoScrubPreset = 'custom' | 'snappy' | 'balanced' | 'cinematic';
 export type PreviewMode = 'cover' | 'contain' | 'stretch';
+export type PortraitCardExpansionMode = 'off' | '3:2' | '16:9';
 export type PreviewBackdropMode = 'off' | 'dim' | 'vignette' | 'dim-vignette' | 'blur' | 'dim-blur';
 export type PreviewTransitionMode = 'off' | 'fade' | 'crossfade';
 export type YouTubeCropStrength = 'off' | 'light' | 'medium' | 'strong';
@@ -62,6 +63,7 @@ export interface PluginConfig {
   autoScrubMinDelayMs: number;
   autoScrubMaxDelayMs: number;
   portraitCardPreviewMode: PreviewMode;
+  portraitCardExpansionMode: PortraitCardExpansionMode;
   backdropCardPreviewMode: PreviewMode;
   previewBackdropMode: PreviewBackdropMode;
   previewBackdropIntensityPercent: number;

@@ -13,6 +13,7 @@ import {
   setTrailerLayerVisible
 } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
+import { expandPortraitCardForPreview } from '../cards/widePreview';
 import { debugLog } from '../core/logger';
 import { runtimeState } from '../runtime';
 import { applyMediaLayout } from './mediaLayout';
@@ -118,7 +119,7 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
     return;
   }
 
-  const hostRect = rootHost.getBoundingClientRect();
+  const hostRect = expandPortraitCardForPreview(card, state) || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }

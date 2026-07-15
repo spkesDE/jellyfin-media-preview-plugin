@@ -49,6 +49,8 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       rootHost: null,
       managedHostPosition: null,
       managedHostOverflow: null,
+      widePreviewCard: null,
+      widePreviewCleanupTimer: null,
       autoScrubTimer: null,
       autoScrubPercent: null,
       autoScrubAnimationFrame: null,

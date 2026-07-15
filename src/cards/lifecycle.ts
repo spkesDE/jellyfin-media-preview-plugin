@@ -9,6 +9,7 @@ import { config } from '../config';
 import { getPreviewBackdropStyles } from './layout';
 import { getImageRenderHost } from './discovery';
 import { getOrCreateCardState } from './state';
+import { restorePortraitCardWidth } from './widePreview';
 import { clearTrailerMedia } from '../preview/renderTrailer';
 import { cancelScheduledTrickplayPreload, disconnectTrickplayPreloadObserver } from '../preview/preload';
 import { expandTrailer } from '../trailerOverlay/expandedTrailer';
@@ -782,6 +783,7 @@ export function restoreCard(card: HTMLElement): void {
   clearAutoScrub(state);
   clearPreviewTransitionTimer(state);
   clearTrailerTransitionTimer(state);
+  restorePortraitCardWidth(state);
   state.latestRequestToken += 1;
   state.hoverIntentAnchorX = null;
   state.hoverIntentAnchorY = null;
@@ -837,6 +839,7 @@ export function destroyCardBindings(): void {
       state.boundTarget = null;
       state.boundHandlers = null;
       restoreCard(card);
+      restorePortraitCardWidth(state, true);
       removeManagedNode<HTMLDivElement>(state, 'previewBackdrop');
       state.previewBackdrop = null;
       removeManagedNode<HTMLDivElement>(state, 'previewFrame');

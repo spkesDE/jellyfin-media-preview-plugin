@@ -69,6 +69,7 @@ const standaloneFallbackConfig: PluginConfig = {
   autoScrubMinDelayMs: 40,
   autoScrubMaxDelayMs: 1000,
   portraitCardPreviewMode: 'contain',
+  portraitCardExpansionMode: 'off',
   backdropCardPreviewMode: 'cover',
   previewBackdropMode: 'dim-blur',
   previewBackdropIntensityPercent: 35,
@@ -152,6 +153,10 @@ export function normalizeConfig(): void {
 
   if (!VALID_PREVIEW_MODES.has(config.portraitCardPreviewMode)) {
     config.portraitCardPreviewMode = PREVIEW_MODE_CONTAIN;
+  }
+
+  if (!['off', '3:2', '16:9'].includes(config.portraitCardExpansionMode)) {
+    config.portraitCardExpansionMode = 'off';
   }
 
   if (!VALID_PREVIEW_MODES.has(config.backdropCardPreviewMode)) {

@@ -47,6 +47,13 @@ internal static class PluginConfigurationNormalizer
         "stretch"
     };
 
+    private static readonly HashSet<string> ValidPortraitCardExpansionModes = new(StringComparer.Ordinal)
+    {
+        "off",
+        "3:2",
+        "16:9"
+    };
+
     private static readonly HashSet<string> ValidPreviewBackdropModes = new(StringComparer.Ordinal)
     {
         "off",
@@ -130,6 +137,7 @@ internal static class PluginConfigurationNormalizer
             AutoScrubMinDelayMs = Clamp(source.AutoScrubMinDelayMs, 16, 60000, 40),
             AutoScrubMaxDelayMs = Clamp(source.AutoScrubMaxDelayMs, 16, 60000, 1000),
             PortraitCardPreviewMode = NormalizeChoice(source.PortraitCardPreviewMode, ValidPreviewModes, "contain"),
+            PortraitCardExpansionMode = NormalizeChoice(source.PortraitCardExpansionMode, ValidPortraitCardExpansionModes, "off"),
             BackdropCardPreviewMode = NormalizeChoice(source.BackdropCardPreviewMode, ValidPreviewModes, "cover"),
             PreviewBackdropMode = NormalizeChoice(source.PreviewBackdropMode, ValidPreviewBackdropModes, "dim-blur"),
             PreviewBackdropIntensityPercent = Clamp(source.PreviewBackdropIntensityPercent, 0, 100, 35),
