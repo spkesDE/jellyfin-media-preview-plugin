@@ -796,9 +796,9 @@ export function restoreCard(card: HTMLElement): void {
 
   if (config.restoreOnLeave) {
     hidePreviewFrame(state);
+    clearTrailerMedia(state);
   }
 
-  clearTrailerMedia(state);
   resetPreviewBackdrop(state);
   hideProgress(state);
 }
