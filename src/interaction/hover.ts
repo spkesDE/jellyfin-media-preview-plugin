@@ -31,7 +31,7 @@ import { getOrCreateCardState } from '../cards/state';
 import { runtimeState } from '../runtime';
 import { applyPreview } from '../preview';
 import { cancelScheduledTrickplayPreload, observeTrickplayPreload, scheduleTrickplayPreload } from '../preview/preload';
-import { getContentTypePreviewSource, getPreviewUrl } from '../preview/source';
+import { getContentTypePreviewSource, getPreviewSourceForItem, getPreviewUrl } from '../preview/source';
 import { clamp } from '../core/dom';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
 import { clearAutoScrub, startAutoScrub } from './autoScrub';
@@ -56,16 +56,16 @@ function getEffectiveHoverDelayMs(state: ReturnType<typeof getOrCreateCardState>
   return Math.max(baseDelayMs, cooldownRemainingMs);
 }
 
-function getNoPreviewMessage(): string {
-  if (config.previewSource === PREVIEW_SOURCE_TRAILER) {
+function getNoPreviewMessage(previewSource: string): string {
+  if (previewSource === PREVIEW_SOURCE_TRAILER) {
     return NO_PREVIEW_MESSAGE_TRAILER;
   }
 
-  if (config.previewSource === PREVIEW_SOURCE_TRICKPLAY) {
+  if (previewSource === PREVIEW_SOURCE_TRICKPLAY) {
     return NO_PREVIEW_MESSAGE_TRICKPLAY;
   }
 
-  if (config.previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY || config.previewSource === PREVIEW_SOURCE_PREFER_TRAILER) {
+  if (previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY || previewSource === PREVIEW_SOURCE_PREFER_TRAILER) {
     return NO_PREVIEW_MESSAGE_ANY;
   }
 
@@ -201,7 +201,11 @@ function scheduleHoverActivation(
           previewSource: config.previewSource
         });
         if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
-          showUnavailableMessage(state, getNoPreviewMessage());
+          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+            if (state.previewActive && requestToken === state.latestRequestToken && state.pointerInside) {
+              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+            }
+          });
         }
         return;
       }
@@ -263,7 +267,11 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
       if (!preview) {
         hideLoadingIndicator(state);
         if (config.showNoPreviewMessage && state.focusInside) {
-          showUnavailableMessage(state, getNoPreviewMessage());
+          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+            if (state.previewActive && requestToken === state.latestRequestToken && state.focusInside) {
+              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+            }
+          });
         }
         return;
       }

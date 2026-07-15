@@ -55,72 +55,47 @@ export function getResolvedPreviewSource(itemType?: string | null, libraryId?: s
   return getContentTypePreviewSource(itemType);
 }
 
-export function getPreviewUrl(itemId: string, percent: number, itemType?: string | null): Promise<PreviewResult | null> {
+export function getPreviewSourceForItem(itemId: string, itemType?: string | null): Promise<string> {
   if (!config.libraryPreviewSourceOverrides.length) {
-    const effectiveSource = getContentTypePreviewSource(itemType);
-
-    if (effectiveSource === PREVIEW_SOURCE_TRICKPLAY) {
-      return getTrickplayPreview(itemId, percent);
-    }
-
-    if (effectiveSource === PREVIEW_SOURCE_TRAILER) {
-      return getTrailerPreview(itemId);
-    }
-
-    if (effectiveSource === PREVIEW_SOURCE_PREFER_TRICKPLAY) {
-      return getTrickplayPreview(itemId, percent).then<PreviewResult | null>((preview) => {
-        if (preview) {
-          return preview;
-        }
-
-        return getTrailerPreview(itemId);
-      });
-    }
-
-    if (effectiveSource === PREVIEW_SOURCE_PREFER_TRAILER) {
-      return getTrailerPreview(itemId).then<PreviewResult | null>((preview) => {
-        if (preview) {
-          return preview;
-        }
-
-        return getTrickplayPreview(itemId, percent);
-      });
-    }
-
-    return Promise.resolve(null);
+    return Promise.resolve(getContentTypePreviewSource(itemType));
   }
 
-  return getLibraryIdForItem(itemId).then((libraryId) => {
-    const effectiveSource = getResolvedPreviewSource(itemType, libraryId);
+  return getLibraryIdForItem(itemId).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
+}
 
-    if (effectiveSource === PREVIEW_SOURCE_TRICKPLAY) {
-      return getTrickplayPreview(itemId, percent);
-    }
+function getPreviewForSource(itemId: string, percent: number, effectiveSource: string): Promise<PreviewResult | null> {
+  if (effectiveSource === PREVIEW_SOURCE_TRICKPLAY) {
+    return getTrickplayPreview(itemId, percent);
+  }
 
-    if (effectiveSource === PREVIEW_SOURCE_TRAILER) {
+  if (effectiveSource === PREVIEW_SOURCE_TRAILER) {
+    return getTrailerPreview(itemId);
+  }
+
+  if (effectiveSource === PREVIEW_SOURCE_PREFER_TRICKPLAY) {
+    return getTrickplayPreview(itemId, percent).then<PreviewResult | null>((preview) => {
+      if (preview) {
+        return preview;
+      }
+
       return getTrailerPreview(itemId);
-    }
+    });
+  }
 
-    if (effectiveSource === PREVIEW_SOURCE_PREFER_TRICKPLAY) {
-      return getTrickplayPreview(itemId, percent).then<PreviewResult | null>((preview) => {
-        if (preview) {
-          return preview;
-        }
+  if (effectiveSource === PREVIEW_SOURCE_PREFER_TRAILER) {
+    return getTrailerPreview(itemId).then<PreviewResult | null>((preview) => {
+      if (preview) {
+        return preview;
+      }
 
-        return getTrailerPreview(itemId);
-      });
-    }
+      return getTrickplayPreview(itemId, percent);
+    });
+  }
 
-    if (effectiveSource === PREVIEW_SOURCE_PREFER_TRAILER) {
-      return getTrailerPreview(itemId).then<PreviewResult | null>((preview) => {
-        if (preview) {
-          return preview;
-        }
+  return Promise.resolve(null);
+}
 
-        return getTrickplayPreview(itemId, percent);
-      });
-    }
-
-    return null;
-  });
+export function getPreviewUrl(itemId: string, percent: number, itemType?: string | null): Promise<PreviewResult | null> {
+  return getPreviewSourceForItem(itemId, itemType)
+    .then((effectiveSource) => getPreviewForSource(itemId, percent, effectiveSource));
 }
