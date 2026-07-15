@@ -1,7 +1,7 @@
 {
   "name": "jellyfin-media-preview-plugin",
   "private": true,
-  "version": "0.1.0.0",
+  "version": "0.2.2.0",
   "description": "TypeScript build for the Jellyfin Media Preview client bundle.",
   "scripts": {
     "typecheck": "tsc --noEmit && vue-tsc --noEmit",
