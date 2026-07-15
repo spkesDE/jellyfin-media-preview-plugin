@@ -15,8 +15,10 @@ import {
 import { schedulePreviewUpdate } from './hover';
 import type { CardState } from '../types/state';
 
-function canContinueAutoScrub(state: CardState): boolean {
-  return !!state.previewActive && state.activePreviewSource !== PREVIEW_SOURCE_TRAILER;
+function canContinueAutoScrub(state: CardState, generation: number): boolean {
+  return state.autoScrubGeneration === generation
+    && !!state.previewActive
+    && state.activePreviewSource !== PREVIEW_SOURCE_TRAILER;
 }
 
 function scheduleSmoothAutoScrubFrame(
@@ -24,11 +26,11 @@ function scheduleSmoothAutoScrubFrame(
   state: CardState,
   durationMs: number,
   startPercent: number,
-  pingPong: boolean
+  pingPong: boolean,
+  generation: number
 ): void {
   function tick(timestamp: number): void {
-    if (!canContinueAutoScrub(state)) {
-      clearAutoScrub(state);
+    if (!canContinueAutoScrub(state, generation)) {
       return;
     }
 
@@ -52,7 +54,7 @@ function scheduleSmoothAutoScrubFrame(
   state.autoScrubAnimationFrame = window.requestAnimationFrame(tick);
 }
 
-function startSmoothAutoScrub(card: HTMLElement, state: CardState, itemId: string): void {
+function startSmoothAutoScrub(card: HTMLElement, state: CardState, itemId: string, generation: number): void {
   state.autoScrubPercent = clamp(config.autoScrubStartPercent / 100, 0, 1);
   state.autoScrubStartedAt = null;
   schedulePreviewUpdate(card, state.autoScrubPercent);
@@ -60,7 +62,7 @@ function startSmoothAutoScrub(card: HTMLElement, state: CardState, itemId: strin
   const pingPong = config.autoScrubMode === AUTO_SCRUB_MODE_PING_PONG;
 
   getTrickplayInfo(itemId).then((info) => {
-    if (!canContinueAutoScrub(state)) {
+    if (!canContinueAutoScrub(state, generation)) {
       return;
     }
 
@@ -69,10 +71,11 @@ function startSmoothAutoScrub(card: HTMLElement, state: CardState, itemId: strin
       state,
       getEffectiveSmoothAutoScrubDurationMs(info),
       state.autoScrubPercent || 0,
-      pingPong
+      pingPong,
+      generation
     );
   }).catch(() => {
-    if (!canContinueAutoScrub(state)) {
+    if (!canContinueAutoScrub(state, generation)) {
       return;
     }
 
@@ -81,18 +84,27 @@ function startSmoothAutoScrub(card: HTMLElement, state: CardState, itemId: strin
       state,
       getEffectiveSmoothAutoScrubDurationMs(null),
       state.autoScrubPercent || 0,
-      pingPong
+      pingPong,
+      generation
     );
   });
 }
 
-function startStepAutoScrubInterval(card: HTMLElement, state: CardState, frameCount: number): void {
+function startStepAutoScrubInterval(
+  card: HTMLElement,
+  state: CardState,
+  frameCount: number,
+  generation: number
+): void {
   const step = 1 / Math.max(1, frameCount - 1);
   const intervalMs = Math.max(16, Number(config.autoScrubIntervalMs) || 220);
 
-  state.autoScrubTimer = window.setInterval(() => {
-    if (!canContinueAutoScrub(state)) {
-      clearAutoScrub(state);
+  const timer = window.setInterval(() => {
+    if (!canContinueAutoScrub(state, generation)) {
+      window.clearInterval(timer);
+      if (state.autoScrubTimer === timer) {
+        state.autoScrubTimer = null;
+      }
       return;
     }
 
@@ -103,28 +115,33 @@ function startStepAutoScrubInterval(card: HTMLElement, state: CardState, frameCo
 
     schedulePreviewUpdate(card, state.autoScrubPercent || 0);
   }, intervalMs);
+  state.autoScrubTimer = timer;
 }
 
-function startStepAutoScrub(card: HTMLElement, state: CardState, itemId: string): void {
+function startStepAutoScrub(card: HTMLElement, state: CardState, itemId: string, generation: number): void {
   state.autoScrubPercent = clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1);
   schedulePreviewUpdate(card, state.autoScrubPercent);
 
   getTrickplayInfo(itemId).then((info) => {
-    if (!canContinueAutoScrub(state)) {
+    if (!canContinueAutoScrub(state, generation)) {
       return;
     }
 
-    startStepAutoScrubInterval(card, state, getAutoScrubFrameCount(info));
+    startStepAutoScrubInterval(card, state, getAutoScrubFrameCount(info), generation);
   }).catch(() => {
-    if (!canContinueAutoScrub(state)) {
+    if (!canContinueAutoScrub(state, generation)) {
       return;
     }
 
-    startStepAutoScrubInterval(card, state, getAutoScrubFrameCount(null));
+    startStepAutoScrubInterval(card, state, getAutoScrubFrameCount(null), generation);
   });
 }
 
 export function clearAutoScrub(state: CardState | null | undefined): void {
+  if (state) {
+    state.autoScrubGeneration += 1;
+  }
+
   if (state?.autoScrubTimer) {
     window.clearInterval(state.autoScrubTimer);
     state.autoScrubTimer = null;
@@ -139,6 +156,7 @@ export function clearAutoScrub(state: CardState | null | undefined): void {
 export function startAutoScrub(card: HTMLElement): void {
   const state = getOrCreateCardState(card);
   clearAutoScrub(state);
+  const generation = state.autoScrubGeneration;
   const itemId = getItemIdFromCard(card);
 
   if (!itemId) {
@@ -146,9 +164,9 @@ export function startAutoScrub(card: HTMLElement): void {
   }
 
   if (config.autoScrubMode === AUTO_SCRUB_MODE_SWEEP || config.autoScrubMode === AUTO_SCRUB_MODE_PING_PONG) {
-    startSmoothAutoScrub(card, state, itemId);
+    startSmoothAutoScrub(card, state, itemId, generation);
     return;
   }
 
-  startStepAutoScrub(card, state, itemId);
+  startStepAutoScrub(card, state, itemId, generation);
 }

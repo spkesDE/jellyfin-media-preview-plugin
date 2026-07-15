@@ -51,6 +51,7 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       widePreviewCard: null,
       widePreviewCleanupTimer: null,
       autoScrubTimer: null,
+      autoScrubGeneration: 0,
       autoScrubPercent: null,
       autoScrubAnimationFrame: null,
       autoScrubStartedAt: null,

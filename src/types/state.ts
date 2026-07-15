@@ -46,6 +46,7 @@ export interface CardState {
   widePreviewCard: HTMLElement | null;
   widePreviewCleanupTimer: number | null;
   autoScrubTimer: number | null;
+  autoScrubGeneration: number;
   autoScrubPercent: number | null;
   autoScrubAnimationFrame: number | null;
   autoScrubStartedAt: number | null;
