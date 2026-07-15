@@ -15,6 +15,20 @@ const modeLabel = computed(() =>
   mode.value === 'stretch' ? 'Stretch / Fill' : mode.value === 'cover' ? 'Cover' : 'Contain'
 );
 const cardClass = computed(() => `jmp-appearanceCard-${props.kind}`);
+const portraitExpansionClass = computed(() => {
+  if (props.kind !== 'portrait' || store.config.PortraitCardExpansionMode === 'off') {
+    return '';
+  }
+
+  return `jmp-appearanceCard-portrait-wide-${store.config.PortraitCardExpansionMode.replace(':', '-')}`;
+});
+const previewLabel = computed(() => {
+  if (props.kind !== 'portrait' || store.config.PortraitCardExpansionMode === 'off') {
+    return modeLabel.value;
+  }
+
+  return `${modeLabel.value} · Wide ${store.config.PortraitCardExpansionMode}`;
+});
 const posterStyle = computed(() =>
   store.appearance.value.posterUrl
     ? { backgroundImage: `url("${store.appearance.value.posterUrl.replace(/"/g, '%22')}")` }
@@ -60,6 +74,7 @@ const showMetadata = computed(() =>
 watch(
   () => [
     mode.value,
+    store.config.PortraitCardExpansionMode,
     store.config.PreviewBackdropMode,
     store.config.PreviewBackdropIntensityPercent,
     store.config.MetadataOverlayEnabled,
@@ -78,11 +93,11 @@ watch(
   <div class="jmp-appearancePreviewItem">
     <div class="jmp-appearancePreviewLabel">
       <span>{{ kind === 'portrait' ? 'Portrait card' : 'Backdrop card' }}</span>
-      <span class="jmp-badge jmp-badge-muted">{{ modeLabel }}</span>
+      <span class="jmp-badge jmp-badge-muted">{{ previewLabel }}</span>
     </div>
     <div
       class="jmp-appearanceCard"
-      :class="[cardClass, { 'has-library-artwork': store.appearance.value.previewUrl }]"
+      :class="[cardClass, portraitExpansionClass, { 'has-library-artwork': store.appearance.value.previewUrl }]"
     >
       <div class="jmp-appearancePoster" :style="posterStyle" />
       <div class="jmp-appearanceBackdrop" :style="backdropStyle" />

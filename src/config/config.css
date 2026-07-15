@@ -385,11 +385,12 @@
 
                 #MediaPreviewConfigPage .jmp-appearancePreviewGrid {
                     display: grid;
-                    grid-template-columns: minmax(0, 340px);
+                    grid-template-columns: minmax(0, 540px);
                     justify-items: center;
                     justify-content: start;
                     gap: 1.25rem;
-                    max-width: 340px;
+                    width: 100%;
+                    max-width: 540px;
                     margin: 0 0 0.75rem;
                 }
 
@@ -400,7 +401,7 @@
                 }
 
                 #MediaPreviewConfigPage .jmp-appearancePreviewItem:first-child {
-                    width: min(100%, 235px);
+                    width: 100%;
                 }
 
                 #MediaPreviewConfigPage .jmp-appearancePreviewLabel {
@@ -424,8 +425,17 @@
                 }
 
                 #MediaPreviewConfigPage .jmp-appearanceCard-portrait {
-                    width: min(100%, 235px);
-                    aspect-ratio: 2 / 3;
+                    width: min(100%, 200px);
+                    height: 300px;
+                    transition: width 280ms cubic-bezier(0.2, 0.75, 0.2, 1);
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceCard-portrait-wide-3-2 {
+                    width: min(100%, 450px);
+                }
+
+                #MediaPreviewConfigPage .jmp-appearanceCard-portrait-wide-16-9 {
+                    width: min(100%, 533px);
                 }
 
                 #MediaPreviewConfigPage .jmp-appearanceCard-backdrop {
