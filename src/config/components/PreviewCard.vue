@@ -5,6 +5,7 @@ import { useConfigStore } from '../libs/store';
 const props = defineProps<{ kind: 'portrait' | 'backdrop' }>();
 const store = useConfigStore();
 const activeLayer = ref(0);
+const hovered = ref(false);
 
 const mode = computed(() =>
   props.kind === 'portrait'
@@ -16,7 +17,7 @@ const modeLabel = computed(() =>
 );
 const cardClass = computed(() => `jmp-appearanceCard-${props.kind}`);
 const portraitExpansionClass = computed(() => {
-  if (props.kind !== 'portrait' || store.config.PortraitCardExpansionMode === 'off') {
+  if (props.kind !== 'portrait' || !hovered.value || store.config.PortraitCardExpansionMode === 'off') {
     return '';
   }
 
@@ -98,6 +99,8 @@ watch(
     <div
       class="jmp-appearanceCard"
       :class="[cardClass, portraitExpansionClass, { 'has-library-artwork': store.appearance.value.previewUrl }]"
+      @mouseenter="hovered = true"
+      @mouseleave="hovered = false"
     >
       <div class="jmp-appearancePoster" :style="posterStyle" />
       <div class="jmp-appearanceBackdrop" :style="backdropStyle" />
