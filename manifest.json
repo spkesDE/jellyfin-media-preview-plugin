@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
   "versions": [
     {
+      "version": "0.2.3.1",
+      "changelog": "- fix(appearance): shift wide previews into viewport\n",
+      "targetAbi": "10.11.11.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.3.1/MediaPreview.zip",
+      "checksum": "a93fd18f5fc53ae79698f8e1d7538f1e",
+      "timestamp": "2026-07-15 22:43:36"
+    },
+    {
       "version": "0.2.3.0",
       "changelog": "- feat(appearance): add portrait card expansion\n- feat(hover): integrate loading state into countdown\n- feat(config): preview portrait card expansion\n- fix(trickplay): prevent stale auto scrub timers\n- fix(runtime): bound preview caches\n- fix(appearance): keep wide previews in viewport\n- fix(trailer): respect restore on leave setting\n- fix(hover): resolve unavailable preview messages\n- fix(config): expand preview card on hover\n- build: align frontend package version\n- build: refresh bundled frontend output\n",
       "targetAbi": "10.11.11.0",

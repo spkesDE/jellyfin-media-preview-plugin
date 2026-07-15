@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.3.1 - 2026-07-15
+
+
+
+
+
+
+
+
+
+
+
+### Fixes
+
+- fix(appearance): shift wide previews into viewport
+
+
+
+
+
+
 ## v0.2.3.0 - 2026-07-15
 
 
