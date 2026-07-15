@@ -12,6 +12,7 @@ import { log } from './core/logger';
 import { config } from './config';
 import { createPublicApi } from './publicApi';
 import { collapseExpandedTrailer } from './trailerOverlay/expandedTrailer';
+import { clearPreviewCaches } from './core/storage';
 
 export function destroy(): void {
   if (runtimeState.expandedTrailerSession) {
@@ -29,6 +30,7 @@ export function destroy(): void {
   unbindRouteEvents();
   unbindUserActivationEvents();
   destroyCardBindings();
+  clearPreviewCaches();
 }
 
 export function start(): void {
