@@ -5,6 +5,10 @@ import { getCardLayoutKind } from './layout';
 const MANAGED_CLASS = 'jmp-wide-preview-card';
 const EXPANDED_CLASS = 'jmp-wide-preview-expanded';
 const EXPANSION_DURATION_MS = 280;
+const VIEWPORT_GUTTER_PX = 12;
+const activeWidePreviewStates = new Set<CardState>();
+let viewportResizeFrame: number | null = null;
+let viewportResizeBound = false;
 
 export interface WidePreviewDimensions {
   width: number;
@@ -29,6 +33,33 @@ function cleanupManagedCard(state: CardState): void {
   card.style.removeProperty('--jmp-wide-preview-media-height');
   card.style.removeProperty('--jmp-wide-preview-duration');
   state.widePreviewCard = null;
+  activeWidePreviewStates.delete(state);
+  if (!activeWidePreviewStates.size && viewportResizeBound) {
+    window.removeEventListener('resize', handleViewportResize);
+    viewportResizeBound = false;
+  }
+}
+
+function handleViewportResize(): void {
+  if (viewportResizeFrame !== null) {
+    return;
+  }
+
+  viewportResizeFrame = window.requestAnimationFrame(() => {
+    viewportResizeFrame = null;
+    Array.from(activeWidePreviewStates).forEach((state) => {
+      restorePortraitCardWidth(state, true);
+    });
+  });
+}
+
+function bindViewportResize(): void {
+  if (viewportResizeBound) {
+    return;
+  }
+
+  window.addEventListener('resize', handleViewportResize, { passive: true });
+  viewportResizeBound = true;
 }
 
 export function expandPortraitCardForPreview(
@@ -64,7 +95,14 @@ export function expandPortraitCardForPreview(
   const desiredHostWidth = hostHeight * aspectRatio;
   const unclampedCardWidth = cardWidth + Math.max(0, desiredHostWidth - hostWidth);
   const layoutWidth = card.parentElement?.clientWidth || window.innerWidth;
-  const maximumCardWidth = Math.max(cardWidth, Math.min(layoutWidth, window.innerWidth) * 0.72);
+  const cardRect = card.getBoundingClientRect();
+  const parentRect = card.parentElement?.getBoundingClientRect();
+  const availableRightEdge = Math.min(window.innerWidth, parentRect?.right || window.innerWidth);
+  const availableWidth = Math.max(cardWidth, availableRightEdge - Math.max(0, cardRect.left) - VIEWPORT_GUTTER_PX);
+  const maximumCardWidth = Math.max(
+    cardWidth,
+    Math.min(Math.min(layoutWidth, window.innerWidth) * 0.72, availableWidth)
+  );
   const targetCardWidth = Math.min(unclampedCardWidth, maximumCardWidth);
   const targetHostWidth = hostWidth + Math.max(0, targetCardWidth - cardWidth);
 
@@ -73,6 +111,8 @@ export function expandPortraitCardForPreview(
   }
 
   state.widePreviewCard = card;
+  activeWidePreviewStates.add(state);
+  bindViewportResize();
   card.style.setProperty('--jmp-wide-preview-card-width', `${targetCardWidth}px`);
   card.style.setProperty('--jmp-wide-preview-media-height', `${hostHeight}px`);
   card.style.setProperty('--jmp-wide-preview-duration', `${EXPANSION_DURATION_MS}ms`);
