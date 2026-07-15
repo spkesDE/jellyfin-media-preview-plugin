@@ -257,28 +257,6 @@ export function ensureUnavailableMessage(state: CardState | null | undefined): H
   return state.unavailableMessage;
 }
 
-export function ensureLoadingIndicator(state: CardState | null | undefined): HTMLDivElement | null {
-  if (!state?.rootHost) {
-    return null;
-  }
-
-  if (!state.loadingIndicator) {
-    const loadingIndicator = document.createElement('div');
-    loadingIndicator.className = 'jmp-loading-indicator';
-    loadingIndicator.setAttribute('aria-hidden', 'true');
-    loadingIndicator.style.display = 'none';
-
-    const spinner = document.createElement('span');
-    spinner.className = 'jmp-loading-spinner';
-    loadingIndicator.appendChild(spinner);
-
-    state.rootHost.appendChild(loadingIndicator);
-    state.loadingIndicator = loadingIndicator;
-  }
-
-  return state.loadingIndicator;
-}
-
 export function ensureTrailerLayer(state: CardState | null | undefined): HTMLDivElement | null {
   if (!state?.rootHost) {
     return null;
@@ -410,6 +388,10 @@ export function applyHoverCountdownSettings(state: CardState | null | undefined)
 }
 
 export function updateHoverCountdown(state: CardState | null | undefined, remainingMs: number, totalMs: number): void {
+  if (!config.hoverCountdownEnabled) {
+    return;
+  }
+
   const hoverCountdown = ensureHoverCountdown(state);
   const hoverCountdownLabel = state?.hoverCountdownLabel;
   if (!hoverCountdown || !hoverCountdownLabel) {
@@ -417,6 +399,7 @@ export function updateHoverCountdown(state: CardState | null | undefined, remain
   }
 
   applyHoverCountdownSettings(state);
+  hoverCountdown.classList.remove('is-loading');
   const safeTotalMs = Math.max(1, totalMs);
   const clampedRemainingMs = Math.max(0, remainingMs);
   const progress = Math.max(0, Math.min(1, clampedRemainingMs / safeTotalMs));
@@ -439,6 +422,7 @@ export function resetHoverCountdown(state: CardState | null | undefined): void {
 
   state.hoverCountdownStartedAt = null;
   state.hoverCountdownDurationMs = 0;
+  state.hoverCountdown.classList.remove('is-loading');
   state.hoverCountdown.style.display = 'none';
   state.hoverCountdown.style.setProperty('--progress', '1');
   state.hoverCountdownLabel.textContent = '1';
@@ -468,20 +452,29 @@ export function showLoadingIndicator(state: CardState | null | undefined): void 
     return;
   }
 
-  const loadingIndicator = ensureLoadingIndicator(state);
-  if (!loadingIndicator) {
+  const hoverCountdown = ensureHoverCountdown(state);
+  if (!hoverCountdown || !state?.hoverCountdownLabel) {
     return;
   }
 
-  loadingIndicator.style.display = 'flex';
+  applyHoverCountdownSettings(state);
+  hoverCountdown.classList.add('is-loading');
+  hoverCountdown.style.display = 'block';
+  hoverCountdown.style.setProperty('--progress', '1');
+  state.hoverCountdownLabel.textContent = '';
 }
 
 export function hideLoadingIndicator(state: CardState | null | undefined): void {
-  if (!state?.loadingIndicator) {
+  if (!state?.hoverCountdown?.classList.contains('is-loading')) {
     return;
   }
 
-  state.loadingIndicator.style.display = 'none';
+  state.hoverCountdown.classList.remove('is-loading');
+  state.hoverCountdown.style.display = 'none';
+  state.hoverCountdown.style.setProperty('--progress', '1');
+  if (state.hoverCountdownLabel) {
+    state.hoverCountdownLabel.textContent = '1';
+  }
 }
 
 export function setTrailerExpandVisible(state: CardState | null | undefined, isVisible: boolean): void {
@@ -849,8 +842,6 @@ export function destroyCardBindings(): void {
       removeManagedNode<HTMLDivElement>(state, 'hoverCountdown');
       state.hoverCountdown = null;
       state.hoverCountdownLabel = null;
-      removeManagedNode<HTMLDivElement>(state, 'loadingIndicator');
-      state.loadingIndicator = null;
       removeManagedNode<HTMLDivElement>(state, 'unavailableMessage');
       state.unavailableMessage = null;
       removeManagedNode<HTMLDivElement>(state, 'trailerLayer');

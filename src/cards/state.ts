@@ -24,7 +24,6 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       previewTransitionTimer: null,
       hoverCountdown: null,
       hoverCountdownLabel: null,
-      loadingIndicator: null,
       unavailableMessage: null,
       trailerLayer: null,
       trailerActions: null,
