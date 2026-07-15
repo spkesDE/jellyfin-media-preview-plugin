@@ -45,6 +45,8 @@ export interface CardState {
   managedHostOverflow: string | null;
   widePreviewCard: HTMLElement | null;
   widePreviewCleanupTimer: number | null;
+  widePreviewScroller: HTMLElement | null;
+  widePreviewScrollerTranslate: string | null;
   autoScrubTimer: number | null;
   autoScrubGeneration: number;
   autoScrubPercent: number | null;
