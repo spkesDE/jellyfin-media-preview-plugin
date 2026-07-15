@@ -1,5 +1,52 @@
 # Changelog
 
+## v0.2.3.0 - 2026-07-15
+
+
+
+
+
+
+
+
+
+
+### Features
+
+- feat(appearance): add portrait card expansion
+
+- feat(hover): integrate loading state into countdown
+
+- feat(config): preview portrait card expansion
+
+
+
+### Fixes
+
+- fix(trickplay): prevent stale auto scrub timers
+
+- fix(runtime): bound preview caches
+
+- fix(appearance): keep wide previews in viewport
+
+- fix(trailer): respect restore on leave setting
+
+- fix(hover): resolve unavailable preview messages
+
+- fix(config): expand preview card on hover
+
+
+
+### Build
+
+- build: align frontend package version
+
+- build: refresh bundled frontend output
+
+
+
+
+
 ## v0.2.2.0 - 2026-06-22
 
 
