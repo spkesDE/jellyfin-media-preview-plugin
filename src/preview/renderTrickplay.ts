@@ -46,7 +46,10 @@ export function applyTrickplayPreview(
   }
   const tileUrl = preview.tileUrl;
 
-  const hostRect = expandPortraitCardForPreview(card, state) || rootHost.getBoundingClientRect();
+  const hostRect = expandPortraitCardForPreview(card, state, {
+    width: preview.info.frameWidth,
+    height: preview.info.frameHeight
+  }) || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }

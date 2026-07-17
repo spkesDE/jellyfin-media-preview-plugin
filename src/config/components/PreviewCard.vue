@@ -21,7 +21,10 @@ const portraitExpansionClass = computed(() => {
     return '';
   }
 
-  return `jmp-appearanceCard-portrait-wide-${store.config.PortraitCardExpansionMode.replace(':', '-')}`;
+  const previewExpansionMode = store.config.PortraitCardExpansionMode === 'source'
+    ? '16:9'
+    : store.config.PortraitCardExpansionMode;
+  return `jmp-appearanceCard-portrait-wide-${previewExpansionMode.replace(':', '-')}`;
 });
 const previewLabel = computed(() => {
   if (props.kind !== 'portrait' || store.config.PortraitCardExpansionMode === 'off') {

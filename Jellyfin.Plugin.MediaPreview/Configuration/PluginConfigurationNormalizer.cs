@@ -51,7 +51,8 @@ internal static class PluginConfigurationNormalizer
     {
         "off",
         "3:2",
-        "16:9"
+        "16:9",
+        "source"
     };
 
     private static readonly HashSet<string> ValidPreviewBackdropModes = new(StringComparer.Ordinal)
