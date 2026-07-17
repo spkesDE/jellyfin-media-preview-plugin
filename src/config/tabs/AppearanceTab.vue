@@ -15,7 +15,8 @@ const previewModeOptions: SelectOption[] = [
 const portraitExpansionOptions: SelectOption[] = [
   { value: 'off', label: 'Normal' },
   { value: '3:2', label: 'Wide (3:2)' },
-  { value: '16:9', label: 'Wide (16:9)' }
+  { value: '16:9', label: 'Wide (16:9)' },
+  { value: 'source', label: 'Source / Video ratio' }
 ];
 const backdropOptions: SelectOption[] = [
   { value: 'off', label: 'Off' },
