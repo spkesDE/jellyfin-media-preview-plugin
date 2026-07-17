@@ -1,5 +1,28 @@
 # Changelog
 
+## v0.2.4.0 - 2026-07-17
+
+
+
+
+
+
+
+
+
+
+### Features
+
+- feat(trailer): enhance portrait card expansion with source aspect ratio support
+
+- feat(appearance): add 'Source / Video ratio' option for portrait card expansion
+
+
+
+
+
+
+
 ## v0.2.3.1 - 2026-07-15
 
 
