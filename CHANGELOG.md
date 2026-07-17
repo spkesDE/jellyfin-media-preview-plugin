@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.2.4.1 - 2026-07-17
+
+
+
+
+
+
+
+
+
+
+
+### Fixes
+
+- fix(config): live preview grid
+
+
+
+
+
+
 ## v0.2.4.0 - 2026-07-17
 
 

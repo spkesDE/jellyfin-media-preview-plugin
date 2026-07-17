@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
   "versions": [
     {
+      "version": "0.2.4.1",
+      "changelog": "- fix(config): live preview grid\n",
+      "targetAbi": "10.11.11.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.4.1/MediaPreview.zip",
+      "checksum": "ffdd5af5475126b8190c1b43179989c6",
+      "timestamp": "2026-07-17 10:25:41"
+    },
+    {
       "version": "0.2.4.0",
       "changelog": "- feat(trailer): enhance portrait card expansion with source aspect ratio support\n- feat(appearance): add 'Source / Video ratio' option for portrait card expansion\n",
       "targetAbi": "10.11.11.0",
