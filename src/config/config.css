@@ -394,10 +394,6 @@
                     margin: 0 0 0.75rem;
                 }
 
-                #MediaPreviewConfigPage .jmp-appearancePreviewSection {
-                    grid-column: 1 / -1;
-                }
-
                 #MediaPreviewConfigPage .jmp-appearancePreviewItem {
                     display: grid;
                     gap: 0.5rem;
