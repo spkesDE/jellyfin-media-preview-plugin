@@ -119,7 +119,8 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
     return;
   }
 
-  const hostRect = expandPortraitCardForPreview(card, state) || rootHost.getBoundingClientRect();
+  const hostRect = expandPortraitCardForPreview(card, state, preview.trailer.aspectRatio)
+    || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }

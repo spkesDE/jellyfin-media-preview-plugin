@@ -155,7 +155,7 @@ export function normalizeConfig(): void {
     config.portraitCardPreviewMode = PREVIEW_MODE_CONTAIN;
   }
 
-  if (!['off', '3:2', '16:9'].includes(config.portraitCardExpansionMode)) {
+  if (!['off', '3:2', '16:9', 'source'].includes(config.portraitCardExpansionMode)) {
     config.portraitCardExpansionMode = 'off';
   }
 

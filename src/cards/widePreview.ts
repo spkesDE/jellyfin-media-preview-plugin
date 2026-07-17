@@ -1,4 +1,5 @@
 import { config } from '../config';
+import type { AspectRatio } from '../types/preview';
 import type { CardState } from '../types/state';
 import { getCardLayoutKind } from './layout';
 
@@ -80,7 +81,8 @@ function bindViewportResize(): void {
 
 export function expandPortraitCardForPreview(
   card: HTMLElement,
-  state: CardState
+  state: CardState,
+  sourceAspectRatio?: AspectRatio | null
 ): WidePreviewDimensions | null {
   if (config.portraitCardExpansionMode === 'off' || getCardLayoutKind(card) !== 'portrait' || !state.rootHost) {
     return null;
@@ -109,7 +111,13 @@ export function expandPortraitCardForPreview(
     return null;
   }
 
-  const aspectRatio = config.portraitCardExpansionMode === '16:9' ? 16 / 9 : 3 / 2;
+  const aspectRatio = config.portraitCardExpansionMode === 'source'
+    && sourceAspectRatio?.width
+    && sourceAspectRatio.height
+    ? sourceAspectRatio.width / sourceAspectRatio.height
+    : config.portraitCardExpansionMode === '3:2'
+      ? 3 / 2
+      : 16 / 9;
   const desiredHostWidth = hostHeight * aspectRatio;
   const unclampedCardWidth = cardWidth + Math.max(0, desiredHostWidth - hostWidth);
   const layoutWidth = card.parentElement?.clientWidth || window.innerWidth;
