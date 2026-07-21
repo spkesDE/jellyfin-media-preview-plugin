@@ -1,5 +1,55 @@
 # Changelog
 
+## v0.3.0.0 - 2026-07-21
+
+
+
+
+
+
+
+
+
+
+### Features
+
+- feat(cards): support portrait expansion in wrapped rows
+
+- feat(trailer): persist unavailable YouTube sources
+
+- feat(trailer): sync unavailable sources with server
+
+- feat(config): configure unavailable trailer retry interval
+
+- feat(config): toggle unavailable trailer cache
+
+
+
+### Fixes
+
+- fix(cards): enhance card selection logic and exclude non-playable media cards
+
+- fix(apiClient): added Jellyfin 12 support
+
+- fix(trailer): skip unavailable YouTube embeds
+
+- fix(trailer): read persisted unavailable source ids
+
+
+
+### Build
+
+- build(dist): refresh preview bundles
+
+
+
+
+### Refactoring
+
+- refactor(navigation): improve plugin configuration link handling and update navigation entry logic for Jellyfin 12.0
+
+
+
 ## v0.2.4.1 - 2026-07-17
 
 

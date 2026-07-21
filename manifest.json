@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
   "versions": [
     {
+      "version": "0.3.0.0",
+      "changelog": "- feat(cards): support portrait expansion in wrapped rows\n- feat(trailer): persist unavailable YouTube sources\n- feat(trailer): sync unavailable sources with server\n- feat(config): configure unavailable trailer retry interval\n- feat(config): toggle unavailable trailer cache\n- fix(cards): enhance card selection logic and exclude non-playable media cards\n- fix(apiClient): added Jellyfin 12 support\n- fix(trailer): skip unavailable YouTube embeds\n- fix(trailer): read persisted unavailable source ids\n- build(dist): refresh preview bundles\n- refactor(navigation): improve plugin configuration link handling and update navigation entry logic for Jellyfin 12.0\n",
+      "targetAbi": "10.11.11.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.0.0/MediaPreview.zip",
+      "checksum": "f7600fc1aae82fa25d9d13b62602973e",
+      "timestamp": "2026-07-21 18:34:08"
+    },
+    {
       "version": "0.2.4.1",
       "changelog": "- fix(config): live preview grid\n",
       "targetAbi": "10.11.11.0",
