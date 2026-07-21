@@ -9,6 +9,13 @@ import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '.
 import type { AspectRatio, TrailerCandidate, TrailerInfo, TrailerPreview } from '../types/preview';
 
 const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']);
+const unavailableYouTubeVideoIds = new Set<string>();
+
+export function markYouTubeTrailerUnavailable(videoId: string | null | undefined): void {
+  if (videoId) {
+    unavailableYouTubeVideoIds.add(videoId);
+  }
+}
 
 export function extractItemList(payload: unknown): JellyfinItem[] {
   if (Array.isArray(payload)) {
@@ -193,6 +200,10 @@ export function isTrailerCandidateAllowed(
 
   if (isLocalTrailerCandidate(candidate)) {
     return true;
+  }
+
+  if (candidate.provider === 'youtube' && candidate.youtubeId) {
+    return !unavailableYouTubeVideoIds.has(candidate.youtubeId);
   }
 
   return true;

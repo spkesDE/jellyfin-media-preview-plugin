@@ -844,6 +844,8 @@ export function destroyCardBindings(): void {
       state.hoverCountdownLabel = null;
       removeManagedNode<HTMLDivElement>(state, 'unavailableMessage');
       state.unavailableMessage = null;
+      state.trailerMediaCleanup?.();
+      state.trailerMediaCleanup = null;
       removeManagedNode<HTMLDivElement>(state, 'trailerLayer');
       state.trailerLayer = null;
       state.trailerMedia = null;
