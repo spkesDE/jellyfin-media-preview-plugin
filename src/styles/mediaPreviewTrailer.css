@@ -59,9 +59,10 @@
   background: rgba(22, 28, 38, 0.9);
 }
 
-.jmp-trailer-expand .material-icons {
-  font-size: 19px;
-  line-height: 1;
+.jmp-trailer-expand svg {
+  width: 19px;
+  height: 19px;
+  fill: currentColor;
 }
 
 .jmp-trailer-layer.jmp-debug-visible {

@@ -300,7 +300,11 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     trailerExpandButton.type = 'button';
     trailerExpandButton.title = 'Expand trailer';
     trailerExpandButton.setAttribute('aria-label', 'Expand trailer');
-    trailerExpandButton.innerHTML = '<span class="material-icons" aria-hidden="true">open_in_full</span>';
+    trailerExpandButton.innerHTML = [
+      '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">',
+      '<path d="M21 11V3h-8l3.29 3.29-10 10L3 13v8h8l-3.29-3.29 10-10L21 11z"></path>',
+      '</svg>'
+    ].join('');
     trailerExpandButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
