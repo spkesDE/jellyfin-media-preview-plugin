@@ -1,5 +1,26 @@
 # Changelog
 
+## v0.3.0.1 - 2026-07-21
+
+
+
+
+
+
+
+
+
+
+
+### Fixes
+
+- fix(trailer): keep expand button above card overlay
+
+
+
+
+
+
 ## v0.3.0.0 - 2026-07-21
 
 
