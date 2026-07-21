@@ -32,6 +32,11 @@ public sealed class UnavailableTrailerStore
 
     public async Task<IReadOnlyList<string>> GetActiveVideoIdsAsync(CancellationToken cancellationToken)
     {
+        if (!GetConfiguration().UnavailableTrailerCacheEnabled)
+        {
+            return [];
+        }
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -58,6 +63,11 @@ public sealed class UnavailableTrailerStore
         int errorCode,
         CancellationToken cancellationToken)
     {
+        if (!GetConfiguration().UnavailableTrailerCacheEnabled)
+        {
+            return;
+        }
+
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
@@ -215,9 +225,11 @@ public sealed class UnavailableTrailerStore
 
     private static TimeSpan GetEntryLifetime()
     {
-        PluginConfiguration configuration = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
-        return TimeSpan.FromDays(configuration.UnavailableTrailerRetryDays);
+        return TimeSpan.FromDays(GetConfiguration().UnavailableTrailerRetryDays);
     }
+
+    private static PluginConfiguration GetConfiguration() =>
+        PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
 
     private static bool RefreshExpirationAndPrune(
         UnavailableTrailerCache cache,

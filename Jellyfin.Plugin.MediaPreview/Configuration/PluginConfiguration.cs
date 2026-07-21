@@ -72,6 +72,8 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrailerVolumePercent { get; set; } = 35;
 
+    public bool UnavailableTrailerCacheEnabled { get; set; } = true;
+
     public int UnavailableTrailerRetryDays { get; set; } = 30;
 
     public string HoverMode { get; set; } = "auto";

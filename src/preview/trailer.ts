@@ -19,6 +19,10 @@ interface UnavailableTrailerListResponse {
 }
 
 function loadUnavailableYouTubeVideoIds(): Promise<void> {
+  if (!config.unavailableTrailerCacheEnabled) {
+    return Promise.resolve();
+  }
+
   if (unavailableYouTubeVideoIdsRequest) {
     return unavailableYouTubeVideoIdsRequest;
   }
@@ -61,7 +65,7 @@ export function markYouTubeTrailerUnavailable(
 
   const isNew = !unavailableYouTubeVideoIds.has(videoId);
   unavailableYouTubeVideoIds.add(videoId);
-  if (!isNew || !itemId) {
+  if (!isNew || !itemId || !config.unavailableTrailerCacheEnabled) {
     return;
   }
 

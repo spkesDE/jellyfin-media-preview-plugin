@@ -28,6 +28,7 @@ export const CONFIG_DEFAULTS = {
   ShowNoPreviewMessage: false,
   TrailerAudioEnabled: false,
   TrailerVolumePercent: 35,
+  UnavailableTrailerCacheEnabled: true,
   UnavailableTrailerRetryDays: 30,
   YouTubeCropStrength: 'medium' as YouTubeCropStrength,
   TrailerExpandButtonEnabled: true,

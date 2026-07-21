@@ -41,6 +41,7 @@ const standaloneFallbackConfig: PluginConfig = {
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  unavailableTrailerCacheEnabled: true,
   hoverDelayMs: 300,
   hoverIntentEnabled: false,
   hoverIntentThresholdPx: 18,
@@ -217,6 +218,7 @@ export function normalizeConfig(): void {
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.unavailableTrailerCacheEnabled = config.unavailableTrailerCacheEnabled !== false;
   config.previewBackdropIntensityPercent = clamp(numberOrFallback(config.previewBackdropIntensityPercent, 35), 0, 100);
   config.previewTransitionDurationMs = Math.max(0, numberOrFallback(config.previewTransitionDurationMs, 180));
   config.autoScrubStartPercent = clamp(numberOrFallback(config.autoScrubStartPercent, 0), 0, 100);
