@@ -3,18 +3,73 @@ import { PREVIEW_SOURCE_TRAILER, SUPPORTED_TYPES } from '../constants';
 import { buildApiUrl, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { debugLog } from '../core/logger';
 import { trailerInfoCache } from '../core/storage';
-import { requestJson } from '../core/request';
+import { postJson, requestJson } from '../core/request';
 import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
 import type { AspectRatio, TrailerCandidate, TrailerInfo, TrailerPreview } from '../types/preview';
 
 const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']);
+const UNAVAILABLE_TRAILER_CACHE_WAIT_MS = 1500;
 const unavailableYouTubeVideoIds = new Set<string>();
+let unavailableYouTubeVideoIdsRequest: Promise<void> | null = null;
 
-export function markYouTubeTrailerUnavailable(videoId: string | null | undefined): void {
-  if (videoId) {
-    unavailableYouTubeVideoIds.add(videoId);
+interface UnavailableTrailerListResponse {
+  videoIds?: unknown;
+}
+
+function loadUnavailableYouTubeVideoIds(): Promise<void> {
+  if (unavailableYouTubeVideoIdsRequest) {
+    return unavailableYouTubeVideoIdsRequest;
   }
+
+  const loadRequest = requestJson<UnavailableTrailerListResponse>(
+    'media-preview/unavailable-trailers'
+  ).then((response) => {
+    if (!Array.isArray(response?.videoIds)) {
+      return;
+    }
+
+    response.videoIds.forEach((videoId) => {
+      if (typeof videoId === 'string') {
+        unavailableYouTubeVideoIds.add(videoId);
+      }
+    });
+  }).catch((error) => {
+    debugLog('Failed to load the persistent unavailable trailer cache.', error);
+  });
+
+  unavailableYouTubeVideoIdsRequest = Promise.race([
+    loadRequest,
+    new Promise<void>((resolve) => {
+      window.setTimeout(resolve, UNAVAILABLE_TRAILER_CACHE_WAIT_MS);
+    })
+  ]);
+
+  return unavailableYouTubeVideoIdsRequest;
+}
+
+export function markYouTubeTrailerUnavailable(
+  videoId: string | null | undefined,
+  itemId: string | null | undefined,
+  errorCode: number
+): void {
+  if (!videoId) {
+    return;
+  }
+
+  const isNew = !unavailableYouTubeVideoIds.has(videoId);
+  unavailableYouTubeVideoIds.add(videoId);
+  if (!isNew || !itemId) {
+    return;
+  }
+
+  void postJson('media-preview/unavailable-trailers/report', {
+    itemId,
+    videoId,
+    errorCode
+  }).catch((error) => {
+    debugLog('Failed to persist an unavailable YouTube trailer.', { itemId, videoId, errorCode }, error);
+  });
 }
 
 export function extractItemList(payload: unknown): JellyfinItem[] {
@@ -272,7 +327,10 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
 export function getTrailerPreview(
   itemId: string
 ): Promise<TrailerPreview | null> {
-  return getTrailerInfo(itemId).then((info) => {
+  return Promise.all([
+    getTrailerInfo(itemId),
+    loadUnavailableYouTubeVideoIds()
+  ]).then(([info]) => {
     if (!info?.candidates?.length) {
       return null;
     }
@@ -284,6 +342,7 @@ export function getTrailerPreview(
 
     return {
       source: PREVIEW_SOURCE_TRAILER,
+      itemId,
       trailer: candidate,
       info: {
         frameWidth: candidate.aspectRatio.width,

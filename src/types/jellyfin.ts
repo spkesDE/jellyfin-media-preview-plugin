@@ -48,9 +48,11 @@ export interface JellyfinCurrentUser {
 }
 
 export interface JellyfinAjaxRequest {
-  type: 'GET';
+  type: 'GET' | 'POST';
   url: string;
-  dataType: 'json';
+  dataType?: 'json';
+  contentType?: 'application/json';
+  data?: string;
 }
 
 export interface JellyfinServerInfo {

@@ -231,7 +231,7 @@ export function applyTrailerPreview(
               youtubeId: trailer.youtubeId || null,
               errorCode
             });
-            markYouTubeTrailerUnavailable(trailer.youtubeId);
+            markYouTubeTrailerUnavailable(trailer.youtubeId, preview.itemId, errorCode);
             state.lastPreviewKey = null;
             state.activePreviewSource = null;
             clearTrailerMedia(state);
