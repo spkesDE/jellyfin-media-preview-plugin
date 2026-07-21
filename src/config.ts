@@ -41,6 +41,7 @@ const standaloneFallbackConfig: PluginConfig = {
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  unavailableTrailerCacheEnabled: true,
   hoverDelayMs: 300,
   hoverIntentEnabled: false,
   hoverIntentThresholdPx: 18,
@@ -70,6 +71,9 @@ const standaloneFallbackConfig: PluginConfig = {
   autoScrubMaxDelayMs: 1000,
   portraitCardPreviewMode: 'contain',
   portraitCardExpansionMode: 'off',
+  portraitCardExpansionLayoutMode: 'horizontal-only',
+  portraitCardCompressionMode: 'distance',
+  portraitCardRowLockEnabled: true,
   backdropCardPreviewMode: 'cover',
   previewBackdropMode: 'dim-blur',
   previewBackdropIntensityPercent: 35,
@@ -159,6 +163,16 @@ export function normalizeConfig(): void {
     config.portraitCardExpansionMode = 'off';
   }
 
+  if (!['all', 'horizontal-only', 'compress'].includes(config.portraitCardExpansionLayoutMode)) {
+    config.portraitCardExpansionLayoutMode = 'horizontal-only';
+  }
+
+  if (!['distance', 'neighbors'].includes(config.portraitCardCompressionMode)) {
+    config.portraitCardCompressionMode = 'distance';
+  }
+
+  config.portraitCardRowLockEnabled = config.portraitCardRowLockEnabled !== false;
+
   if (!VALID_PREVIEW_MODES.has(config.backdropCardPreviewMode)) {
     config.backdropCardPreviewMode = PREVIEW_MODE_COVER;
   }
@@ -204,6 +218,7 @@ export function normalizeConfig(): void {
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.unavailableTrailerCacheEnabled = config.unavailableTrailerCacheEnabled !== false;
   config.previewBackdropIntensityPercent = clamp(numberOrFallback(config.previewBackdropIntensityPercent, 35), 0, 100);
   config.previewTransitionDurationMs = Math.max(0, numberOrFallback(config.previewTransitionDurationMs, 180));
   config.autoScrubStartPercent = clamp(numberOrFallback(config.autoScrubStartPercent, 0), 0, 100);

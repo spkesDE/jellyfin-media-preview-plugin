@@ -28,6 +28,7 @@ import {
   updateHoverCountdown
 } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
+import { restorePortraitCardWidth } from '../cards/widePreview';
 import { runtimeState } from '../runtime';
 import { applyPreview } from '../preview';
 import { cancelScheduledTrickplayPreload, observeTrickplayPreload, scheduleTrickplayPreload } from '../preview/preload';
@@ -70,6 +71,61 @@ function getNoPreviewMessage(previewSource: string): string {
   }
 
   return NO_PREVIEW_MESSAGE_ANY;
+}
+
+function recoverFromUnavailableTrailer(
+  card: HTMLElement,
+  state: ReturnType<typeof getOrCreateCardState>,
+  itemId: string,
+  itemType: string | null,
+  percent: number,
+  requestToken: number,
+  isEngaged: () => boolean,
+  startAutoScrubOnFallback: boolean
+): void {
+  if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
+    restorePortraitCardWidth(state);
+    return;
+  }
+
+  getPreviewUrl(itemId, percent, itemType).then((preview) => {
+    if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
+      return;
+    }
+
+    if (!preview) {
+      restorePortraitCardWidth(state);
+      if (config.showNoPreviewMessage) {
+        getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+          if (state.previewActive && requestToken === state.latestRequestToken && isEngaged()) {
+            showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+          }
+        });
+      }
+      return;
+    }
+
+    hideUnavailableMessage(state);
+    applyPreview(card, preview, percent, {
+      onTrailerUnavailable: () => recoverFromUnavailableTrailer(
+        card,
+        state,
+        itemId,
+        itemType,
+        percent,
+        requestToken,
+        isEngaged,
+        startAutoScrubOnFallback
+      )
+    });
+
+    if (startAutoScrubOnFallback && preview.source !== PREVIEW_SOURCE_TRAILER) {
+      startAutoScrub(card);
+    }
+  }).catch((error) => {
+    restorePortraitCardWidth(state);
+    debugLog('Failed to recover from an unavailable trailer.', itemId, error);
+  });
 }
 
 function startHoverCountdown(
@@ -213,7 +269,18 @@ function scheduleHoverActivation(
       resetHoverCountdown(state);
       hideUnavailableMessage(state);
       hideLoadingIndicator(state);
-      applyPreview(card, preview, initialPercent);
+      applyPreview(card, preview, initialPercent, {
+        onTrailerUnavailable: () => recoverFromUnavailableTrailer(
+          card,
+          state,
+          itemId,
+          itemType,
+          initialPercent,
+          requestToken,
+          () => state.pointerInside,
+          config.hoverMode === HOVER_MODE_AUTO
+        )
+      });
 
       if (preview.source === PREVIEW_SOURCE_TRAILER) {
         return;
@@ -278,7 +345,18 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
 
       hideUnavailableMessage(state);
       hideLoadingIndicator(state);
-      applyPreview(card, preview, initialPercent);
+      applyPreview(card, preview, initialPercent, {
+        onTrailerUnavailable: () => recoverFromUnavailableTrailer(
+          card,
+          state,
+          itemId,
+          itemType,
+          initialPercent,
+          requestToken,
+          () => state.focusInside,
+          false
+        )
+      });
     }).catch((error) => {
       if (requestToken !== state.latestRequestToken) {
         return;

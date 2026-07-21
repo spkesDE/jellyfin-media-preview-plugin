@@ -7,6 +7,7 @@ import {
   ensureTrailerActions,
   ensureTrailerLayer,
   hidePreviewFrame,
+  hideMetadataOverlay,
   hideProgress,
   resetPreviewBackdrop,
   setTrailerExpandVisible,
@@ -17,8 +18,13 @@ import { expandPortraitCardForPreview } from '../cards/widePreview';
 import { debugLog } from '../core/logger';
 import { runtimeState } from '../runtime';
 import { applyMediaLayout } from './mediaLayout';
-import { buildYouTubeEmbedUrl } from '../trailerOverlay/youtube';
+import {
+  buildYouTubeEmbedUrl,
+  monitorYouTubeEmbed,
+  YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES
+} from '../trailerOverlay/youtube';
 import { collapseExpandedTrailer } from '../trailerOverlay/expandedTrailer';
+import { markYouTubeTrailerUnavailable } from './trailer';
 import type { TrailerPreview } from '../types/preview';
 import type { CardState } from '../types/state';
 
@@ -51,8 +57,13 @@ export function ensureTrailerMediaElement(
     return state.trailerMedia;
   }
 
-  if (state.trailerMedia?.parentNode) {
-    state.trailerMedia.parentNode.removeChild(state.trailerMedia);
+  if (state.trailerMedia) {
+    const previousMedia = state.trailerMedia;
+    state.trailerMediaCleanup?.();
+    state.trailerMediaCleanup = null;
+    if (previousMedia.parentNode) {
+      previousMedia.parentNode.removeChild(previousMedia);
+    }
   }
 
   const mediaElement = document.createElement(kind === 'iframe' ? 'iframe' : 'video') as HTMLVideoElement | HTMLIFrameElement;
@@ -98,7 +109,13 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   }
 
   if (state.trailerMediaKind === 'iframe') {
-    state.trailerMedia.src = 'about:blank';
+    state.trailerMediaCleanup?.();
+    state.trailerMediaCleanup = null;
+    if (state.trailerMedia.parentNode) {
+      state.trailerMedia.parentNode.removeChild(state.trailerMedia);
+    }
+    state.trailerMedia = null;
+    state.trailerMediaKind = null;
     return;
   }
 
@@ -108,7 +125,11 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   videoElement.load();
 }
 
-export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview | null | undefined): void {
+export function applyTrailerPreview(
+  card: HTMLElement,
+  preview: TrailerPreview | null | undefined,
+  options?: { onUnavailable?: () => void }
+): void {
   const state = getOrCreateCardState(card);
   if (!ensurePreviewHost(card, state) || !preview?.trailer || !ensureTrailerLayer(state)) {
     return;
@@ -119,20 +140,20 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
     return;
   }
 
-  const hostRect = expandPortraitCardForPreview(card, state, preview.trailer.aspectRatio)
+  const trailer = preview.trailer;
+  const hostRect = expandPortraitCardForPreview(card, state, trailer.aspectRatio)
     || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }
 
-  const trailer = preview.trailer;
   const sourceWidth = Math.max(1, trailer.aspectRatio?.width || 16);
   const sourceHeight = Math.max(1, trailer.aspectRatio?.height || 9);
   const previewMode = getPreviewModeForCard(card);
   const rootBorderRadius = window.getComputedStyle(rootHost).borderRadius;
   const previewKey = [
     trailer.kind,
-    trailer.src || trailer.embedUrl,
+    trailer.src || trailer.embedUrl || trailer.youtubeId,
     previewMode,
     Math.round(hostRect.width),
     Math.round(hostRect.height)
@@ -148,6 +169,14 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
   hidePreviewFrame(state);
   resetPreviewBackdrop(state);
   applyPreviewBackdrop(state);
+
+  if (
+    trailer.kind === 'iframe'
+    && state.currentTrailer?.youtubeId
+    && state.currentTrailer.youtubeId !== trailer.youtubeId
+  ) {
+    clearTrailerMedia(state);
+  }
 
   const mediaElement = ensureTrailerMediaElement(state, trailer.kind);
   if (!mediaElement) {
@@ -185,6 +214,35 @@ export function applyTrailerPreview(card: HTMLElement, preview: TrailerPreview |
       : trailer.embedUrl;
 
     if (iframeUrl && mediaElement instanceof HTMLIFrameElement && mediaElement.src !== iframeUrl) {
+      state.trailerMediaCleanup?.();
+      state.trailerMediaCleanup = monitorYouTubeEmbed(mediaElement, {
+        onError: (errorCode) => {
+          if (!YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES.has(errorCode)) {
+            return;
+          }
+
+          window.setTimeout(() => {
+            if (state.trailerMedia !== mediaElement || state.currentTrailer !== trailer) {
+              return;
+            }
+
+            debugLog('YouTube trailer cannot be played in an embedded player.', {
+              title: trailer.title || null,
+              youtubeId: trailer.youtubeId || null,
+              errorCode
+            });
+            markYouTubeTrailerUnavailable(trailer.youtubeId, preview.itemId, errorCode);
+            state.lastPreviewKey = null;
+            state.activePreviewSource = null;
+            clearTrailerMedia(state);
+            hideMetadataOverlay(state);
+            options?.onUnavailable?.();
+          }, 0);
+        },
+        onMonitorUnavailable: () => {
+          debugLog('YouTube iframe API monitoring is unavailable.', trailer.youtubeId || trailer.title);
+        }
+      });
       mediaElement.src = iframeUrl;
       state.trailerPlaybackStartedAt = Date.now();
     }

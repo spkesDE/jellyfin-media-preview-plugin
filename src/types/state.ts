@@ -25,6 +25,7 @@ export interface CardState {
   trailerExpandButton: HTMLButtonElement | null;
   trailerMedia: HTMLVideoElement | HTMLIFrameElement | null;
   trailerMediaKind: 'video' | 'iframe' | null;
+  trailerMediaCleanup: (() => void) | null;
   trailerTransitionTimer: number | null;
   currentTrailer: TrailerCandidate | null;
   trailerPlaybackStartedAt: number;
@@ -47,6 +48,7 @@ export interface CardState {
   widePreviewCleanupTimer: number | null;
   widePreviewScroller: HTMLElement | null;
   widePreviewScrollerTranslate: string | null;
+  widePreviewRowCards: HTMLElement[];
   autoScrubTimer: number | null;
   autoScrubGeneration: number;
   autoScrubPercent: number | null;

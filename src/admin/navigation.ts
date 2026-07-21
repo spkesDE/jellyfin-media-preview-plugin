@@ -1,34 +1,48 @@
 import { ADMIN_NAV_LINK_ATTR, CONFIGURATION_PAGE_HASH, CONFIGURATION_PAGE_NAME } from '../constants';
 import { runtimeState } from '../runtime';
 
-export function isPluginConfigurationLink(element: Element | null): boolean {
+export function isPluginConfigurationLink(
+  element: Element | null
+): boolean {
   return !!(
     element &&
     element.tagName === 'A' &&
     typeof element.getAttribute === 'function' &&
-    (element.getAttribute('href') || '').includes('#/configurationpage?name=')
+    (element.getAttribute('href') || '').includes(
+      '#/configurationpage?name='
+    )
   );
 }
 
 export function getAdminNavigationContainers(): HTMLElement[] {
-  const pluginLinks = Array.from(document.querySelectorAll('a[href*="#/configurationpage?name="]'))
-    .filter((link) => {
-      return isPluginConfigurationLink(link) && (link.getAttribute('href') || '') !== CONFIGURATION_PAGE_HASH;
-    });
   const containers = new Set<HTMLElement>();
 
+  // Jellyfin 12 MUI navigation
+  const muiPluginsContainer =
+    document.querySelector<HTMLElement>(
+      'ul[aria-labelledby="plugins-subheader"]'
+    );
+
+  if (muiPluginsContainer) {
+    containers.add(muiPluginsContainer);
+  }
+
+  // Jellyfin 10.11 and generic fallback
+  const pluginLinks = Array.from(
+    document.querySelectorAll(
+      'a[href*="#/configurationpage?name="]'
+    )
+  ).filter((link) => {
+    return (
+      isPluginConfigurationLink(link) &&
+      (link.getAttribute('href') || '') !==
+        CONFIGURATION_PAGE_HASH
+    );
+  });
+
   pluginLinks.forEach((link) => {
-    const parent = link.parentElement;
-    if (!parent) {
-      return;
-    }
-
-    const siblingPluginLinks = Array.from(parent.children).filter((child) => {
-      return isPluginConfigurationLink(child);
-    });
-
-    if (siblingPluginLinks.length >= 2) {
-      containers.add(parent);
+    if (link.parentElement) {
+      containers.add(link.parentElement);
     }
   });
 
@@ -122,6 +136,8 @@ export function updateAdminNavigationEntry(entry: Element): void {
   entry.removeAttribute('id');
 
   const labelSelectors = [
+    '.MuiListItemText-primary',
+    '.MuiTypography-root.MuiListItemText-primary',
     '.navMenuOptionText',
     '.listItemBodyText',
     '.drawerLinkText',
@@ -169,9 +185,13 @@ export function ensureAdminNavigationLink(): void {
       return;
     }
 
-    const template = Array.from(container.children).find((child) => {
-      return isPluginConfigurationLink(child);
-    });
+    const template =
+      Array.from(container.children).find((child) => {
+        return isPluginConfigurationLink(child);
+      }) ||
+      container.querySelector(
+        'a[href="#/dashboard/plugins"], a[href="#/plugins"]'
+      );
     if (!template) {
       return;
     }

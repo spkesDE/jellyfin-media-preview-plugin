@@ -4,13 +4,18 @@ import { applyTrailerPreview } from './renderTrailer';
 import { applyTrickplayPreview } from './renderTrickplay';
 import type { PreviewResult } from '../types/preview';
 
-export function applyPreview(card: HTMLElement, preview: PreviewResult | null | undefined, percent: number): void {
+export function applyPreview(
+  card: HTMLElement,
+  preview: PreviewResult | null | undefined,
+  percent: number,
+  options?: { onTrailerUnavailable?: () => void }
+): void {
   if (!preview) {
     return;
   }
 
   if (preview.source === PREVIEW_SOURCE_TRAILER) {
-    applyTrailerPreview(card, preview);
+    applyTrailerPreview(card, preview, { onUnavailable: options?.onTrailerUnavailable });
     renderMetadataOverlay(card);
     return;
   }

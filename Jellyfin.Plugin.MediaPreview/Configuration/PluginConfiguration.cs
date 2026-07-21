@@ -72,6 +72,10 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrailerVolumePercent { get; set; } = 35;
 
+    public bool UnavailableTrailerCacheEnabled { get; set; } = true;
+
+    public int UnavailableTrailerRetryDays { get; set; } = 30;
+
     public string HoverMode { get; set; } = "auto";
 
     public bool HoverCountdownEnabled { get; set; } = false;
@@ -95,6 +99,12 @@ public sealed class PluginConfiguration : BasePluginConfiguration
     public string PortraitCardPreviewMode { get; set; } = "contain";
 
     public string PortraitCardExpansionMode { get; set; } = "off";
+
+    public string PortraitCardExpansionLayoutMode { get; set; } = "horizontal-only";
+
+    public string PortraitCardCompressionMode { get; set; } = "distance";
+
+    public bool PortraitCardRowLockEnabled { get; set; } = true;
 
     public string BackdropCardPreviewMode { get; set; } = "cover";
 

@@ -58,6 +58,7 @@ export interface TrickplayPreview {
 
 export interface TrailerPreview {
   source: 'trailer';
+  itemId: string;
   trailer: TrailerCandidate;
   info: {
     frameWidth: number;

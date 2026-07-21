@@ -15,6 +15,8 @@ export type AutoScrubMode = 'step' | 'sweep' | 'ping-pong';
 export type AutoScrubPreset = 'custom' | 'snappy' | 'balanced' | 'cinematic';
 export type PreviewMode = 'cover' | 'contain' | 'stretch';
 export type PortraitCardExpansionMode = 'off' | '3:2' | '16:9' | 'source';
+export type PortraitCardExpansionLayoutMode = 'all' | 'horizontal-only' | 'compress';
+export type PortraitCardCompressionMode = 'distance' | 'neighbors';
 export type PreviewBackdropMode = 'off' | 'dim' | 'vignette' | 'dim-vignette' | 'blur' | 'dim-blur';
 export type PreviewTransitionMode = 'off' | 'fade' | 'crossfade';
 export type YouTubeCropStrength = 'off' | 'light' | 'medium' | 'strong';
@@ -35,6 +37,7 @@ export interface PluginConfig {
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
+  unavailableTrailerCacheEnabled: boolean;
   hoverDelayMs: number;
   hoverIntentEnabled: boolean;
   hoverIntentThresholdPx: number;
@@ -64,6 +67,9 @@ export interface PluginConfig {
   autoScrubMaxDelayMs: number;
   portraitCardPreviewMode: PreviewMode;
   portraitCardExpansionMode: PortraitCardExpansionMode;
+  portraitCardExpansionLayoutMode: PortraitCardExpansionLayoutMode;
+  portraitCardCompressionMode: PortraitCardCompressionMode;
+  portraitCardRowLockEnabled: boolean;
   backdropCardPreviewMode: PreviewMode;
   previewBackdropMode: PreviewBackdropMode;
   previewBackdropIntensityPercent: number;

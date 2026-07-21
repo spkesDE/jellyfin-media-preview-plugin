@@ -30,3 +30,38 @@ export function requestJson<T>(
     return response.json() as Promise<T>;
   });
 }
+
+export function postJson(
+  path: string,
+  body: unknown
+): Promise<void> {
+  const apiClient = getGlobalApiClient();
+  const url = buildApiUrl(path);
+  if (!apiClient || !url) {
+    return Promise.reject(new Error('ApiClient is not available.'));
+  }
+
+  const serializedBody = JSON.stringify(body);
+  if (typeof apiClient.ajax === 'function') {
+    return Promise.resolve(apiClient.ajax({
+      type: 'POST',
+      url,
+      contentType: 'application/json',
+      data: serializedBody
+    })).then(() => undefined);
+  }
+
+  return fetch(url, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      ...getAuthHeaders(apiClient),
+      'Content-Type': 'application/json'
+    },
+    body: serializedBody
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+  });
+}
