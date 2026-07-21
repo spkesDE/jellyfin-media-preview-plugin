@@ -15,6 +15,7 @@ let unavailableYouTubeVideoIdsRequest: Promise<void> | null = null;
 
 interface UnavailableTrailerListResponse {
   videoIds?: unknown;
+  VideoIds?: unknown;
 }
 
 function loadUnavailableYouTubeVideoIds(): Promise<void> {
@@ -25,11 +26,12 @@ function loadUnavailableYouTubeVideoIds(): Promise<void> {
   const loadRequest = requestJson<UnavailableTrailerListResponse>(
     'media-preview/unavailable-trailers'
   ).then((response) => {
-    if (!Array.isArray(response?.videoIds)) {
+    const videoIds = response?.videoIds ?? response?.VideoIds;
+    if (!Array.isArray(videoIds)) {
       return;
     }
 
-    response.videoIds.forEach((videoId) => {
+    videoIds.forEach((videoId) => {
       if (typeof videoId === 'string') {
         unavailableYouTubeVideoIds.add(videoId);
       }
