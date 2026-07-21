@@ -1,6 +1,9 @@
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using Jellyfin.Plugin.MediaPreview.Trailers;
+using MediaBrowser.Controller.Library;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -23,10 +26,17 @@ public sealed class MediaPreviewController : ControllerBase
         () => LoadEmbeddedScript(ConfigScriptResourcePath),
         LazyThreadSafetyMode.ExecutionAndPublication);
     private readonly ILogger<MediaPreviewController> _logger;
+    private readonly ILibraryManager _libraryManager;
+    private readonly UnavailableTrailerStore _unavailableTrailerStore;
 
-    public MediaPreviewController(ILogger<MediaPreviewController> logger)
+    public MediaPreviewController(
+        ILogger<MediaPreviewController> logger,
+        ILibraryManager libraryManager,
+        UnavailableTrailerStore unavailableTrailerStore)
     {
         _logger = logger;
+        _libraryManager = libraryManager;
+        _unavailableTrailerStore = unavailableTrailerStore;
     }
 
     [HttpGet("script")]
@@ -90,6 +100,51 @@ public sealed class MediaPreviewController : ControllerBase
                 statusCode: StatusCodes.Status500InternalServerError,
                 title: "The embedded media preview configuration script is invalid.");
         }
+    }
+
+    [Authorize]
+    [HttpGet("unavailable-trailers")]
+    [ProducesResponseType<UnavailableTrailerListResponse>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<UnavailableTrailerListResponse>> GetUnavailableTrailers(
+        CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        IReadOnlyList<string> videoIds = await _unavailableTrailerStore
+            .GetActiveVideoIdsAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return Ok(new UnavailableTrailerListResponse { VideoIds = videoIds });
+    }
+
+    [Authorize]
+    [HttpPost("unavailable-trailers/report")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ReportUnavailableTrailer(
+        [FromBody] ReportUnavailableTrailerRequest request,
+        CancellationToken cancellationToken)
+    {
+        if (!Guid.TryParse(request.ItemId, out Guid itemId)
+            || !YouTubeVideoId.IsValid(request.VideoId)
+            || !YouTubeVideoId.IsUnavailableErrorCode(request.ErrorCode))
+        {
+            return BadRequest("The unavailable trailer report is invalid.");
+        }
+
+        var item = _libraryManager.GetItemById(itemId);
+        bool trailerBelongsToItem = item?.RemoteTrailers?.Any(remoteTrailer =>
+            string.Equals(
+                YouTubeVideoId.Extract(remoteTrailer.Url),
+                request.VideoId,
+                StringComparison.Ordinal)) == true;
+        if (!trailerBelongsToItem)
+        {
+            return BadRequest("The reported trailer is not attached to the item.");
+        }
+
+        await _unavailableTrailerStore
+            .ReportAsync(request.VideoId, itemId, request.ErrorCode, cancellationToken)
+            .ConfigureAwait(false);
+        return NoContent();
     }
 
     private static byte[] LoadEmbeddedScript(string resourcePath)
