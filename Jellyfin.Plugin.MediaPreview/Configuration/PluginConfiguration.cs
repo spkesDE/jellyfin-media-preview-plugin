@@ -96,6 +96,12 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public string PortraitCardExpansionMode { get; set; } = "off";
 
+    public string PortraitCardExpansionLayoutMode { get; set; } = "horizontal-only";
+
+    public string PortraitCardCompressionMode { get; set; } = "distance";
+
+    public bool PortraitCardRowLockEnabled { get; set; } = true;
+
     public string BackdropCardPreviewMode { get; set; } = "cover";
 
     public string PreviewBackdropMode { get; set; } = "dim-blur";

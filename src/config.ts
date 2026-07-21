@@ -70,6 +70,9 @@ const standaloneFallbackConfig: PluginConfig = {
   autoScrubMaxDelayMs: 1000,
   portraitCardPreviewMode: 'contain',
   portraitCardExpansionMode: 'off',
+  portraitCardExpansionLayoutMode: 'horizontal-only',
+  portraitCardCompressionMode: 'distance',
+  portraitCardRowLockEnabled: true,
   backdropCardPreviewMode: 'cover',
   previewBackdropMode: 'dim-blur',
   previewBackdropIntensityPercent: 35,
@@ -158,6 +161,16 @@ export function normalizeConfig(): void {
   if (!['off', '3:2', '16:9', 'source'].includes(config.portraitCardExpansionMode)) {
     config.portraitCardExpansionMode = 'off';
   }
+
+  if (!['all', 'horizontal-only', 'compress'].includes(config.portraitCardExpansionLayoutMode)) {
+    config.portraitCardExpansionLayoutMode = 'horizontal-only';
+  }
+
+  if (!['distance', 'neighbors'].includes(config.portraitCardCompressionMode)) {
+    config.portraitCardCompressionMode = 'distance';
+  }
+
+  config.portraitCardRowLockEnabled = config.portraitCardRowLockEnabled !== false;
 
   if (!VALID_PREVIEW_MODES.has(config.backdropCardPreviewMode)) {
     config.backdropCardPreviewMode = PREVIEW_MODE_COVER;

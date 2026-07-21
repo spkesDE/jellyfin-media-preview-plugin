@@ -18,6 +18,15 @@ const portraitExpansionOptions: SelectOption[] = [
   { value: '16:9', label: 'Wide (16:9)' },
   { value: 'source', label: 'Source / Video ratio' }
 ];
+const portraitExpansionLayoutOptions: SelectOption[] = [
+  { value: 'all', label: 'Expand in all layouts' },
+  { value: 'horizontal-only', label: 'Expand only in horizontal rows' },
+  { value: 'compress', label: 'Compress cards in wrapped rows' }
+];
+const portraitCompressionOptions: SelectOption[] = [
+  { value: 'distance', label: 'Distance-based compression' },
+  { value: 'neighbors', label: 'Compress direct neighbours first' }
+];
 const backdropOptions: SelectOption[] = [
   { value: 'off', label: 'Off' },
   { value: 'dim', label: 'Dim' },
@@ -51,7 +60,28 @@ const positionOptions: SelectOption[] = [
           label="Portrait Card Expansion"
           :options="portraitExpansionOptions"
         />
-        <p class="jmp-note">Wide modes smoothly expand portrait cards when a preview starts and move neighboring cards aside.</p>
+        <template v-if="store.config.PortraitCardExpansionMode !== 'off'">
+          <ConfigSelect
+            v-model="store.config.PortraitCardExpansionLayoutMode"
+            label="Expansion Layout Behavior"
+            :options="portraitExpansionLayoutOptions"
+          />
+          <template v-if="store.config.PortraitCardExpansionLayoutMode === 'compress'">
+            <ConfigSelect
+              v-model="store.config.PortraitCardCompressionMode"
+              label="Wrapped Row Compression"
+              :options="portraitCompressionOptions"
+            />
+            <ConfigCheckbox
+              v-model="store.config.PortraitCardRowLockEnabled"
+              label="Lock every card in the affected row"
+            />
+            <p class="jmp-note">Row lock assigns temporary pixel widths to the complete visible row. Turn it off to modify only cards that actually provide space.</p>
+          </template>
+          <p v-if="store.config.PortraitCardExpansionLayoutMode === 'all'" class="jmp-note">Allows the original wide-card effect everywhere, including layouts that may reflow.</p>
+          <p v-else-if="store.config.PortraitCardExpansionLayoutMode === 'horizontal-only'" class="jmp-note">Wrapping library grids keep their original portrait dimensions.</p>
+          <p v-else class="jmp-note">The active card uses free row space first, then takes the remaining width from cards in the same visible row.</p>
+        </template>
         <ConfigSelect v-model="store.config.BackdropCardPreviewMode" label="Backdrop Card Preview Mode" :options="previewModeOptions" />
       </ConfigCard>
 

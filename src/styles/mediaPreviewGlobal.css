@@ -51,6 +51,14 @@
   width: var(--jmp-wide-preview-card-width) !important;
 }
 
+.jmp-wide-preview-row-card {
+  transition: width var(--jmp-wide-preview-duration, 280ms) cubic-bezier(0.2, 0.75, 0.2, 1) !important;
+}
+
+.jmp-wide-preview-row-card.jmp-wide-preview-row-adjusted {
+  width: var(--jmp-wide-preview-row-card-width) !important;
+}
+
 .jmp-wide-preview-scroller-shift {
   transition: transform 270ms ease-out,
     translate var(--jmp-wide-preview-duration, 280ms) cubic-bezier(0.2, 0.75, 0.2, 1) !important;
@@ -71,6 +79,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .jmp-wide-preview-card {
+    transition-duration: 0ms !important;
+  }
+
+  .jmp-wide-preview-row-card {
     transition-duration: 0ms !important;
   }
 
