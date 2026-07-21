@@ -9,7 +9,6 @@ public sealed class UnavailableTrailerStore
     private const int CurrentVersion = 1;
     private const int MaximumEntries = 1000;
     private const int MaximumItemIdsPerEntry = 20;
-    private static readonly TimeSpan EntryLifetime = TimeSpan.FromDays(30);
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web)
     {
         WriteIndented = true
@@ -37,7 +36,7 @@ public sealed class UnavailableTrailerStore
         try
         {
             UnavailableTrailerCache cache = await GetCacheAsync(cancellationToken).ConfigureAwait(false);
-            if (Prune(cache, DateTimeOffset.UtcNow))
+            if (RefreshExpirationAndPrune(cache, DateTimeOffset.UtcNow, GetEntryLifetime()))
             {
                 await SaveAsync(cache, cancellationToken).ConfigureAwait(false);
             }
@@ -63,8 +62,9 @@ public sealed class UnavailableTrailerStore
         try
         {
             DateTimeOffset now = DateTimeOffset.UtcNow;
+            TimeSpan entryLifetime = GetEntryLifetime();
             UnavailableTrailerCache cache = await GetCacheAsync(cancellationToken).ConfigureAwait(false);
-            Prune(cache, now);
+            RefreshExpirationAndPrune(cache, now, entryLifetime);
 
             UnavailableTrailerEntry? entry = cache.Entries.Find(candidate =>
                 string.Equals(candidate.VideoId, videoId, StringComparison.Ordinal));
@@ -78,7 +78,7 @@ public sealed class UnavailableTrailerStore
                     ErrorCode = errorCode,
                     FirstSeenUtc = now,
                     LastSeenUtc = now,
-                    RetryAfterUtc = now.Add(EntryLifetime),
+                    RetryAfterUtc = now.Add(entryLifetime),
                     ReportCount = 1,
                     ItemIds = [normalizedItemId]
                 };
@@ -88,7 +88,7 @@ public sealed class UnavailableTrailerStore
             {
                 entry.ErrorCode = errorCode;
                 entry.LastSeenUtc = now;
-                entry.RetryAfterUtc = now.Add(EntryLifetime);
+                entry.RetryAfterUtc = now.Add(entryLifetime);
                 entry.ReportCount = Math.Max(1, entry.ReportCount + 1);
                 if (!entry.ItemIds.Contains(normalizedItemId, StringComparer.OrdinalIgnoreCase))
                 {
@@ -213,12 +213,32 @@ public sealed class UnavailableTrailerStore
         return cache;
     }
 
-    private static bool Prune(UnavailableTrailerCache cache, DateTimeOffset now)
+    private static TimeSpan GetEntryLifetime()
     {
+        PluginConfiguration configuration = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
+        return TimeSpan.FromDays(configuration.UnavailableTrailerRetryDays);
+    }
+
+    private static bool RefreshExpirationAndPrune(
+        UnavailableTrailerCache cache,
+        DateTimeOffset now,
+        TimeSpan entryLifetime)
+    {
+        bool changed = false;
+        foreach (UnavailableTrailerEntry entry in cache.Entries)
+        {
+            DateTimeOffset retryAfterUtc = entry.LastSeenUtc.Add(entryLifetime);
+            if (entry.RetryAfterUtc != retryAfterUtc)
+            {
+                entry.RetryAfterUtc = retryAfterUtc;
+                changed = true;
+            }
+        }
+
         int removed = cache.Entries.RemoveAll(entry => entry.RetryAfterUtc <= now);
         int countBeforeTrim = cache.Entries.Count;
         TrimToMaximumEntries(cache);
-        return removed > 0 || cache.Entries.Count != countBeforeTrim;
+        return changed || removed > 0 || cache.Entries.Count != countBeforeTrim;
     }
 
     private static void TrimToMaximumEntries(UnavailableTrailerCache cache)

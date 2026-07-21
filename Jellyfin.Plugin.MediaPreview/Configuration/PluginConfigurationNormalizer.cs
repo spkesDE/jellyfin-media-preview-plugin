@@ -123,6 +123,7 @@ internal static class PluginConfigurationNormalizer
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),
+            UnavailableTrailerRetryDays = Clamp(source.UnavailableTrailerRetryDays, 1, 365, 30),
             HoverDelayMs = Math.Max(0, source.HoverDelayMs),
             HoverIntentEnabled = source.HoverIntentEnabled,
             HoverIntentThresholdPx = Math.Max(0, source.HoverIntentThresholdPx),

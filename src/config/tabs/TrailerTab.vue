@@ -41,6 +41,17 @@ const positionOptions: SelectOption[] = [
         <p class="jmp-note">Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.</p>
       </ConfigCard>
 
+      <ConfigCard title="Unavailable Trailers" help="Control when failed YouTube embeds should be tested again.">
+        <ConfigNumber
+          v-model="store.config.UnavailableTrailerRetryDays"
+          label="Retry Unavailable Trailers After (days)"
+          :min="1"
+          :max="365"
+          :step="1"
+        />
+        <p class="jmp-note">YouTube errors 100, 101, and 150 are skipped server-wide until this interval has elapsed. Changing the interval also updates existing entries on their next access.</p>
+      </ConfigCard>
+
       <ConfigCard title="Controls" help="Decide whether the in-card expand affordance should be shown and where it sits.">
         <ConfigCheckbox v-model="store.config.TrailerExpandButtonEnabled" label="Show Expand Button" />
         <ConfigSelect v-model="store.config.TrailerExpandButtonPosition" label="Expand Button Position" :options="positionOptions" />
