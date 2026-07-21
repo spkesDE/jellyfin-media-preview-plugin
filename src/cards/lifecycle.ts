@@ -278,6 +278,17 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     return null;
   }
 
+  /*
+   * Jellyfin 12 renders the image and its clickable details overlay as
+   * siblings inside .cardScalable. Mounting the action in the image host
+   * leaves it underneath that overlay, so the visible expand button opens
+   * the item instead of receiving the click. The common scalable host keeps
+   * the action above both siblings; older card layouts keep using rootHost.
+   */
+  const trailerActionsHost =
+    (card.querySelector('.cardScalable') as HTMLElement | null) ||
+    state.rootHost;
+
   if (!state.trailerActions) {
     const trailerActions = document.createElement('div');
     trailerActions.className = 'jmp-trailer-actions';
@@ -300,10 +311,12 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     });
 
     trailerActions.appendChild(trailerExpandButton);
-    state.rootHost.appendChild(trailerActions);
+    trailerActionsHost.appendChild(trailerActions);
 
     state.trailerActions = trailerActions;
     state.trailerExpandButton = trailerExpandButton;
+  } else if (state.trailerActions.parentElement !== trailerActionsHost) {
+    trailerActionsHost.appendChild(state.trailerActions);
   }
 
   applyTrailerExpandButtonSettings(state);
