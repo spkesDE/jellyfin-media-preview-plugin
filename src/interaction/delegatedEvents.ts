@@ -1,5 +1,9 @@
 import { runtimeState } from '../runtime';
-import { getHoverCardFromEventTarget, getSupportedCardFromEventTarget } from '../cards/discovery';
+import {
+  getCardFromEventTarget,
+  getHoverCardFromEventTarget,
+  getSupportedCardFromEventTarget
+} from '../cards/discovery';
 import {
   handleFocusEnter,
   handleFocusLeave,
@@ -53,12 +57,18 @@ export function bindDelegatedHoverEvents(): void {
       return;
     }
 
-    const card = getHoverCardFromEventTarget(event.target);
+    /*
+     * Resolved by card rather than hover host on both sides. The pointer may
+     * have already stepped off the hover host onto another part of the same
+     * card, in which case a hover-host lookup returns null here and the card
+     * is never torn down when the pointer finally moves to a different one.
+     */
+    const card = getCardFromEventTarget(event.target);
     if (!card) {
       return;
     }
 
-    const nextCard = getHoverCardFromEventTarget(event.relatedTarget);
+    const nextCard = getCardFromEventTarget(event.relatedTarget);
     if (nextCard === card) {
       return;
     }
@@ -90,12 +100,12 @@ export function bindDelegatedHoverEvents(): void {
   };
 
   const onMouseOut = (event: MouseEvent) => {
-    const card = getHoverCardFromEventTarget(event.target);
+    const card = getCardFromEventTarget(event.target);
     if (!card) {
       return;
     }
 
-    const nextCard = getHoverCardFromEventTarget(event.relatedTarget);
+    const nextCard = getCardFromEventTarget(event.relatedTarget);
     if (nextCard === card) {
       return;
     }

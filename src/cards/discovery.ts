@@ -504,7 +504,17 @@ export function getCardHoverHost(
   return getImageRenderHost(card);
 }
 
-export function getHoverCardFromEventTarget(
+/**
+ * Resolves the supported card an event target belongs to, without requiring the
+ * target to sit inside the card's hover host.
+ *
+ * Use this when deciding whether a pointer has left a card. Jellyfin places the
+ * overlay buttons inside .cardScalable but the surrounding .card padding is not,
+ * so a pointer travelling from the image to those buttons briefly crosses .card
+ * itself. Judged by hover host that reads as a leave, and the preview is torn
+ * down while the pointer is still on the same card.
+ */
+export function getCardFromEventTarget(
   target: EventTarget | null
 ): HTMLElement | null {
   if (
@@ -532,6 +542,18 @@ export function getHoverCardFromEventTarget(
     itemType &&
     !SUPPORTED_TYPES.has(itemType)
   ) {
+    return null;
+  }
+
+  return card;
+}
+
+export function getHoverCardFromEventTarget(
+  target: EventTarget | null
+): HTMLElement | null {
+  const card = getCardFromEventTarget(target);
+
+  if (!card || !(target instanceof Element)) {
     return null;
   }
 

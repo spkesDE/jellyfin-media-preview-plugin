@@ -65,7 +65,7 @@ export interface CardState {
     onPointerLeave: (event: PointerEvent) => void;
     onMouseEnter: (event: MouseEvent) => void;
     onMouseMove: (event: MouseEvent) => void;
-    onMouseLeave: () => void;
+    onMouseLeave: (event: MouseEvent) => void;
     onPointerCancel: () => void;
     onContextMenu: () => void;
   } | null;

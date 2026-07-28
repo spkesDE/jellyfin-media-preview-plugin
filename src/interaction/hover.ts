@@ -13,7 +13,13 @@ import {
   SUPPORTED_TYPES
 } from '../constants';
 import { debugCardSummary, debugLog } from '../core/logger';
-import { getItemIdFromCard, getItemTypeFromCard, findCandidateCards, getImageRenderHost } from '../cards/discovery';
+import {
+  getCardFromEventTarget,
+  getItemIdFromCard,
+  getItemTypeFromCard,
+  findCandidateCards,
+  getImageRenderHost
+} from '../cards/discovery';
 import {
   clearLeaveHold,
   clearPendingMove,
@@ -710,6 +716,16 @@ export function bindCard(card: HTMLElement): void {
     handlePointerMove(card, event);
   };
   const onPointerLeave = (event: PointerEvent) => {
+    /*
+     * pointerleave fires when the pointer leaves the image host, but Jellyfin's
+     * overlay buttons are siblings of it inside .cardScalable. Without this the
+     * preview is torn down as soon as the pointer reaches those buttons, even
+     * though it never left the card.
+     */
+    if (getCardFromEventTarget(event.relatedTarget) === card) {
+      return;
+    }
+
     handlePointerLeave(card, event);
   };
   const onMouseEnter = (event: MouseEvent) => {
@@ -718,7 +734,11 @@ export function bindCard(card: HTMLElement): void {
   const onMouseMove = (event: MouseEvent) => {
     handleMouseMove(card, event);
   };
-  const onMouseLeave = () => {
+  const onMouseLeave = (event: MouseEvent) => {
+    if (getCardFromEventTarget(event.relatedTarget) === card) {
+      return;
+    }
+
     handleMouseLeave(card);
   };
   const onPointerCancel = () => {
