@@ -476,6 +476,19 @@ export function getImageRenderHost(
     return nearestPadder;
   }
 
+  /*
+   * List rows have neither .cardImageContainer nor .cardPadder, so without this
+   * they fall through to the parent below, which is the full-width .listItem
+   * row. The preview then spans the whole row instead of the thumbnail.
+   */
+  const nearestListItemImage = imageElement.closest(
+    '.listItemImage'
+  ) as HTMLElement | null;
+
+  if (nearestListItemImage) {
+    return nearestListItemImage;
+  }
+
   return imageElement.parentElement || imageElement;
 }
 
