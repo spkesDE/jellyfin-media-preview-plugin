@@ -210,12 +210,13 @@ export function applyTrailerPreview(
 
   if (trailer.kind === 'iframe') {
     const iframeUrl = trailer.youtubeId
-      ? buildYouTubeEmbedUrl(trailer.youtubeId, !canPlayTrailerAudio(), { controls: false })
+      ? buildYouTubeEmbedUrl(trailer.youtubeId, !canPlayTrailerAudio(), { controls: false, loop: false })
       : trailer.embedUrl;
 
     if (iframeUrl && mediaElement instanceof HTMLIFrameElement && mediaElement.src !== iframeUrl) {
       state.trailerMediaCleanup?.();
       state.trailerMediaCleanup = monitorYouTubeEmbed(mediaElement, {
+        loop: true,
         onError: (errorCode) => {
           if (!YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES.has(errorCode)) {
             return;
@@ -240,7 +241,13 @@ export function applyTrailerPreview(
           }, 0);
         },
         onMonitorUnavailable: () => {
-          debugLog('YouTube iframe API monitoring is unavailable.', trailer.youtubeId || trailer.title);
+          /*
+           * Looping is driven by the player API here, so without it the preview
+           * plays once instead of repeating. Reloading the iframe with the
+           * playlist based loop would restart playback mid preview, which is
+           * worse than not looping for a short hover.
+           */
+          debugLog('YouTube iframe API monitoring is unavailable, preview will not loop.', trailer.youtubeId || trailer.title);
         }
       });
       mediaElement.src = iframeUrl;

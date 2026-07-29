@@ -4,8 +4,16 @@ interface YouTubePlayerErrorEvent {
   data: number;
 }
 
+interface YouTubePlayerStateEvent {
+  data: number;
+}
+
+const YOUTUBE_PLAYER_STATE_ENDED = 0;
+
 interface YouTubePlayer {
   destroy: () => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  playVideo: () => void;
 }
 
 interface YouTubePlayerApi {
@@ -14,6 +22,7 @@ interface YouTubePlayerApi {
     options: {
       events: {
         onError: (event: YouTubePlayerErrorEvent) => void;
+        onStateChange?: (event: YouTubePlayerStateEvent) => void;
       };
     }
   ) => YouTubePlayer;
@@ -77,6 +86,7 @@ export function monitorYouTubeEmbed(
   callbacks: {
     onError: (errorCode: number) => void;
     onMonitorUnavailable?: () => void;
+    loop?: boolean;
   }
 ): () => void {
   let disposed = false;
@@ -100,6 +110,23 @@ export function monitorYouTubeEmbed(
             if (!disposed && !errorNotified) {
               errorNotified = true;
               callbacks.onError(Number(event.data));
+            }
+          },
+          onStateChange: (event) => {
+            /*
+             * Looping through loop=1 requires a playlist parameter, which makes
+             * the embed render playlist navigation over the preview. Restarting
+             * on ENDED keeps the loop without that chrome.
+             */
+            if (disposed || !callbacks.loop || Number(event.data) !== YOUTUBE_PLAYER_STATE_ENDED) {
+              return;
+            }
+
+            try {
+              player?.seekTo(0, true);
+              player?.playVideo();
+            } catch {
+              /* the player may already be torn down */
             }
           }
         }
@@ -176,6 +203,7 @@ export function buildYouTubeEmbedUrl(
   options?: {
     controls?: boolean;
     startSeconds?: number;
+    loop?: boolean;
   }
 ): string | null {
   if (!videoId) {
@@ -200,6 +228,7 @@ export function buildYouTubeEmbedUrl(
     + '&enablejsapi=1'
     + `&origin=${encodeURIComponent(window.location.origin)}`
     + (startSeconds > 0 ? `&start=${encodeURIComponent(startSeconds)}` : '')
-    + '&loop=1'
-    + `&playlist=${encodeURIComponent(videoId)}`;
+    + (resolvedOptions.loop === false
+      ? ''
+      : `&loop=1&playlist=${encodeURIComponent(videoId)}`);
 }
