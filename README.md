@@ -4,6 +4,8 @@
 
 `Jellyfin Media Preview` adds hover previews to Jellyfin Web.
 
+This branch provides the legacy build for Jellyfin 10.10.7. It is released separately from the current Jellyfin version and does not receive long-term support.
+
 Hover a movie, series, or episode card and the plugin can show a quick preview using Jellyfin Trickplay thumbnails, local trailers, or YouTube trailers already known to Jellyfin.
 
 ## Features
@@ -17,7 +19,7 @@ Hover a movie, series, or episode card and the plugin can show a quick preview u
 
 ## Requirements
 
-- Jellyfin with the web interface
+- Jellyfin 10.10.7 with the web interface
 - One frontend injection plugin:
   - [File Transformation](https://www.iamparadox.dev/jellyfin/plugins/manifest.json), or
   - [JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector)
@@ -38,7 +40,7 @@ Install Media Preview and one frontend injection plugin:
 2. Add this plugin repository:
 
    ```text
-   https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/manifest.json
+   https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/manifest.json
    ```
 
 3. Save, open the plugin catalog, and install `Media Preview`.
@@ -60,7 +62,7 @@ Install Media Preview and one frontend injection plugin:
 1. Add the JavaScript Injector repository:
 
    ```text
-   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.11/manifest.json
+   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.10/manifest.json
    ```
 
 2. Install `JavaScript Injector`.

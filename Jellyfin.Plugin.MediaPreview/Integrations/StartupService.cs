@@ -36,7 +36,7 @@ public sealed class StartupService : IScheduledTask
     {
         yield return new TaskTriggerInfo
         {
-            Type = TaskTriggerInfoType.StartupTrigger
+            Type = TaskTriggerInfo.TriggerStartup
         };
     }
 

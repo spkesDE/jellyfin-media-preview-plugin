@@ -32,12 +32,12 @@ jobs:
           token: ${{ steps.app-token.outputs.token }}
           persist-credentials: true
 
-      - name: Verify release commit is on main
+      - name: Verify release commit is on the backport branch
         shell: bash
         run: |
-          git fetch origin main
-          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
-            echo "Release tags must point to a commit contained in main."
+          git fetch origin backport/10.10.7
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/backport/10.10.7; then
+            echo "Backport release tags must point to a commit contained in backport/10.10.7."
             exit 1
           fi
 
@@ -82,7 +82,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "9.0.x"
+          dotnet-version: "8.0.x"
 
       - name: Build release ZIP
         shell: pwsh
@@ -114,13 +114,14 @@ jobs:
             "release/MediaPreview.zip" \
             --title "Release ${{ github.ref_name }}" \
             --notes-file "release-notes.md" \
+            --latest=false \
             --verify-tag
 
-      - name: Check out main branch
+      - name: Check out backport branch
         shell: bash
         run: |
-          git fetch origin main
-          git checkout -B main origin/main
+          git fetch origin backport/10.10.7
+          git checkout -B backport/10.10.7 origin/backport/10.10.7
 
       - name: Generate full changelog
         uses: orhun/git-cliff-action@v4
@@ -162,4 +163,4 @@ jobs:
 
           git add CHANGELOG.md manifest.json
           git commit -m "Update changelog and manifest for ${{ github.ref_name }}"
-          git push origin main
+          git push origin backport/10.10.7

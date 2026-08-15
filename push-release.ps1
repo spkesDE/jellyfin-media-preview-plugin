@@ -30,8 +30,8 @@ $branch = (git branch --show-current).Trim()
 if ([string]::IsNullOrWhiteSpace($branch)) {
     throw "Could not determine current branch."
 }
-if ($branch -ne "main") {
-    throw "Releases must be created from the main branch. Current branch: $branch"
+if ($branch -ne "backport/10.10.7") {
+    throw "Backport releases must be created from backport/10.10.7. Current branch: $branch"
 }
 
 function Test-TagExists {
