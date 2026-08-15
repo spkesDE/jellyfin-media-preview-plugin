@@ -41,7 +41,7 @@ onBeforeUnmount(() => {
   <div class="content-primary">
     <form class="jmp-configForm" @submit.prevent="store.saveConfig">
       <div class="sectionTitleContainer flex align-items-center">
-        <h2 class="sectionTitle">Media Preview</h2>
+        <h2 class="sectionTitle">Media Preview Legacy</h2>
       </div>
 
       <div class="verticalSection verticalSection-extrabottompadding jmp-intro">

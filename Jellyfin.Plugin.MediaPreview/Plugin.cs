@@ -9,12 +9,13 @@ namespace Jellyfin.Plugin.MediaPreview;
 
 public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
-    private static readonly Guid PluginGuid = Guid.Parse("2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2");
-    private const string ConfigurationPageName = "MediaPreviewConfigPage";
+    private static readonly Guid PluginGuid = Guid.Parse("9f133479-b133-488b-bf88-395524fd955a");
+    private const string ConfigurationPageName = "MediaPreviewLegacyConfigPage";
 
     public Plugin(IApplicationPaths applicationPaths, IXmlSerializer xmlSerializer, IServerConfigurationManager serverConfigurationManager)
         : base(applicationPaths, xmlSerializer)
     {
+        ServerCompatibility.EnsureSupported();
         Instance = this;
         ServerConfigurationManager = serverConfigurationManager;
     }
@@ -23,12 +24,12 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 
     public IServerConfigurationManager ServerConfigurationManager { get; }
 
-    public override string Name => "Media Preview";
+    public override string Name => "Media Preview Legacy (10.10.7)";
 
     public override Guid Id => PluginGuid;
 
     public override string Description =>
-        "Injects a Jellyfin Web media preview for movie and episode cards using native Trickplay thumbnails.";
+        "Legacy Jellyfin 10.10.7 build of Media Preview.";
 
     public IEnumerable<PluginPageInfo> GetPages()
     {

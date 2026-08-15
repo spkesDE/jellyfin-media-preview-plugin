@@ -46,7 +46,7 @@ function loadUnavailableYouTubeVideoIds(): Promise<void> {
   unavailableYouTubeVideoIdsLastAttemptAt = now;
   const generation = unavailableYouTubeVideoIdsGeneration;
   const loadRequest = requestJson<UnavailableTrailerListResponse>(
-    'media-preview/unavailable-trailers'
+    'media-preview-legacy/unavailable-trailers'
   ).then((response) => {
     const videoIds = response?.videoIds ?? response?.VideoIds;
     if (!Array.isArray(videoIds)) {
@@ -133,7 +133,7 @@ export function markYouTubeTrailerUnavailable(
     return;
   }
 
-  void postJson('media-preview/unavailable-trailers/report', {
+  void postJson('media-preview-legacy/unavailable-trailers/report', {
     itemId,
     videoId,
     errorCode

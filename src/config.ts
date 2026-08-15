@@ -27,7 +27,7 @@ import {
 import { clamp } from './core/dom';
 import type { LibraryPreviewSourceOverride, PluginConfig, RuntimePluginConfig } from './types/config';
 
-// Runtime in Jellyfin always prepends `window.JellyfinMediaPreviewPluginConfig`
+// Runtime in Jellyfin always prepends `window.JellyfinMediaPreviewLegacyPluginConfig`
 // from the server-side plugin configuration. These values are only a fallback
 // for standalone development or unexpected non-plugin loading.
 const standaloneFallbackConfig: PluginConfig = {
@@ -93,7 +93,7 @@ const standaloneFallbackConfig: PluginConfig = {
   metadataOverlayShowCommunityRating: true
 };
 
-const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPreviewPluginConfig;
+const runtimeConfig: RuntimePluginConfig | undefined = window.JellyfinMediaPreviewLegacyPluginConfig;
 
 function numberOrFallback(value: unknown, fallback: number): number {
   if (value === null || value === undefined || value === '') {

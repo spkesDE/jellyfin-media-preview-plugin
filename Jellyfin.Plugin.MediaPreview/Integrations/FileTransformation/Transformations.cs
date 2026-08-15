@@ -7,7 +7,7 @@ namespace Jellyfin.Plugin.MediaPreview;
 public static class Transformations
 {
     private static readonly Regex ScriptMarkerRegex = new(
-        "<script[^>]*plugin=\\\"MediaPreview\\\"[^>]*></script>",
+        "<script[^>]*plugin=\\\"MediaPreviewLegacy\\\"[^>]*></script>",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static readonly Regex ClosingBodyRegex = new(
@@ -43,7 +43,7 @@ public static class Transformations
             basePath = "/" + networkConfiguration.BaseUrl.Trim().Trim('/');
         }
 
-        return $"<script FileTransformation=\"true\" plugin=\"MediaPreview\" defer=\"defer\" src=\"{basePath}/media-preview/script\"></script>";
+        return $"<script FileTransformation=\"true\" plugin=\"MediaPreviewLegacy\" defer=\"defer\" src=\"{basePath}/media-preview-legacy/script\"></script>";
     }
 }
 

@@ -149,13 +149,14 @@ $projectDir = Join-RepoPath @($repoRoot, "Jellyfin.Plugin.MediaPreview")
 $projectFile = Join-RepoPath @($projectDir, "Jellyfin.Plugin.MediaPreview.csproj")
 
 $pluginName = "MediaPreview"
-$pluginDisplayName = "Media Preview"
-$pluginGuid = "2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2"
+$pluginAssemblyName = "Jellyfin.Plugin.MediaPreview.Legacy"
+$pluginDisplayName = "Media Preview Legacy (10.10.7)"
+$pluginGuid = "9f133479-b133-488b-bf88-395524fd955a"
 $pluginOwner = "spkesDE"
 $pluginCategory = "General"
-$pluginOverview = "Hover previews for Jellyfin Web using Trickplay and trailers."
-$pluginDescription = "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers."
-$pluginImageUrl = "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png"
+$pluginOverview = "Legacy hover previews for Jellyfin 10.10.7."
+$pluginDescription = "Legacy Jellyfin 10.10.7 build of Media Preview with Trickplay and trailer hover previews."
+$pluginImageUrl = "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/hero.png"
 
 $releaseRoot = Join-RepoPath @($repoRoot, "release")
 $buildOutput = Join-RepoPath @($releaseRoot, ".build-$([Guid]::NewGuid().ToString("N"))")
@@ -264,7 +265,7 @@ try {
         $buildOutput
     ) "dotnet build failed."
 
-    $builtAssemblyPath = Join-RepoPath @($buildOutput, "Jellyfin.Plugin.MediaPreview.dll")
+    $builtAssemblyPath = Join-RepoPath @($buildOutput, "$pluginAssemblyName.dll")
 
     if (-not (Test-Path -LiteralPath $builtAssemblyPath)) {
         throw "Built plugin assembly not found: $builtAssemblyPath"
@@ -326,9 +327,9 @@ try {
     New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
 
     $includeFiles = @(
-        "Jellyfin.Plugin.MediaPreview.dll",
-        "Jellyfin.Plugin.MediaPreview.deps.json",
-        "Jellyfin.Plugin.MediaPreview.runtimeconfig.json",
+        "$pluginAssemblyName.dll",
+        "$pluginAssemblyName.deps.json",
+        "$pluginAssemblyName.runtimeconfig.json",
         "Newtonsoft.Json.dll"
     )
 
@@ -370,7 +371,7 @@ try {
         status = "Active"
         autoUpdate = $true
         assemblies = @(
-            "Jellyfin.Plugin.MediaPreview.dll"
+            "$pluginAssemblyName.dll"
         )
     }
 

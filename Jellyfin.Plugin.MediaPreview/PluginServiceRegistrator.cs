@@ -10,6 +10,11 @@ public sealed class PluginServiceRegistrator : IPluginServiceRegistrator
 {
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
+        if (!ServerCompatibility.IsSupported)
+        {
+            return;
+        }
+
         serviceCollection.AddSingleton<UnavailableTrailerStore>();
         serviceCollection.AddHostedService<FrontendRegistrationHostedService>();
     }

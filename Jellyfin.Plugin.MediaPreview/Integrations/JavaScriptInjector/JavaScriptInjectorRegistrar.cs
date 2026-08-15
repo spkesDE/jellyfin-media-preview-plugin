@@ -9,7 +9,7 @@ namespace Jellyfin.Plugin.MediaPreview;
 
 internal static class JavaScriptInjectorRegistrar
 {
-    internal const string ScriptId = "2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2-media-preview";
+    internal const string ScriptId = "9f133479-b133-488b-bf88-395524fd955a-media-preview-legacy";
     private const string JavaScriptInjectorAssemblyName = "Jellyfin.Plugin.JavaScriptInjector";
     private const string JavaScriptInjectorInterfaceTypeName = "Jellyfin.Plugin.JavaScriptInjector.PluginInterface";
 
@@ -57,7 +57,7 @@ internal static class JavaScriptInjectorRegistrar
             JObject payload = new JObject
             {
                 { "id", ScriptId },
-                { "name", "Media Preview loader" },
+                { "name", "Media Preview Legacy loader" },
                 { "script", BuildLoaderScript() },
                 { "enabled", enabled },
                 { "requiresAuthentication", false },
@@ -94,20 +94,20 @@ internal static class JavaScriptInjectorRegistrar
             basePath = "/" + networkConfiguration.BaseUrl.Trim().Trim('/');
         }
 
-        string scriptUrl = JsonConvert.SerializeObject($"{basePath}/media-preview/script");
+        string scriptUrl = JsonConvert.SerializeObject($"{basePath}/media-preview-legacy/script");
 
         return $$"""
             (() => {
                 'use strict';
 
-                if (window.JellyfinMediaPreview
-                    || document.querySelector('script[plugin="MediaPreview"], script[data-plugin="MediaPreview"]')) {
+                if (window.JellyfinMediaPreviewLegacy
+                    || document.querySelector('script[plugin="MediaPreviewLegacy"], script[data-plugin="MediaPreviewLegacy"]')) {
                     return;
                 }
 
                 const script = document.createElement('script');
                 script.async = false;
-                script.dataset.plugin = 'MediaPreview';
+                script.dataset.plugin = 'MediaPreviewLegacy';
                 script.src = {{scriptUrl}};
                 (document.head || document.documentElement).appendChild(script);
             })();

@@ -24,7 +24,7 @@ import type {
   SaveState
 } from './types';
 
-const PLUGIN_ID = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
+const PLUGIN_ID = '9f133479-b133-488b-bf88-395524fd955a';
 
 function modeUsesTrailer(mode: PreviewSource): boolean {
   return mode !== 'trickplay';

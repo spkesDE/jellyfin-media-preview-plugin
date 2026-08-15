@@ -25,7 +25,7 @@ public sealed class UnavailableTrailerStore
     {
         _filePath = Path.Combine(
             applicationPaths.DataPath,
-            "media-preview",
+            "media-preview-legacy",
             "unavailable-trailers.json");
         _logger = logger;
     }

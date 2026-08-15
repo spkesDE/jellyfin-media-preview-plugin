@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Media Preview</title>
+    <title>Media Preview Legacy</title>
 </head>
 <body>
     <div id="MediaPreviewConfigPage" data-role="page" class="page type-interior pluginConfigurationPage">
@@ -14,8 +14,8 @@
             (function () {
                 const apiClient = window.ApiClient || window.apiClient;
                 const scriptUrl = apiClient && typeof apiClient.getUrl === 'function'
-                    ? apiClient.getUrl('media-preview/config-script')
-                    : new URL('media-preview/config-script', window.location.origin + '/').toString();
+                    ? apiClient.getUrl('media-preview-legacy/config-script')
+                    : new URL('media-preview-legacy/config-script', window.location.origin + '/').toString();
 
                 if (!scriptUrl) {
                     throw new Error('Could not resolve the Media Preview configuration bundle URL.');

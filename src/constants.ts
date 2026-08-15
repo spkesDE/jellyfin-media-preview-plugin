@@ -1,6 +1,6 @@
 export const STATE_ATTR = 'data-media-preview-bound';
 export const STYLE_ID = 'jellyfin-media-preview-style';
-export const NAMESPACE = 'JellyfinMediaPreview';
+export const NAMESPACE = 'JellyfinMediaPreviewLegacy';
 export const PREVIEW_SOURCE_TRICKPLAY = 'trickplay';
 export const PREVIEW_SOURCE_TRAILER = 'trailer';
 export const PREVIEW_SOURCE_PREFER_TRICKPLAY = 'prefer-trickplay';
@@ -38,7 +38,7 @@ export const TRAILER_EXPAND_BUTTON_TOP_LEFT = 'top-left';
 export const TRAILER_EXPAND_BUTTON_TOP_RIGHT = 'top-right';
 export const TRAILER_EXPAND_BUTTON_BOTTOM_LEFT = 'bottom-left';
 export const TRAILER_EXPAND_BUTTON_BOTTOM_RIGHT = 'bottom-right';
-export const CONFIGURATION_PAGE_NAME = 'MediaPreviewConfigPage';
+export const CONFIGURATION_PAGE_NAME = 'MediaPreviewLegacyConfigPage';
 export const CONFIGURATION_PAGE_HASH = `#/configurationpage?name=${CONFIGURATION_PAGE_NAME}`;
 export const ADMIN_NAV_LINK_ATTR = 'data-media-preview-admin-link';
 export const DEBUG_LEAVE_HOLD_MS = 30000;

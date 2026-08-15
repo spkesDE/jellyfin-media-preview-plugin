@@ -6,6 +6,10 @@
 
 This branch provides the legacy build for Jellyfin 10.10.7. It is released separately from the current Jellyfin version and does not receive long-term support.
 
+Legacy builds use the same numeric plugin version as the corresponding current release, but their Git tags are prefixed with `legacy_` (for example, `legacy_v0.3.3.0`). Do not configure this legacy repository together with the main Media Preview repository on the same Jellyfin server.
+
+The legacy build has its own plugin ID, assembly name, API routes, and browser namespace. It also refuses to load unless the detected Jellyfin server assembly version is exactly `10.10.7.0`.
+
 Hover a movie, series, or episode card and the plugin can show a quick preview using Jellyfin Trickplay thumbnails, local trailers, or YouTube trailers already known to Jellyfin.
 
 ## Features

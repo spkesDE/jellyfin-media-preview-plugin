@@ -3,7 +3,7 @@ name: Release Plugin
 on:
   push:
     tags:
-      - "v*"
+      - "legacy_v*"
 
 permissions:
   contents: read
@@ -46,7 +46,7 @@ jobs:
         run: |
           [xml]$project = Get-Content "Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj"
           $version = [string]($project.Project.PropertyGroup | Select-Object -First 1).Version
-          $expectedTag = "v$version"
+          $expectedTag = "legacy_v$version"
           if ("${{ github.ref_name }}" -ne $expectedTag) {
             throw "Release tag '${{ github.ref_name }}' does not match project version '$version'. Expected '$expectedTag'."
           }
@@ -112,7 +112,7 @@ jobs:
         run: |
           gh release create "${{ github.ref_name }}" \
             "release/MediaPreview.zip" \
-            --title "Release ${{ github.ref_name }}" \
+            --title "Legacy Release ${{ github.ref_name }}" \
             --notes-file "release-notes.md" \
             --latest=false \
             --verify-tag

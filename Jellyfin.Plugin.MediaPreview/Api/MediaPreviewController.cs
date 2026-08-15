@@ -11,7 +11,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Plugin.MediaPreview.Api;
 
 [ApiController]
-[Route("media-preview")]
+[Route("media-preview-legacy")]
 public sealed class MediaPreviewController : ControllerBase
 {
     private const string ScriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.mediapreview.bundle.js";
@@ -70,7 +70,7 @@ public sealed class MediaPreviewController : ControllerBase
             RuntimeConfigJsonOptions);
 
         byte[] configBytes = Encoding.UTF8.GetBytes(
-            "window.JellyfinMediaPreviewPluginConfig = " + serializedConfig + ";" + Environment.NewLine);
+            "window.JellyfinMediaPreviewLegacyPluginConfig = " + serializedConfig + ";" + Environment.NewLine);
 
         using MemoryStream scriptBuffer = new MemoryStream();
         scriptBuffer.Write(configBytes, 0, configBytes.Length);

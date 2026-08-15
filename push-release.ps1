@@ -191,7 +191,7 @@ if (
 Sync-FrontendVersion -NewVersion $version
 
 if ([string]::IsNullOrWhiteSpace($Tag)) {
-    $Tag = "v$version"
+    $Tag = "legacy_v$version"
 }
 
 while (Test-TagExists -CandidateTag $Tag) {
@@ -202,10 +202,10 @@ while (Test-TagExists -CandidateTag $Tag) {
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to stage updated project version."
     }
-    $Tag = "v$version"
+    $Tag = "legacy_v$version"
 }
 
-$expectedTag = "v$version"
+$expectedTag = "legacy_v$version"
 if ($Tag -ne $expectedTag) {
     throw "Release tag '$Tag' does not match project version '$version'. Expected '$expectedTag'."
 }

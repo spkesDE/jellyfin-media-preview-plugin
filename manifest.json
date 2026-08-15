@@ -1,9 +1,9 @@
 [
   {
-    "guid": "2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2",
-    "name": "Media Preview",
-    "overview": "Hover previews for Jellyfin Web using Trickplay and trailers.",
-    "description": "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers.",
+    "guid": "9f133479-b133-488b-bf88-395524fd955a",
+    "name": "Media Preview Legacy (10.10.7)",
+    "overview": "Legacy hover previews for Jellyfin 10.10.7.",
+    "description": "Legacy Jellyfin 10.10.7 build of Media Preview with Trickplay and trailer hover previews.",
     "owner": "spkesDE",
     "category": "General",
     "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/hero.png",
