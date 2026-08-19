@@ -1,12 +1,21 @@
 [
-  {
-    "guid": "9f133479-b133-488b-bf88-395524fd955a",
-    "name": "Media Preview Legacy (10.10.7)",
-    "overview": "Legacy hover previews for Jellyfin 10.10.7.",
-    "description": "Legacy Jellyfin 10.10.7 build of Media Preview with Trickplay and trailer hover previews.",
-    "owner": "spkesDE",
-    "category": "General",
-    "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/hero.png",
-    "versions": []
-  }
+{
+  "guid": "9f133479-b133-488b-bf88-395524fd955a",
+  "name": "Media Preview Legacy (10.10.7)",
+  "overview": "Legacy hover previews for Jellyfin 10.10.7.",
+  "description": "Legacy Jellyfin 10.10.7 build of Media Preview with Trickplay and trailer hover previews.",
+  "owner": "spkesDE",
+  "category": "General",
+  "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/hero.png",
+  "versions": [
+    {
+      "version": "0.3.1.1",
+      "changelog": "- fix(changelog): filter merge commits from release notes\n- fix(navigation): restrict admin link injection to plugin sidebar\n- docs: update contribution guidelines\n- docs: update build guide for clarity and structure\n- Update CHANGELOG for v0.3.1.0\n- Update manifest.json\n- Update manifest.json\n",
+      "targetAbi": "10.10.7.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/legacy_v0.3.1.1/MediaPreview.zip",
+      "checksum": "04f6d119961e7e221c1ca0409cf7c692",
+      "timestamp": "2026-08-19 05:56:17"
+    }
+  ]
+}
 ]
