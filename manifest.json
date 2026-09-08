@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
   "versions": [
     {
+      "version": "0.4.0.1",
+      "changelog": "- fix(dependencies): update nanoid to version 3.3.18\n",
+      "targetAbi": "12.0.0.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.4.0.1/MediaPreview.zip",
+      "checksum": "cc6b597ea005af141f5a0af8e13800cb",
+      "timestamp": "2026-09-08 10:15:53"
+    },
+    {
       "version": "0.4.0.0",
       "changelog": "- build: upgrade to .NET 10 and Jellyfin 12\n",
       "targetAbi": "12.0.0.0",
