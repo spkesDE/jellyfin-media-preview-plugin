@@ -56,7 +56,7 @@ fix(hover): restore hover preview on series cards
 feat(trailer): add trailer fallback for missing trickplay
 docs: rewrite README for end users
 refactor: simplify preview source selection
-build: update Jellyfin packages to 10.11.11
+build: update Jellyfin packages to 12.0.0
 ```
 
 Avoid vague commit messages like:

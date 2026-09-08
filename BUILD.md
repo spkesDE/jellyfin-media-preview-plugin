@@ -7,7 +7,7 @@ This guide explains how to build and test Jellyfin Media Preview locally.
 Install:
 
 - Node.js and npm
-- .NET 9 SDK
+- .NET 10 SDK
 - PowerShell
 
 ## Install Dependencies
