@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- fix(dependencies): update nanoid to version 3.3.18
+## v0.4.0.0 - 2026-09-08
+
+### Build
+
+- build: upgrade to .NET 10 and Jellyfin 12
 ## v0.3.1.1 - 2026-08-08
 
 ### Fixes
@@ -19,48 +29,70 @@
 - Update manifest.json
 ## v0.3.1.0 - 2026-07-31
 
+### Features
+
+- feat: support JavaScript Injector
+
 ### Fixes
 
+- fix(trailer): render expand icon as svg
+- fix(runtime): harden preview cleanup and caches
 - fix(layout): Mount list row previews on the thumbnail instead of the row (#18)
 - fix(hover): Scope preview teardown to the card rather than the hover host (#19)
 - fix(trailer): Loop hover trailers through the player API instead of a playlist (#20)
 
+### Build
+
+- build: synchronize release versions
+
 ### Other
 
 - chore: update nanoid and postcss dependencies to latest versions
-## v0.2.3.1 - 2026-07-15
+## v0.3.0.1 - 2026-07-21
+
+### Fixes
+
+- fix(trailer): keep expand button above card overlay
+## v0.3.0.0 - 2026-07-21
 
 ### Features
 
-- feat(trailer): enhance portrait card expansion with source aspect ratio support
-- feat(appearance): add 'Source / Video ratio' option for portrait card expansion
 - feat(cards): support portrait expansion in wrapped rows
 - feat(trailer): persist unavailable YouTube sources
 - feat(trailer): sync unavailable sources with server
 - feat(config): configure unavailable trailer retry interval
 - feat(config): toggle unavailable trailer cache
-- feat: support JavaScript Injector
 
 ### Fixes
 
-- fix(appearance): shift wide previews into viewport
-- fix(config): live preview grid
 - fix(cards): enhance card selection logic and exclude non-playable media cards
 - fix(apiClient): added Jellyfin 12 support
 - fix(trailer): skip unavailable YouTube embeds
 - fix(trailer): read persisted unavailable source ids
-- fix(trailer): keep expand button above card overlay
-- fix(trailer): render expand icon as svg
-- fix(runtime): harden preview cleanup and caches
 
 ### Build
 
 - build(dist): refresh preview bundles
-- build: synchronize release versions
 
 ### Refactoring
 
 - refactor(navigation): improve plugin configuration link handling and update navigation entry logic for Jellyfin 12.0
+## v0.2.4.1 - 2026-07-17
+
+### Fixes
+
+- fix(config): live preview grid
+## v0.2.4.0 - 2026-07-17
+
+### Features
+
+- feat(trailer): enhance portrait card expansion with source aspect ratio support
+- feat(appearance): add 'Source / Video ratio' option for portrait card expansion
+## v0.2.3.1 - 2026-07-15
+
+### Fixes
+
+- fix(appearance): shift wide previews into viewport
 ## v0.2.3.0 - 2026-07-15
 
 ### Features
