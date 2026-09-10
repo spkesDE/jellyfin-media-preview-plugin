@@ -42,6 +42,7 @@ export interface CardState {
   queuedMoveFrame: number | null;
   latestRequestToken: number;
   rootHost: HTMLElement | null;
+  previewStack: HTMLDivElement | null;
   managedHostPosition: string | null;
   managedHostOverflow: string | null;
   widePreviewCard: HTMLElement | null;

@@ -61,6 +61,41 @@ function removeManagedNode<T extends HTMLElement>(state: CardState, key: keyof C
   return node as T;
 }
 
+function getJellyfinCardOverlay(card: HTMLElement): HTMLElement | null {
+  const scalableHost = card.querySelector('.cardScalable');
+  if (!(scalableHost instanceof HTMLElement)) {
+    return null;
+  }
+
+  const overlay = Array.from(scalableHost.children)
+    .find((child) => child.classList.contains('cardOverlayContainer'));
+  return overlay instanceof HTMLElement ? overlay : null;
+}
+
+function ensurePreviewStack(card: HTMLElement, state: CardState): HTMLDivElement | null {
+  if (!state.rootHost) {
+    return null;
+  }
+
+  const stackHost = getJellyfinCardOverlay(card) || state.rootHost;
+  if (!state.previewStack) {
+    const previewStack = document.createElement('div');
+    previewStack.className = 'jmp-preview-stack';
+    previewStack.setAttribute('aria-hidden', 'true');
+    state.previewStack = previewStack;
+  }
+
+  if (state.previewStack.parentElement !== stackHost) {
+    stackHost.insertBefore(state.previewStack, stackHost.firstChild);
+  }
+
+  return state.previewStack;
+}
+
+function getPreviewLayerHost(state: CardState): HTMLElement | null {
+  return state.previewStack || state.rootHost;
+}
+
 export function getPreviewTransitionDurationMs(): number {
   return Math.max(0, Number(config.previewTransitionDurationMs) || 0);
 }
@@ -129,6 +164,7 @@ export function ensurePreviewHost(card: HTMLElement, state: CardState): CardStat
   }
 
   state.rootHost = positionedHost;
+  ensurePreviewStack(card, state);
   return state;
 }
 
@@ -141,7 +177,7 @@ export function ensurePreviewBackdrop(state: CardState | null | undefined): HTML
     const previewBackdrop = document.createElement('div');
     previewBackdrop.className = 'jmp-preview-backdrop';
     previewBackdrop.setAttribute('aria-hidden', 'true');
-    state.rootHost.appendChild(previewBackdrop);
+    getPreviewLayerHost(state)?.appendChild(previewBackdrop);
     state.previewBackdrop = previewBackdrop;
   }
 
@@ -159,7 +195,7 @@ export function ensurePreviewFrame(state: CardState | null | undefined): HTMLDiv
     previewFrame.setAttribute('aria-hidden', 'true');
     previewFrame.style.display = 'none';
     applyTransitionStyle(previewFrame);
-    state.rootHost.appendChild(previewFrame);
+    getPreviewLayerHost(state)?.appendChild(previewFrame);
     state.previewFrame = previewFrame;
   }
 
@@ -178,7 +214,7 @@ export function ensurePreviewFrameSecondary(state: CardState | null | undefined)
     previewFrame.setAttribute('aria-hidden', 'true');
     previewFrame.style.display = 'none';
     applyTransitionStyle(previewFrame);
-    state.rootHost.appendChild(previewFrame);
+    getPreviewLayerHost(state)?.appendChild(previewFrame);
     state.previewFrameSecondary = previewFrame;
   }
 
@@ -230,7 +266,7 @@ export function ensureHoverCountdown(state: CardState | null | undefined): HTMLD
     hoverCountdownLabel.className = 'jmp-hover-countdown-label';
     hoverCountdownLabel.textContent = '1';
     hoverCountdown.appendChild(hoverCountdownLabel);
-    state.rootHost.appendChild(hoverCountdown);
+    getPreviewLayerHost(state)?.appendChild(hoverCountdown);
 
     state.hoverCountdown = hoverCountdown;
     state.hoverCountdownLabel = hoverCountdownLabel;
@@ -250,7 +286,7 @@ export function ensureUnavailableMessage(state: CardState | null | undefined): H
     unavailableMessage.className = 'jmp-unavailable-message';
     unavailableMessage.setAttribute('aria-hidden', 'true');
     unavailableMessage.style.display = 'none';
-    state.rootHost.appendChild(unavailableMessage);
+    getPreviewLayerHost(state)?.appendChild(unavailableMessage);
     state.unavailableMessage = unavailableMessage;
   }
 
@@ -266,7 +302,7 @@ export function ensureTrailerLayer(state: CardState | null | undefined): HTMLDiv
     const trailerLayer = document.createElement('div');
     trailerLayer.className = 'jmp-trailer-layer';
     trailerLayer.setAttribute('aria-hidden', 'true');
-    state.rootHost.appendChild(trailerLayer);
+    getPreviewLayerHost(state)?.appendChild(trailerLayer);
     state.trailerLayer = trailerLayer;
   }
 
@@ -346,7 +382,7 @@ export function ensureMetadataOverlay(state: CardState | null | undefined): HTML
 
     metadataOverlay.appendChild(title);
     metadataOverlay.appendChild(meta);
-    state.rootHost.appendChild(metadataOverlay);
+    getPreviewLayerHost(state)?.appendChild(metadataOverlay);
 
     state.metadataOverlay = metadataOverlay;
     state.metadataOverlayTitle = title;
@@ -371,7 +407,7 @@ export function ensureProgress(state: CardState | null | undefined): HTMLDivElem
     const progressBar = document.createElement('div');
     progressBar.className = 'jmp-progress-bar';
     progress.appendChild(progressBar);
-    state.rootHost.appendChild(progress);
+    getPreviewLayerHost(state)?.appendChild(progress);
 
     state.progress = progress;
     state.progressBar = progressBar;
@@ -882,6 +918,8 @@ export function destroyCardBindings(): void {
       removeManagedNode<HTMLDivElement>(state, 'progress');
       state.progress = null;
       state.progressBar = null;
+      removeManagedNode<HTMLDivElement>(state, 'previewStack');
+      state.previewStack = null;
       restoreManagedHostStyles(state);
       state.rootHost = null;
       card.removeAttribute(STATE_ATTR);

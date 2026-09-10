@@ -47,6 +47,7 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       queuedMoveFrame: null,
       latestRequestToken: 0,
       rootHost: null,
+      previewStack: null,
       managedHostPosition: null,
       managedHostOverflow: null,
       widePreviewCard: null,
