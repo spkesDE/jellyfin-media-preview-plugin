@@ -1,5 +1,14 @@
 # Changelog
 
+## v12.1.0.0 - 2026-09-10
+
+### Fixes
+
+- fix(preview): unify card overlay stacking in Jellyfin 12
+
+### Other
+
+- chore: update version to 12.1.0.0 in project files to keep in sync with jellyfin versioning
 ## v0.4.0.1 - 2026-09-08
 
 ### Fixes
