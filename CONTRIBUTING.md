@@ -43,6 +43,13 @@ That creates:
 - `release/MediaPreview/`
 - `release/MediaPreview.zip`
 
+## Versioning
+
+Plugin versions use `JellyfinMajor.PluginMajor.PluginMinor.PluginPatch` so the
+supported Jellyfin generation is visible immediately. Each new Jellyfin major
+version starts a new plugin line at `<JellyfinMajor>.1.0.0`; for example,
+Jellyfin 12 starts at `12.1.0.0` and Jellyfin 13 starts at `13.1.0.0`.
+
 ## Commit Style
 
 This repository uses `git-cliff` to generate `CHANGELOG.md`, GitHub release notes, and the changelog entry for the latest version in `manifest.json`.
