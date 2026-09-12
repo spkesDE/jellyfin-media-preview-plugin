@@ -1,0 +1,88 @@
+name: Setup / support question
+description: Ask for help with installation, configuration, or expected behavior
+title: "[Support]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please check the README setup and troubleshooting sections first. If something is still unclear, provide the details below.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read the relevant README sections.
+          required: true
+        - label: I searched existing issues for the same question.
+          required: true
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Topic
+      options:
+        - Installation
+        - Frontend loading
+        - Trickplay
+        - Local trailers
+        - YouTube trailers
+        - Hover behavior
+        - Audio / autoplay
+        - General configuration
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: goal
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: result
+    attributes:
+      label: What happens instead?
+    validations:
+      required: true
+
+  - type: input
+    id: jellyfin-version
+    attributes:
+      label: Jellyfin version
+      placeholder: e.g. 12.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Media Preview version
+      placeholder: e.g. 12.1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source-mode
+    attributes:
+      label: Preview source mode
+      options:
+        - Prefer Trickplay
+        - Prefer Trailers
+        - Trickplay only
+        - Trailer only
+        - Not sure
+
+  - type: input
+    id: client
+    attributes:
+      label: Client / browser
+      placeholder: e.g. Chrome on Windows 11
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Add relevant settings or screenshots if useful.
