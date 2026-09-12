@@ -60,7 +60,7 @@ Install Media Preview and one frontend injection plugin:
 1. Add the JavaScript Injector repository:
 
    ```text
-   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.11/manifest.json
+   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/manifest.json
    ```
 
 2. Install `JavaScript Injector`.
