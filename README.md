@@ -115,13 +115,12 @@ YouTube trailers may also be blocked by privacy tools, ad blockers, browser sett
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=spkesde%2Fjellyfin-featured-plugin%2Cspkesde%2Fjellyfin-media-preview-plugin&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=spkesde%2Fjellyfin-media-preview-plugin&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-featured-plugin%2Cspkesde/jellyfin-media-preview-plugin&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-featured-plugin%2Cspkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=spkesde/jellyfin-featured-plugin%2Cspkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
  </picture>
 </a>
-## License
 
 This project is licensed under the [MIT License](./LICENSE).
