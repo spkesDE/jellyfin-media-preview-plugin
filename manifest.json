@@ -6,7 +6,7 @@
   "description": "Legacy Jellyfin 10.10.7 build of Media Preview with Trickplay and trailer hover previews.",
   "owner": "spkesDE",
   "category": "General",
-  "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/hero.png",
+  "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/refs/heads/backport/10.10.7/logo.png",
   "versions": [
     {
       "version": "0.3.1.1",
