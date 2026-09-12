@@ -1,141 +1,141 @@
 [
-{
-  "guid": "2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2",
-  "name": "Media Preview",
-  "overview": "Hover previews for Jellyfin Web using Trickplay and trailers.",
-  "description": "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers.",
-  "owner": "spkesDE",
-  "category": "General",
-  "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/hero.png",
-  "versions": [
-    {
-      "version": "12.1.0.0",
-      "changelog": "- fix(preview): unify card overlay stacking in Jellyfin 12\n- chore: update version to 12.1.0.0 in project files to keep in sync with jellyfin versioning\n",
-      "targetAbi": "12.0.0.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v12.1.0.0/MediaPreview.zip",
-      "checksum": "b9c15e449dcd211a91235b1feb94d65e",
-      "timestamp": "2026-09-10 15:21:49"
-    },
-    {
-      "version": "0.4.0.1",
-      "changelog": "- fix(dependencies): update nanoid to version 3.3.18\n",
-      "targetAbi": "12.0.0.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.4.0.1/MediaPreview.zip",
-      "checksum": "cc6b597ea005af141f5a0af8e13800cb",
-      "timestamp": "2026-09-08 10:15:53"
-    },
-    {
-      "version": "0.4.0.0",
-      "changelog": "- build: upgrade to .NET 10 and Jellyfin 12\n",
-      "targetAbi": "12.0.0.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.4.0.0/MediaPreview.zip",
-      "checksum": "a971ed920d27cb98ea5bb9341b03b25d",
-      "timestamp": "2026-09-08 10:12:51"
-    },
-    {
-      "version": "0.3.1.1",
-      "changelog": "- fix(changelog): filter merge commits from release notes\n- fix(navigation): restrict admin link injection to plugin sidebar\n- docs: update contribution guidelines\n- docs: update build guide for clarity and structure\n- Update CHANGELOG for v0.3.1.0\n- Update manifest.json\n- Update manifest.json\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.1.1/MediaPreview.zip",
-      "checksum": "d425f922c41418b76eaff287bc58fbb7",
-      "timestamp": "2026-08-08 09:37:57"
-    },
-    {
-      "version": "0.3.1.0",
-      "changelog": "- feat: support JavaScript Injector\n- fix(trailer): render expand icon as svg\n- fix(runtime): harden preview cleanup and caches\n- fix(layout): Mount list row previews on the thumbnail instead of the row (#18)\n- fix(hover): Scope preview teardown to the card rather than the hover host (#19)\n- fix(trailer): Loop hover trailers through the player API instead of a playlist (#20)\n- build: synchronize release versions\n- chore: update nanoid and postcss dependencies to latest versions\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.1.0/MediaPreview.zip",
-      "checksum": "50ece21a24a35c573e5007983081020f",
-      "timestamp": "2026-07-31 09:42:46"
-    },
-    {
-      "version": "0.3.0.1",
-      "changelog": "- fix(trailer): keep expand button above card overlay\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.0.1/MediaPreview.zip",
-      "checksum": "af5a3115edf58f015b9e29819d6e8da9",
-      "timestamp": "2026-07-21 20:51:50"
-    },
-    {
-      "version": "0.3.0.0",
-      "changelog": "- feat(cards): support portrait expansion in wrapped rows\n- feat(trailer): persist unavailable YouTube sources\n- feat(trailer): sync unavailable sources with server\n- feat(config): configure unavailable trailer retry interval\n- feat(config): toggle unavailable trailer cache\n- fix(cards): enhance card selection logic and exclude non-playable media cards\n- fix(apiClient): added Jellyfin 12 support\n- fix(trailer): skip unavailable YouTube embeds\n- fix(trailer): read persisted unavailable source ids\n- build(dist): refresh preview bundles\n- refactor(navigation): improve plugin configuration link handling and update navigation entry logic for Jellyfin 12.0\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.0.0/MediaPreview.zip",
-      "checksum": "f7600fc1aae82fa25d9d13b62602973e",
-      "timestamp": "2026-07-21 18:34:08"
-    },
-    {
-      "version": "0.2.4.1",
-      "changelog": "- fix(config): live preview grid\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.4.1/MediaPreview.zip",
-      "checksum": "ffdd5af5475126b8190c1b43179989c6",
-      "timestamp": "2026-07-17 10:25:41"
-    },
-    {
-      "version": "0.2.4.0",
-      "changelog": "- feat(trailer): enhance portrait card expansion with source aspect ratio support\n- feat(appearance): add 'Source / Video ratio' option for portrait card expansion\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.4.0/MediaPreview.zip",
-      "checksum": "7b910608cc0992913e7d333d67f9ec26",
-      "timestamp": "2026-07-17 10:19:00"
-    },
-    {
-      "version": "0.2.3.1",
-      "changelog": "- fix(appearance): shift wide previews into viewport\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.3.1/MediaPreview.zip",
-      "checksum": "a93fd18f5fc53ae79698f8e1d7538f1e",
-      "timestamp": "2026-07-15 22:43:36"
-    },
-    {
-      "version": "0.2.3.0",
-      "changelog": "- feat(appearance): add portrait card expansion\n- feat(hover): integrate loading state into countdown\n- feat(config): preview portrait card expansion\n- fix(trickplay): prevent stale auto scrub timers\n- fix(runtime): bound preview caches\n- fix(appearance): keep wide previews in viewport\n- fix(trailer): respect restore on leave setting\n- fix(hover): resolve unavailable preview messages\n- fix(config): expand preview card on hover\n- build: align frontend package version\n- build: refresh bundled frontend output\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.3.0/MediaPreview.zip",
-      "checksum": "460b3d6c7d2f62637c837367769b641e",
-      "timestamp": "2026-07-15 12:50:33"
-    },
-    {
-      "version": "0.2.2.0",
-      "changelog": "- feat(trickplay): preload preview thumbnails\n- build: add plugin catalog image\n- docs: simplify README for users\n- docs: clarify contribution welcome note\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.2.0/MediaPreview.zip",
-      "checksum": "fa7095b512d24cb5fc79ac106c65c1ae",
-      "timestamp": "2026-06-22 19:28:24"
-    },
-    {
-      "version": "0.2.1.0",
-      "changelog": "- feat(config): migrate settings UI to Vue\n- build(changelog): order feature entries first\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.1.0/MediaPreview.zip",
-      "checksum": "563902dfef35c14ed2774654f7fe5e59",
-      "timestamp": "2026-06-16 13:59:31"
-    },
-    {
-      "version": "0.2.0.1",
-      "changelog": "- build: automate manifest changelog generation with git-cliff\n- build: remove manual manifest changelog override\n- build: align manifest changelog with git-cliff output\n- build: refresh bundled frontend output\n- build: refresh bundled frontend output\n- build: refresh bundled frontend output\n- build: update Jellyfin packages to 10.11.11\n- feat: add per-content-type preview source overrides\n- feat: add configurable smart preview source selection\n- feat: add configurable hover intent and cooldown\n- feat: add configurable preview metadata overlay\n- feat: add configurable preview fade and crossfade transitions\n- feat: add configurable keyboard preview support\n- feat: add library preview source rules\n- feat: refine configuration page and live preview\n- fix: guard initial hover preview requests\n- fix: clean up preview DOM on destroy\n- fix: support previews in season and episode overviews\n- fix: tighten card discovery and binding\n- fix: harden release and preview behavior\n- fix: validate embedded client bundle\n- fix: streamline CI workflow and update paths in build script\n- perf: skip library lookups without overrides\n- refactor: simplify auto scrub and trailer helpers\n- refactor: extract metadata overlay styles\n- refactor: unify plugin configuration page layout\n- refactor: unify remaining configuration tabs\n- refactor: enhance build script with modular functions and improved error handling\n",
-      "targetAbi": "10.11.11.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.0.1/MediaPreview.zip",
-      "checksum": "5ee1bf7c3f01a56e5f5ef114cc408d15",
-      "timestamp": "2026-06-15 07:28:05"
-    },
-    {
-      "version": "0.1.1.0",
-      "changelog": "- feat: extend preview backdrop and hover settings\n- feat: add hover countdown and preview availability overlays\n- refactor: rename media preview frontend classes to jmp\n- refactor: split media preview styles into css modules\n- refactor: lazily inject preview dom\n- fix: restore preview backdrop rendering\n- fix: resolve lifecycle type guards\n- fix: restore reliable hover preview lifecycle\n- chore: rebuild media preview bundle\n- chore: minify css in bundled styles\n- chore: move manifest updater into scripts",
-      "targetAbi": "10.11.9.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.1.0/MediaPreview.zip",
-      "checksum": "a1e376c6b314326d759b3dcae5710951",
-      "timestamp": "2026-05-24 20:06:16"
-    },
-    {
-      "version": "0.1.0.0",
-      "changelog": "Initial Release",
-      "targetAbi": "10.11.9.0",
-      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.0.0/MediaPreview.zip",
-      "checksum": "5f9c61c96e155d4bddc87d5432aac31a",
-      "timestamp": "2026-05-24 11:14:35"
-    }
-  ]
-}
+  {
+    "guid": "2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2",
+    "name": "Media Preview",
+    "overview": "Hover previews for Jellyfin Web using Trickplay and trailers.",
+    "description": "Adds hover previews to movie, series, and episode cards in Jellyfin Web using Jellyfin Trickplay images and trailers.",
+    "owner": "spkesDE",
+    "category": "General",
+    "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/logo.png",
+    "versions": [
+      {
+        "version": "12.1.0.0",
+        "changelog": "- fix(preview): unify card overlay stacking in Jellyfin 12\n- chore: update version to 12.1.0.0 in project files to keep in sync with jellyfin versioning\n",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v12.1.0.0/MediaPreview.zip",
+        "checksum": "b9c15e449dcd211a91235b1feb94d65e",
+        "timestamp": "2026-09-10 15:21:49"
+      },
+      {
+        "version": "0.4.0.1",
+        "changelog": "- fix(dependencies): update nanoid to version 3.3.18\n",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.4.0.1/MediaPreview.zip",
+        "checksum": "cc6b597ea005af141f5a0af8e13800cb",
+        "timestamp": "2026-09-08 10:15:53"
+      },
+      {
+        "version": "0.4.0.0",
+        "changelog": "- build: upgrade to .NET 10 and Jellyfin 12\n",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.4.0.0/MediaPreview.zip",
+        "checksum": "a971ed920d27cb98ea5bb9341b03b25d",
+        "timestamp": "2026-09-08 10:12:51"
+      },
+      {
+        "version": "0.3.1.1",
+        "changelog": "- fix(changelog): filter merge commits from release notes\n- fix(navigation): restrict admin link injection to plugin sidebar\n- docs: update contribution guidelines\n- docs: update build guide for clarity and structure\n- Update CHANGELOG for v0.3.1.0\n- Update manifest.json\n- Update manifest.json\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.1.1/MediaPreview.zip",
+        "checksum": "d425f922c41418b76eaff287bc58fbb7",
+        "timestamp": "2026-08-08 09:37:57"
+      },
+      {
+        "version": "0.3.1.0",
+        "changelog": "- feat: support JavaScript Injector\n- fix(trailer): render expand icon as svg\n- fix(runtime): harden preview cleanup and caches\n- fix(layout): Mount list row previews on the thumbnail instead of the row (#18)\n- fix(hover): Scope preview teardown to the card rather than the hover host (#19)\n- fix(trailer): Loop hover trailers through the player API instead of a playlist (#20)\n- build: synchronize release versions\n- chore: update nanoid and postcss dependencies to latest versions\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.1.0/MediaPreview.zip",
+        "checksum": "50ece21a24a35c573e5007983081020f",
+        "timestamp": "2026-07-31 09:42:46"
+      },
+      {
+        "version": "0.3.0.1",
+        "changelog": "- fix(trailer): keep expand button above card overlay\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.0.1/MediaPreview.zip",
+        "checksum": "af5a3115edf58f015b9e29819d6e8da9",
+        "timestamp": "2026-07-21 20:51:50"
+      },
+      {
+        "version": "0.3.0.0",
+        "changelog": "- feat(cards): support portrait expansion in wrapped rows\n- feat(trailer): persist unavailable YouTube sources\n- feat(trailer): sync unavailable sources with server\n- feat(config): configure unavailable trailer retry interval\n- feat(config): toggle unavailable trailer cache\n- fix(cards): enhance card selection logic and exclude non-playable media cards\n- fix(apiClient): added Jellyfin 12 support\n- fix(trailer): skip unavailable YouTube embeds\n- fix(trailer): read persisted unavailable source ids\n- build(dist): refresh preview bundles\n- refactor(navigation): improve plugin configuration link handling and update navigation entry logic for Jellyfin 12.0\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.3.0.0/MediaPreview.zip",
+        "checksum": "f7600fc1aae82fa25d9d13b62602973e",
+        "timestamp": "2026-07-21 18:34:08"
+      },
+      {
+        "version": "0.2.4.1",
+        "changelog": "- fix(config): live preview grid\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.4.1/MediaPreview.zip",
+        "checksum": "ffdd5af5475126b8190c1b43179989c6",
+        "timestamp": "2026-07-17 10:25:41"
+      },
+      {
+        "version": "0.2.4.0",
+        "changelog": "- feat(trailer): enhance portrait card expansion with source aspect ratio support\n- feat(appearance): add 'Source / Video ratio' option for portrait card expansion\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.4.0/MediaPreview.zip",
+        "checksum": "7b910608cc0992913e7d333d67f9ec26",
+        "timestamp": "2026-07-17 10:19:00"
+      },
+      {
+        "version": "0.2.3.1",
+        "changelog": "- fix(appearance): shift wide previews into viewport\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.3.1/MediaPreview.zip",
+        "checksum": "a93fd18f5fc53ae79698f8e1d7538f1e",
+        "timestamp": "2026-07-15 22:43:36"
+      },
+      {
+        "version": "0.2.3.0",
+        "changelog": "- feat(appearance): add portrait card expansion\n- feat(hover): integrate loading state into countdown\n- feat(config): preview portrait card expansion\n- fix(trickplay): prevent stale auto scrub timers\n- fix(runtime): bound preview caches\n- fix(appearance): keep wide previews in viewport\n- fix(trailer): respect restore on leave setting\n- fix(hover): resolve unavailable preview messages\n- fix(config): expand preview card on hover\n- build: align frontend package version\n- build: refresh bundled frontend output\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.3.0/MediaPreview.zip",
+        "checksum": "460b3d6c7d2f62637c837367769b641e",
+        "timestamp": "2026-07-15 12:50:33"
+      },
+      {
+        "version": "0.2.2.0",
+        "changelog": "- feat(trickplay): preload preview thumbnails\n- build: add plugin catalog image\n- docs: simplify README for users\n- docs: clarify contribution welcome note\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.2.0/MediaPreview.zip",
+        "checksum": "fa7095b512d24cb5fc79ac106c65c1ae",
+        "timestamp": "2026-06-22 19:28:24"
+      },
+      {
+        "version": "0.2.1.0",
+        "changelog": "- feat(config): migrate settings UI to Vue\n- build(changelog): order feature entries first\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.1.0/MediaPreview.zip",
+        "checksum": "563902dfef35c14ed2774654f7fe5e59",
+        "timestamp": "2026-06-16 13:59:31"
+      },
+      {
+        "version": "0.2.0.1",
+        "changelog": "- build: automate manifest changelog generation with git-cliff\n- build: remove manual manifest changelog override\n- build: align manifest changelog with git-cliff output\n- build: refresh bundled frontend output\n- build: refresh bundled frontend output\n- build: refresh bundled frontend output\n- build: update Jellyfin packages to 10.11.11\n- feat: add per-content-type preview source overrides\n- feat: add configurable smart preview source selection\n- feat: add configurable hover intent and cooldown\n- feat: add configurable preview metadata overlay\n- feat: add configurable preview fade and crossfade transitions\n- feat: add configurable keyboard preview support\n- feat: add library preview source rules\n- feat: refine configuration page and live preview\n- fix: guard initial hover preview requests\n- fix: clean up preview DOM on destroy\n- fix: support previews in season and episode overviews\n- fix: tighten card discovery and binding\n- fix: harden release and preview behavior\n- fix: validate embedded client bundle\n- fix: streamline CI workflow and update paths in build script\n- perf: skip library lookups without overrides\n- refactor: simplify auto scrub and trailer helpers\n- refactor: extract metadata overlay styles\n- refactor: unify plugin configuration page layout\n- refactor: unify remaining configuration tabs\n- refactor: enhance build script with modular functions and improved error handling\n",
+        "targetAbi": "10.11.11.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.2.0.1/MediaPreview.zip",
+        "checksum": "5ee1bf7c3f01a56e5f5ef114cc408d15",
+        "timestamp": "2026-06-15 07:28:05"
+      },
+      {
+        "version": "0.1.1.0",
+        "changelog": "- feat: extend preview backdrop and hover settings\n- feat: add hover countdown and preview availability overlays\n- refactor: rename media preview frontend classes to jmp\n- refactor: split media preview styles into css modules\n- refactor: lazily inject preview dom\n- fix: restore preview backdrop rendering\n- fix: resolve lifecycle type guards\n- fix: restore reliable hover preview lifecycle\n- chore: rebuild media preview bundle\n- chore: minify css in bundled styles\n- chore: move manifest updater into scripts",
+        "targetAbi": "10.11.9.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.1.0/MediaPreview.zip",
+        "checksum": "a1e376c6b314326d759b3dcae5710951",
+        "timestamp": "2026-05-24 20:06:16"
+      },
+      {
+        "version": "0.1.0.0",
+        "changelog": "Initial Release",
+        "targetAbi": "10.11.9.0",
+        "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v0.1.0.0/MediaPreview.zip",
+        "checksum": "5f9c61c96e155d4bddc87d5432aac31a",
+        "timestamp": "2026-05-24 11:14:35"
+      }
+    ]
+  }
 ]
