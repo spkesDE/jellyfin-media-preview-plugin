@@ -1,6 +1,8 @@
 name: Setup / support question
 description: Ask for help with installation, configuration, or expected behavior
 title: "[Support]: "
+labels:
+  - question
 body:
   - type: markdown
     attributes:
