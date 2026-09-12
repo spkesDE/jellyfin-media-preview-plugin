@@ -1,0 +1,133 @@
+name: Bug report
+description: Report a reproducible problem with Jellyfin Media Preview
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please check the README troubleshooting section and existing issues first.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues for the same problem.
+          required: true
+        - label: I restarted Jellyfin and hard-refreshed Jellyfin Web.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Hover behavior
+        - Trickplay previews
+        - Local trailers
+        - YouTube trailers
+        - Audio / autoplay
+        - Expanded trailer view
+        - Visual layout
+        - Configuration page
+        - Frontend loading
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Hover ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: input
+    id: jellyfin-version
+    attributes:
+      label: Jellyfin version
+      placeholder: e.g. 12.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: Media Preview version
+      placeholder: e.g. 12.1.0.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: source-mode
+    attributes:
+      label: Preview source mode
+      options:
+        - Prefer Trickplay
+        - Prefer Trailers
+        - Trickplay only
+        - Trailer only
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: hover-mode
+    attributes:
+      label: Hover mode
+      options:
+        - Auto
+        - Scrub
+        - Not sure
+
+  - type: input
+    id: client
+    attributes:
+      label: Client / browser
+      placeholder: e.g. Chrome 153, Firefox 145, Jellyfin Web
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: e.g. Windows 11, Ubuntu 24.04, Android
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Relevant configuration
+      description: Include preview, hover, trailer, audio, or visual settings that may matter.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / browser console
+      description: Paste relevant Jellyfin logs or browser console output. Review pasted content for private information before submitting.
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or recordings
+      description: Drag and drop screenshots or recordings here if they help explain the problem.
