@@ -113,6 +113,10 @@ YouTube trailers may also be blocked by privacy tools, ad blockers, browser sett
 - [AI assistance disclosure](./AI_USAGE.md)
 - [Changelog](./CHANGELOG.md)
 
+## More Jellyfin plugins
+
+Check out my other plugin: [Jellyfin Featured](https://github.com/spkesDE/jellyfin-featured-plugin).
+
 ## Star History
 
 <a href="https://www.star-history.com/?repos=spkesde%2Fjellyfin-media-preview-plugin&type=date&legend=top-left">
