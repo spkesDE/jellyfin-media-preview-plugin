@@ -68,7 +68,7 @@ Install Media Preview and one frontend injection plugin:
 1. Add the JavaScript Injector repository:
 
    ```text
-   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/10.11/manifest.json
+   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/manifest.json
    ```
 
 2. Install `JavaScript Injector`.
@@ -121,6 +121,18 @@ YouTube trailers may also be blocked by privacy tools, ad blockers, browser sett
 - [AI assistance disclosure](./AI_USAGE.md)
 - [Changelog](./CHANGELOG.md)
 
-## License
+## More Jellyfin plugins
+
+Check out my other plugin: [Jellyfin Featured](https://github.com/spkesDE/jellyfin-featured-plugin).
+
+## Star History
+
+<a href="https://www.star-history.com/?repos=spkesde%2Fjellyfin-media-preview-plugin&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
+ </picture>
+</a>
 
 This project is licensed under the [MIT License](./LICENSE).
