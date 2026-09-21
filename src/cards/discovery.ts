@@ -386,14 +386,18 @@ export function getCardImageElement(
     // Older Jellyfin card layouts.
     '.listItemImage',
     '.cardImage',
-    'img',
     '.lazy',
     '.itemImage',
     '.cardPadder',
 
     // Generic fallback. Overlay links are intentionally last.
     '.cardImageContainer:not(a[href*="#/details?id="])',
-    '.cardImageContainer'
+    '.cardImageContainer',
+
+    // Last resort only. Third-party overlays can contain decorative images
+    // (for example Jellyfin Enhanced language flags), which must never become
+    // the preview render host while a structural card-image element exists.
+    'img'
   ];
 
   for (let i = 0; i < selectors.length; i += 1) {
@@ -402,6 +406,20 @@ export function getCardImageElement(
     ) as HTMLElement | null;
 
     if (!match) {
+      continue;
+    }
+
+    if (
+      match instanceof HTMLImageElement &&
+      match.closest(
+        [
+          '.cardIndicators',
+          '.cardOverlayContainer',
+          '.je-tag-host',
+          '[class*="-overlay-container"]'
+        ].join(', ')
+      )
+    ) {
       continue;
     }
 
