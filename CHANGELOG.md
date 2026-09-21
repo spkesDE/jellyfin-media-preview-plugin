@@ -1,5 +1,28 @@
 # Changelog
 
+## v12.1.1.0 - 2026-09-21
+
+### Fixes
+
+- fix: Refactor star history section in README (#23)
+- fix(preview): ignore overlay images as render hosts, fixes #24
+
+### Documentation
+
+- docs: Add Star History section to README
+- docs: Add section for more Jellyfin plugins
+
+### Other
+
+- chore: add issue templates (#22)
+- chore: label feature issues automatically
+- chore: label support issues automatically
+- chore: label bug issues automatically
+- chore: update manifest and add new logo image
+- chore: update hero image
+- chore: update logo image
+- chore: add additional badges to README for license, latest release, Jellyfin version, and build status
+- chore: Update JavaScript Injector manifest URL in README
 ## v12.1.0.0 - 2026-09-10
 
 ### Fixes
