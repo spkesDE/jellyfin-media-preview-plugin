@@ -1,4 +1,4 @@
-import { buildApiUrl } from '../core/apiClient';
+import { buildApiUrl, getApiContextKey, getGlobalApiClient } from '../core/apiClient';
 import { tilePreloadCache } from '../core/storage';
 import { config } from '../config';
 import {
@@ -122,7 +122,7 @@ export function queueTrickplayPreload(
 
   const normalizedPercent = clamp(Number(percent) || 0, 0, 1);
   const percentBucket = Math.round(normalizedPercent * 20);
-  const preloadKey = `${itemId}|${itemType || ''}|${percentBucket}`;
+  const preloadKey = `${getApiContextKey(getGlobalApiClient()) || 'anonymous'}|${itemId}|${itemType || ''}|${percentBucket}`;
   if (trickplayPreloadCache.has(preloadKey)) {
     return;
   }

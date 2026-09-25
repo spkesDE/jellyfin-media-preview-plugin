@@ -1,8 +1,8 @@
 import { config } from '../config';
 import { PREVIEW_SOURCE_TRAILER, SUPPORTED_TYPES } from '../constants';
-import { buildApiUrl, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
+import { buildApiUrl, getApiContextKey, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { debugLog } from '../core/logger';
-import { trailerInfoCache } from '../core/storage';
+import { getScopedPreviewCacheKey, trailerInfoCache } from '../core/storage';
 import { postJson, requestJson } from '../core/request';
 import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
@@ -339,15 +339,17 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
     return Promise.resolve(null);
   }
 
-  if (trailerInfoCache.has(itemId)) {
-    return trailerInfoCache.get(itemId)!;
-  }
-
   const apiClient = getGlobalApiClient();
   const userId = getCurrentUserId(apiClient);
-  if (!apiClient || !userId) {
+  const contextKey = getApiContextKey(apiClient, userId);
+  if (!apiClient || !userId || !contextKey) {
     debugLog('Skipping trailer fetch because ApiClient or user id is missing.', itemId);
     return Promise.resolve(null);
+  }
+  const cacheKey = getScopedPreviewCacheKey(contextKey, itemId);
+
+  if (trailerInfoCache.has(cacheKey)) {
+    return trailerInfoCache.get(cacheKey)!;
   }
 
   const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
@@ -380,14 +382,14 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
     return trailerInfo;
   }).catch((error) => {
     debugLog('Failed to resolve trailer info for item.', itemId, error);
-    trailerInfoCache.delete(itemId);
+    trailerInfoCache.delete(cacheKey);
     return null;
   });
 
-  trailerInfoCache.set(itemId, request);
+  trailerInfoCache.set(cacheKey, request);
   return request.then((result) => {
     if (!result) {
-      trailerInfoCache.delete(itemId);
+      trailerInfoCache.delete(cacheKey);
     }
 
     return result;

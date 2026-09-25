@@ -2,10 +2,10 @@ import { getItemIdFromCard } from '../cards/discovery';
 import { ensureMetadataOverlay, hideMetadataOverlay, showMetadataOverlay } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { config } from '../config';
-import { getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
+import { getApiContextKey, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { debugLog } from '../core/logger';
 import { requestJson } from '../core/request';
-import { metadataOverlayCache } from '../core/storage';
+import { getScopedPreviewCacheKey, metadataOverlayCache } from '../core/storage';
 import type { JellyfinItem } from '../types/jellyfin';
 import type { MetadataOverlayInfo } from '../types/preview';
 
@@ -41,14 +41,16 @@ export function getMetadataOverlayInfo(itemId: string | null | undefined): Promi
     return Promise.resolve(null);
   }
 
-  if (metadataOverlayCache.has(itemId)) {
-    return metadataOverlayCache.get(itemId)!;
-  }
-
   const apiClient = getGlobalApiClient();
   const userId = getCurrentUserId(apiClient);
-  if (!apiClient || !userId) {
+  const contextKey = getApiContextKey(apiClient, userId);
+  if (!apiClient || !userId || !contextKey) {
     return Promise.resolve(null);
+  }
+  const cacheKey = getScopedPreviewCacheKey(contextKey, itemId);
+
+  if (metadataOverlayCache.has(cacheKey)) {
+    return metadataOverlayCache.get(cacheKey)!;
   }
 
   const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
@@ -67,15 +69,15 @@ export function getMetadataOverlayInfo(itemId: string | null | undefined): Promi
       communityRating: Number.isFinite(Number(item.CommunityRating)) ? Number(item.CommunityRating) : null
     };
   }).catch((error) => {
-    metadataOverlayCache.delete(itemId);
+    metadataOverlayCache.delete(cacheKey);
     debugLog('Failed to load metadata overlay info.', itemId, error);
     return null;
   });
 
-  metadataOverlayCache.set(itemId, request);
+  metadataOverlayCache.set(cacheKey, request);
   return request.then((result) => {
     if (!result) {
-      metadataOverlayCache.delete(itemId);
+      metadataOverlayCache.delete(cacheKey);
     }
 
     return result;

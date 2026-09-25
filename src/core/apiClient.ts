@@ -39,12 +39,28 @@ export function getAccessToken(
     return null;
   }
 
-  const tokenFromMethod =
-    typeof apiClient.accessToken === 'function'
-      ? apiClient.accessToken()
-      : null;
+  const tokenFromMethod = typeof apiClient.accessToken === 'function'
+    ? apiClient.accessToken()
+    : apiClient.accessToken;
 
   return tokenFromMethod || apiClient._serverInfo?.AccessToken || null;
+}
+
+export function getApiContextKey(
+  apiClient: JellyfinApiClient | null,
+  userId: string | null = getCurrentUserId(apiClient)
+): string | null {
+  if (!apiClient || !userId) {
+    return null;
+  }
+
+  const serverAddress = typeof apiClient.serverAddress === 'function'
+    ? apiClient.serverAddress()
+    : apiClient._serverAddress || apiClient._serverInfo?.ManualAddress;
+  const serverIdentity = apiClient._serverInfo?.Id
+    || String(serverAddress || window.location.origin).replace(/\/+$/, '').toLowerCase();
+
+  return `${serverIdentity}\u001f${userId}`;
 }
 
 function normalizeApiKey(

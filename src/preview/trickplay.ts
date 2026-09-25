@@ -1,17 +1,17 @@
 import { config } from '../config';
 import { PREVIEW_SOURCE_TRICKPLAY, SUPPORTED_TYPES, VALID_AUTO_SCRUB_PRESETS, AUTO_SCRUB_PRESET_BALANCED, AUTO_SCRUB_PRESET_SNAPPY, AUTO_SCRUB_PRESET_CINEMATIC, AUTO_SCRUB_PRESET_CUSTOM } from '../constants';
-import { buildApiUrl, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
+import { buildApiUrl, getApiContextKey, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
-import { itemInfoCache, missingTrickplayCache } from '../core/storage';
+import { getScopedPreviewCacheKey, itemInfoCache, missingTrickplayCache } from '../core/storage';
 import { requestJson } from '../core/request';
 import type { JellyfinItem, JellyfinTrickplayManifest } from '../types/jellyfin';
 import type { TrickplayInfo, TrickplayPreview } from '../types/preview';
 
 const missingTrickplayCacheCooldownMs = 10 * 60 * 1000;
 
-function isMissingTrickplayCached(itemId: string): boolean {
-  const cachedAt = missingTrickplayCache.get(itemId);
+function isMissingTrickplayCached(cacheKey: string): boolean {
+  const cachedAt = missingTrickplayCache.get(cacheKey);
   if (!cachedAt) {
     return false;
   }
@@ -20,7 +20,7 @@ function isMissingTrickplayCached(itemId: string): boolean {
     return true;
   }
 
-  missingTrickplayCache.delete(itemId);
+  missingTrickplayCache.delete(cacheKey);
   return false;
 }
 
@@ -180,20 +180,22 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
     return Promise.resolve(null);
   }
 
-  if (isMissingTrickplayCached(itemId)) {
+  const apiClient = getGlobalApiClient();
+  const userId = getCurrentUserId(apiClient);
+  const contextKey = getApiContextKey(apiClient, userId);
+  if (!apiClient || !userId || !contextKey) {
+    debugLog('Skipping trickplay fetch because ApiClient or user id is missing.', itemId);
+    return Promise.resolve(null);
+  }
+  const cacheKey = getScopedPreviewCacheKey(contextKey, itemId);
+
+  if (isMissingTrickplayCached(cacheKey)) {
     debugLog('Skipping trickplay fetch because a recent lookup found no usable manifest.', itemId);
     return Promise.resolve(null);
   }
 
-  if (itemInfoCache.has(itemId)) {
-    return itemInfoCache.get(itemId)!;
-  }
-
-  const apiClient = getGlobalApiClient();
-  const userId = getCurrentUserId(apiClient);
-  if (!apiClient || !userId) {
-    debugLog('Skipping trickplay fetch because ApiClient or user id is missing.', itemId);
-    return Promise.resolve(null);
+  if (itemInfoCache.has(cacheKey)) {
+    return itemInfoCache.get(cacheKey)!;
   }
 
   const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
@@ -218,20 +220,20 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
     }
 
     debugLog('Resolved trickplay info.', normalized);
-    missingTrickplayCache.delete(itemId);
+    missingTrickplayCache.delete(cacheKey);
     return normalized;
   }).catch((error) => {
     debugLog('Failed to load trickplay metadata for item.', itemId, error);
-    itemInfoCache.delete(itemId);
-    missingTrickplayCache.set(itemId, Date.now());
+    itemInfoCache.delete(cacheKey);
+    missingTrickplayCache.set(cacheKey, Date.now());
     return null;
   });
 
-  itemInfoCache.set(itemId, request);
+  itemInfoCache.set(cacheKey, request);
   return request.then((result) => {
     if (!result) {
-      itemInfoCache.delete(itemId);
-      missingTrickplayCache.set(itemId, Date.now());
+      itemInfoCache.delete(cacheKey);
+      missingTrickplayCache.set(cacheKey, Date.now());
     }
 
     return result;
