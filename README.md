@@ -21,6 +21,7 @@ Hover a movie, series, or episode card and the plugin can show a quick preview u
 - Local trailer and YouTube trailer previews
 - Source priority settings, including Trickplay-first or trailer-first fallback
 - Optional trailer audio after browser interaction
+- Keyboard and focus previews for web-based TV, touch, and hybrid clients
 - Lightweight visual options for poster backdrops
 
 ## Requirements

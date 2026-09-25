@@ -43,11 +43,6 @@ export function start(): void {
     return;
   }
 
-  if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    log('Skipping media preview because the current device does not advertise precise hover.');
-    return;
-  }
-
   ensureInjectedStyles();
   bindUserActivationEvents();
   bindRouteEvents();
