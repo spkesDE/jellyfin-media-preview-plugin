@@ -2,6 +2,14 @@
 
 ![Jellyfin Media Preview hover preview](./hero.png)
 
+<p align="center">
+  <a href="./LICENSE"><img alt="License" src="https://img.shields.io/github/license/spkesDE/jellyfin-media-preview-plugin?color=00A4DC&amp;cacheSeconds=3600" /></a>
+  <a href="https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/spkesDE/jellyfin-media-preview-plugin?color=AA5CC3&amp;cacheSeconds=3600" /></a>
+  <img alt="Jellyfin version" src="https://img.shields.io/badge/Jellyfin-12.x-AA5CC3?labelColor=555&amp;logo=jellyfin&amp;logoColor=00A4DC&amp;cacheSeconds=3600" />
+  <a href="https://github.com/spkesDE/jellyfin-media-preview-plugin/actions/workflows/ci.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/spkesDE/jellyfin-media-preview-plugin/ci.yml?branch=main&amp;color=00A4DC&amp;cacheSeconds=3600" /></a>
+  <img alt="Downloads" src="https://img.shields.io/github/downloads/spkesDE/jellyfin-media-preview-plugin/total?color=AA5CC3&amp;cacheSeconds=3600" />
+</p>
+
 `Jellyfin Media Preview` adds hover previews to Jellyfin Web.
 
 Hover a movie, series, or episode card and the plugin can show a quick preview using Jellyfin Trickplay thumbnails, local trailers, or YouTube trailers already known to Jellyfin.
