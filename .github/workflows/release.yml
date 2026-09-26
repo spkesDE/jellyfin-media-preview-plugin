@@ -84,6 +84,12 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
+      - name: Test backend
+        shell: pwsh
+        run: |
+          dotnet restore Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj
+          dotnet test Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj --configuration Release --no-restore
+
       - name: Build release ZIP
         shell: pwsh
         run: |

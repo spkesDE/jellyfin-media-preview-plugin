@@ -23,7 +23,6 @@ import {
 } from '../cards/discovery';
 import {
   clearLeaveHold,
-  clearPendingMove,
   ensureHoverCountdown,
   ensurePreviewHost,
   hideUnavailableMessage,

@@ -11,8 +11,8 @@ export function applyMediaLayout(
   sourceHeight: number,
   rootBorderRadius: string
 ): void {
-  let scaleX = hostRect.width / sourceWidth;
-  let scaleY = hostRect.height / sourceHeight;
+  const scaleX = hostRect.width / sourceWidth;
+  const scaleY = hostRect.height / sourceHeight;
   const isIframe = mediaElement.tagName === 'IFRAME';
   const overscan = isIframe ? getYouTubeOverscanMultiplier() : 1;
 

@@ -2,9 +2,9 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, dev]
   push:
-    branches: [main]
+    branches: [main, dev]
   workflow_dispatch:
 
 permissions:
@@ -31,6 +31,12 @@ jobs:
       - name: Typecheck frontend
         run: npm run typecheck
 
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Test frontend and contracts
+        run: npm test
+
       - name: Build frontend bundle
         run: npm run bundle
 
@@ -40,7 +46,10 @@ jobs:
           dotnet-version: "10.0.x"
 
       - name: Restore
-        run: dotnet restore Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj
+        run: dotnet restore Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj
 
       - name: Build
         run: dotnet build Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj --configuration Release --no-restore -p:UseSharedCompilation=false
+
+      - name: Test backend
+        run: dotnet test Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj --configuration Release --no-restore

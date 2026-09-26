@@ -4,18 +4,29 @@
   "version": "12.1.1.0",
   "description": "TypeScript build for the Jellyfin Media Preview client bundle.",
   "scripts": {
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit && vue-tsc --noEmit",
     "bundle": "node scripts/build.mjs",
-    "build": "npm run typecheck && npm run bundle",
+    "build": "npm run lint && npm run typecheck && npm run test && npm run bundle",
+    "test": "npm run test:unit && npm run test:contracts",
+    "test:unit": "vitest run",
+    "test:contracts": "node --test tests/contracts/*.test.mjs",
     "dev": "vite --config vite.config.ts",
     "dev:bundle": "node scripts/build.mjs --watch"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "@vue/compiler-sfc": "^3.5.38",
     "esbuild": "^0.28.1",
+    "eslint": "^10.11.0",
+    "eslint-plugin-vue": "^10.11.1",
+    "globals": "^17.12.0",
+    "happy-dom": "^20.14.5",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.0",
     "vite": "^8.0.16",
+    "vitest": "^5.0.2",
     "vue-tsc": "^3.3.5"
   },
   "dependencies": {

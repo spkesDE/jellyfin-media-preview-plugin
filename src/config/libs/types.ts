@@ -1,6 +1,5 @@
 import type {
-  ContentTypePreviewSource,
-  PreviewSource
+  ContentTypePreviewSource
 } from '../../types/config';
 
 export interface ConfigLibraryOverride {

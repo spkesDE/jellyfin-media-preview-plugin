@@ -25,7 +25,7 @@ function select(tab: ConfigTab): void {
 async function handleKeydown(event: KeyboardEvent, tab: ConfigTab): Promise<void> {
   const visibleTabs = tabs.filter((candidate) => isVisible(candidate.id));
   const currentIndex = visibleTabs.findIndex((candidate) => candidate.id === tab);
-  let nextIndex = currentIndex;
+  let nextIndex: number;
 
   if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % visibleTabs.length;
   else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + visibleTabs.length) % visibleTabs.length;
