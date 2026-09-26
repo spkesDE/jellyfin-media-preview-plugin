@@ -1,6 +1,6 @@
 name: Setup / support question
 description: Ask for help with installation, configuration, or expected behavior
-title: "[Support]: "
+title: '[Support]: '
 labels:
   - question
 body:

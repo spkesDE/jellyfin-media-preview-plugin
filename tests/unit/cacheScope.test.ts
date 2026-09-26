@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { getApiContextKey } from '../../src/core/apiClient';
-import {
-  getScopedPreviewCacheKey,
-  itemInfoCache,
-  trailerInfoCache
-} from '../../src/core/storage';
+import { getScopedPreviewCacheKey, itemInfoCache, trailerInfoCache } from '../../src/core/storage';
 import type { JellyfinApiClient } from '../../src/types/jellyfin';
 
 describe('preview cache scope', () => {

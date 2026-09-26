@@ -1,12 +1,4 @@
-import {
-  computed,
-  inject,
-  reactive,
-  ref,
-  type ComputedRef,
-  type InjectionKey,
-  type Ref
-} from 'vue';
+import { computed, inject, reactive, ref, type ComputedRef, type InjectionKey, type Ref } from 'vue';
 import { getGlobalApiClient } from '../../core/apiClient';
 import type { ContentTypePreviewSource, PreviewSource } from '../../types/config';
 import { loadAppearancePreview } from './appearanceApi';
@@ -17,12 +9,7 @@ import {
   loadConfig as loadPluginConfig,
   saveConfig as createSaveConfigPayload
 } from './serialization';
-import type {
-  AppearancePreview,
-  ConfigLibrary,
-  ConfigTab,
-  SaveState
-} from './types';
+import type { AppearancePreview, ConfigLibrary, ConfigTab, SaveState } from './types';
 
 const PLUGIN_ID = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
 
@@ -87,18 +74,28 @@ export function createConfigStore(): ConfigStore {
     savedFeedback.value && !isDirty.value ? 'saved' : isDirty.value ? 'dirty' : 'clean'
   );
 
-  const previewSourceNote = computed(() => ({
-    trailer: 'Only Trailer: local trailer first, then supported remote trailer. No Trickplay fallback.',
-    trickplay: 'Only Trickplay: always use Jellyfin scrub images.',
-    'prefer-trailer': 'Prefer Trailer: local trailer, then supported remote trailer, then Direct Play.',
-    'prefer-trickplay': 'Prefer Trickplay: Trickplay first, then trailer if needed.'
-  })[config.PreviewSource]);
+  const previewSourceNote = computed(
+    () =>
+      ({
+        trailer: 'Only Trailer: local trailer first, then supported remote trailer. No Trickplay fallback.',
+        trickplay: 'Only Trickplay: always use Jellyfin scrub images.',
+        'prefer-trailer': 'Prefer Trailer: local trailer, then supported remote trailer, then Direct Play.',
+        'prefer-trickplay': 'Prefer Trickplay: Trickplay first, then trailer if needed.'
+      })[config.PreviewSource]
+  );
 
-  const motionProfile = computed(() => ({
-    step: { glyph: '1', title: 'Frame by Frame', text: 'Advances one Trickplay frame at a time.' },
-    sweep: { glyph: '>', title: 'Continuous', text: 'Allows frame skips when needed so motion stays fluid.' },
-    'ping-pong': { glyph: '<>', title: 'Continuous Ping-Pong', text: 'Uses continuous motion while sweeping back and forth.' }
-  })[config.AutoScrubMode]);
+  const motionProfile = computed(
+    () =>
+      ({
+        step: { glyph: '1', title: 'Frame by Frame', text: 'Advances one Trickplay frame at a time.' },
+        sweep: { glyph: '>', title: 'Continuous', text: 'Allows frame skips when needed so motion stays fluid.' },
+        'ping-pong': {
+          glyph: '<>',
+          title: 'Continuous Ping-Pong',
+          text: 'Uses continuous motion while sweeping back and forth.'
+        }
+      })[config.AutoScrubMode]
+  );
 
   const presetValues = computed(() => {
     if (config.AutoScrubPreset === 'custom') {
@@ -180,8 +177,9 @@ export function createConfigStore(): ConfigStore {
   }
 
   function getLibraryOverride(libraryId: string): ContentTypePreviewSource {
-    return config.LibraryPreviewSourceOverrides.find((entry) => entry.LibraryId === libraryId)?.PreviewSource
-      ?? 'inherit';
+    return (
+      config.LibraryPreviewSourceOverrides.find((entry) => entry.LibraryId === libraryId)?.PreviewSource ?? 'inherit'
+    );
   }
 
   function setLibraryOverride(libraryId: string, value: ContentTypePreviewSource): void {

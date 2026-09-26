@@ -16,11 +16,7 @@ const focused = ref(false);
 
 <template>
   <div class="inputContainer">
-    <label
-      class="inputLabel"
-      :class="focused ? 'inputLabelFocused' : 'inputLabelUnfocused'"
-      :for="fieldId"
-    >
+    <label class="inputLabel" :class="focused ? 'inputLabelFocused' : 'inputLabelUnfocused'" :for="fieldId">
       {{ label }}
     </label>
     <input
@@ -35,6 +31,6 @@ const focused = ref(false);
       @focus="focused = true"
       @blur="focused = false"
       @input="emit('update:modelValue', Number(($event.target as HTMLInputElement).value))"
-    >
+    />
   </div>
 </template>

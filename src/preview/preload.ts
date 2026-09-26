@@ -1,11 +1,7 @@
 import { buildApiUrl, getApiContextKey, getGlobalApiClient } from '../core/apiClient';
 import { tilePreloadCache } from '../core/storage';
 import { config } from '../config';
-import {
-  PREVIEW_SOURCE_PREFER_TRAILER,
-  PREVIEW_SOURCE_PREFER_TRICKPLAY,
-  PREVIEW_SOURCE_TRICKPLAY
-} from '../constants';
+import { PREVIEW_SOURCE_PREFER_TRAILER, PREVIEW_SOURCE_PREFER_TRICKPLAY, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
 import { getLibraryIdForItem } from './library';
@@ -48,9 +44,11 @@ function getMaxConcurrentTrickplayPreloads(): number {
 }
 
 function previewSourceUsesTrickplay(source: string): boolean {
-  return source === PREVIEW_SOURCE_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRAILER;
+  return (
+    source === PREVIEW_SOURCE_TRICKPLAY ||
+    source === PREVIEW_SOURCE_PREFER_TRICKPLAY ||
+    source === PREVIEW_SOURCE_PREFER_TRAILER
+  );
 }
 
 function getPreloadPreviewSource(itemId: string, itemType?: string | null): Promise<string> {
@@ -173,25 +171,28 @@ function getTrickplayPreloadObserver(): IntersectionObserver | null {
   }
 
   if (!runtimeState.trickplayPreloadObserver) {
-    runtimeState.trickplayPreloadObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) {
-          return;
-        }
+    runtimeState.trickplayPreloadObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
 
-        runtimeState.trickplayPreloadObserver?.unobserve(entry.target);
-        const request = trickplayPreloadCards.get(entry.target);
-        if (!request) {
-          return;
-        }
+          runtimeState.trickplayPreloadObserver?.unobserve(entry.target);
+          const request = trickplayPreloadCards.get(entry.target);
+          if (!request) {
+            return;
+          }
 
-        queueTrickplayPreload(request.itemId, request.percent, request.itemType);
-      });
-    }, {
-      root: null,
-      rootMargin: '600px 0px',
-      threshold: 0.01
-    });
+          queueTrickplayPreload(request.itemId, request.percent, request.itemType);
+        });
+      },
+      {
+        root: null,
+        rootMargin: '600px 0px',
+        threshold: 0.01
+      }
+    );
   }
 
   return runtimeState.trickplayPreloadObserver;

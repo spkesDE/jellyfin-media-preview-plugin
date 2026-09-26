@@ -22,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
 
       - name: Install frontend dependencies
@@ -43,10 +43,13 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: "10.0.x"
+          dotnet-version: '10.0.x'
 
       - name: Restore
         run: dotnet restore Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj
+
+      - name: Check formatting
+        run: npm run format:check
 
       - name: Build
         run: dotnet build Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj --configuration Release --no-restore -p:UseSharedCompilation=false

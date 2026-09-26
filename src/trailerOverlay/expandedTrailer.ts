@@ -137,7 +137,10 @@ export function getExpandedTrailerViewportRect(session: NonNullable<typeof runti
   };
 }
 
-export function applyExpandedViewportRect(viewport: HTMLElement | null, rect: { left: number; top: number; width: number; height: number } | null): void {
+export function applyExpandedViewportRect(
+  viewport: HTMLElement | null,
+  rect: { left: number; top: number; width: number; height: number } | null
+): void {
   if (!viewport || !rect) {
     return;
   }
@@ -182,7 +185,12 @@ export function getApproximateTrailerPlaybackSeconds(state: ReturnType<typeof ge
 
 export function expandTrailer(card: HTMLElement): void {
   const state = getOrCreateCardState(card);
-  if (!state.trailerMedia || !state.currentTrailer || !state.trailerLayer || state.trailerLayer.style.display === 'none') {
+  if (
+    !state.trailerMedia ||
+    !state.currentTrailer ||
+    !state.trailerLayer ||
+    state.trailerLayer.style.display === 'none'
+  ) {
     return;
   }
 
@@ -229,12 +237,13 @@ export function expandTrailer(card: HTMLElement): void {
     expandedMedia.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture');
     expandedMedia.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     expandedMedia.setAttribute('tabindex', '-1');
-    expandedMedia.src = buildYouTubeEmbedUrl(state.currentTrailer.youtubeId, !canPlayTrailerAudio(), {
-      controls: true,
-      startSeconds
-    }) || 'about:blank';
+    expandedMedia.src =
+      buildYouTubeEmbedUrl(state.currentTrailer.youtubeId, !canPlayTrailerAudio(), {
+        controls: true,
+        startSeconds
+      }) || 'about:blank';
     runtimeState.expandedTrailerSession.expandedMedia = expandedMedia;
-    runtimeState.expandedTrailerSession.expandedPlaybackStartedAt = Date.now() - (startSeconds * 1000);
+    runtimeState.expandedTrailerSession.expandedPlaybackStartedAt = Date.now() - startSeconds * 1000;
     overlayState.mediaHost.appendChild(expandedMedia);
     if (state.trailerMedia instanceof HTMLIFrameElement) {
       state.trailerMedia.src = 'about:blank';
@@ -288,7 +297,11 @@ export function collapseExpandedTrailer(options?: { immediate?: boolean }): void
 
     if (state.trailerLayer) {
       if (session.expandedMedia) {
-        if (session.collapsedMedia && session.collapsedMedia !== session.expandedMedia && session.collapsedMedia.parentNode) {
+        if (
+          session.collapsedMedia &&
+          session.collapsedMedia !== session.expandedMedia &&
+          session.collapsedMedia.parentNode
+        ) {
           session.collapsedMedia.parentNode.removeChild(session.collapsedMedia);
         }
 

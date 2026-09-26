@@ -1,6 +1,6 @@
 name: Feature request
 description: Suggest an improvement for Jellyfin Media Preview
-title: "[Feature]: "
+title: '[Feature]: '
 labels:
   - enhancement
 body:

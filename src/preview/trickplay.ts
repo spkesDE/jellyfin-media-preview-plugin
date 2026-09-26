@@ -1,5 +1,13 @@
 import { config } from '../config';
-import { PREVIEW_SOURCE_TRICKPLAY, SUPPORTED_TYPES, VALID_AUTO_SCRUB_PRESETS, AUTO_SCRUB_PRESET_BALANCED, AUTO_SCRUB_PRESET_SNAPPY, AUTO_SCRUB_PRESET_CINEMATIC, AUTO_SCRUB_PRESET_CUSTOM } from '../constants';
+import {
+  PREVIEW_SOURCE_TRICKPLAY,
+  SUPPORTED_TYPES,
+  VALID_AUTO_SCRUB_PRESETS,
+  AUTO_SCRUB_PRESET_BALANCED,
+  AUTO_SCRUB_PRESET_SNAPPY,
+  AUTO_SCRUB_PRESET_CINEMATIC,
+  AUTO_SCRUB_PRESET_CUSTOM
+} from '../constants';
 import { buildApiUrl, getApiContextKey, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
@@ -24,7 +32,10 @@ function isMissingTrickplayCached(cacheKey: string): boolean {
   return false;
 }
 
-export function getTrickplayFrameIndex(info: TrickplayInfo | null | undefined, percent: number | null | undefined): number {
+export function getTrickplayFrameIndex(
+  info: TrickplayInfo | null | undefined,
+  percent: number | null | undefined
+): number {
   if (!info || !info.thumbnailCount) {
     return 0;
   }
@@ -84,7 +95,10 @@ export function getAutoScrubTimingProfile(): {
     case AUTO_SCRUB_PRESET_CUSTOM:
       return {
         minDelayMs: Math.max(16, Number(config.autoScrubMinDelayMs) || 40),
-        maxDelayMs: Math.max(Math.max(16, Number(config.autoScrubMinDelayMs) || 40), Number(config.autoScrubMaxDelayMs) || 1000),
+        maxDelayMs: Math.max(
+          Math.max(16, Number(config.autoScrubMinDelayMs) || 40),
+          Number(config.autoScrubMaxDelayMs) || 1000
+        ),
         plannedDurationMs: Math.max(500, Number(config.autoScrubDurationMs) || 4000)
       };
     case AUTO_SCRUB_PRESET_BALANCED:
@@ -152,7 +166,8 @@ export function normalizeTrickplayManifest(item: JellyfinItem | null | undefined
   const mediaSources = Array.isArray(item.MediaSources) ? item.MediaSources : [];
   const mediaSourceIds = mediaSources.map((source) => source?.Id).filter(Boolean) as string[];
   const manifestKeys = Object.keys(widthBucket || {});
-  const selectedManifestKey = mediaSourceIds.find((id) => Object.prototype.hasOwnProperty.call(widthBucket, id)) || manifestKeys[0];
+  const selectedManifestKey =
+    mediaSourceIds.find((id) => Object.prototype.hasOwnProperty.call(widthBucket, id)) || manifestKeys[0];
   const trickplayInfo = widthBucket?.[selectedManifestKey] as JellyfinTrickplayManifest | undefined;
 
   if (!trickplayInfo?.Width || !trickplayInfo.TileWidth || !trickplayInfo.TileHeight || !trickplayInfo.ThumbnailCount) {
@@ -200,34 +215,36 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
 
   const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
     Fields: 'Trickplay,MediaSources'
-  }).then((item) => {
-    if (!item || !SUPPORTED_TYPES.has(item.Type || '')) {
-      debugLog('Item is unsupported or missing.', {
-        itemId,
-        type: item?.Type
-      });
-      return null;
-    }
+  })
+    .then((item) => {
+      if (!item || !SUPPORTED_TYPES.has(item.Type || '')) {
+        debugLog('Item is unsupported or missing.', {
+          itemId,
+          type: item?.Type
+        });
+        return null;
+      }
 
-    const normalized = normalizeTrickplayManifest(item);
-    if (!normalized) {
-      debugLog('No usable trickplay manifest found for item.', {
-        itemId,
-        type: item.Type,
-        trickplayKeys: item.Trickplay ? Object.keys(item.Trickplay) : []
-      });
-      return null;
-    }
+      const normalized = normalizeTrickplayManifest(item);
+      if (!normalized) {
+        debugLog('No usable trickplay manifest found for item.', {
+          itemId,
+          type: item.Type,
+          trickplayKeys: item.Trickplay ? Object.keys(item.Trickplay) : []
+        });
+        return null;
+      }
 
-    debugLog('Resolved trickplay info.', normalized);
-    missingTrickplayCache.delete(cacheKey);
-    return normalized;
-  }).catch((error) => {
-    debugLog('Failed to load trickplay metadata for item.', itemId, error);
-    itemInfoCache.delete(cacheKey);
-    missingTrickplayCache.set(cacheKey, Date.now());
-    return null;
-  });
+      debugLog('Resolved trickplay info.', normalized);
+      missingTrickplayCache.delete(cacheKey);
+      return normalized;
+    })
+    .catch((error) => {
+      debugLog('Failed to load trickplay metadata for item.', itemId, error);
+      itemInfoCache.delete(cacheKey);
+      missingTrickplayCache.set(cacheKey, Date.now());
+      return null;
+    });
 
   itemInfoCache.set(cacheKey, request);
   return request.then((result) => {

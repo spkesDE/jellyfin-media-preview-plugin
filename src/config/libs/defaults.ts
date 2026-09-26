@@ -82,7 +82,7 @@ export const CONFIG_DEFAULTS = {
 } satisfies Record<string, StoreConfigValue>;
 
 export type StoreConfig = {
-  [Key in keyof typeof CONFIG_DEFAULTS]: typeof CONFIG_DEFAULTS[Key];
+  [Key in keyof typeof CONFIG_DEFAULTS]: (typeof CONFIG_DEFAULTS)[Key];
 } & Record<string, StoreConfigValue>;
 
 export function createDefaultConfig(): StoreConfig {

@@ -67,7 +67,8 @@ export function ensureTrailerMediaElement(
     }
   }
 
-  const mediaElement = document.createElement(kind === 'iframe' ? 'iframe' : 'video') as HTMLVideoElement | HTMLIFrameElement;
+  const mediaElement = document.createElement(kind === 'iframe' ? 'iframe' : 'video') as
+    HTMLVideoElement | HTMLIFrameElement;
   mediaElement.className = 'jmp-trailer-media';
   mediaElement.setAttribute('aria-hidden', 'true');
 
@@ -146,8 +147,7 @@ export function applyTrailerPreview(
   }
 
   const trailer = preview.trailer;
-  const hostRect = expandPortraitCardForPreview(card, state, trailer.aspectRatio)
-    || rootHost.getBoundingClientRect();
+  const hostRect = expandPortraitCardForPreview(card, state, trailer.aspectRatio) || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }
@@ -176,9 +176,9 @@ export function applyTrailerPreview(
   applyPreviewBackdrop(state);
 
   if (
-    trailer.kind === 'iframe'
-    && state.currentTrailer?.youtubeId
-    && state.currentTrailer.youtubeId !== trailer.youtubeId
+    trailer.kind === 'iframe' &&
+    state.currentTrailer?.youtubeId &&
+    state.currentTrailer.youtubeId !== trailer.youtubeId
   ) {
     clearTrailerMedia(state);
   }
@@ -189,7 +189,15 @@ export function applyTrailerPreview(
   }
 
   state.currentTrailer = trailer;
-  applyMediaLayout(state.trailerLayer, mediaElement, hostRect, previewMode, sourceWidth, sourceHeight, rootBorderRadius);
+  applyMediaLayout(
+    state.trailerLayer,
+    mediaElement,
+    hostRect,
+    previewMode,
+    sourceWidth,
+    sourceHeight,
+    rootBorderRadius
+  );
   setTrailerLayerVisible(state, true);
   const isExpandableTrailer = preview.source === PREVIEW_SOURCE_TRAILER;
   if (isExpandableTrailer && config.trailerExpandButtonEnabled) {
@@ -253,7 +261,10 @@ export function applyTrailerPreview(
            * playlist based loop would restart playback mid preview, which is
            * worse than not looping for a short hover.
            */
-          debugLog('YouTube iframe API monitoring is unavailable, preview will not loop.', trailer.youtubeId || trailer.title);
+          debugLog(
+            'YouTube iframe API monitoring is unavailable, preview will not loop.',
+            trailer.youtubeId || trailer.title
+          );
         }
       });
       mediaElement.src = iframeUrl;
@@ -297,9 +308,9 @@ export function applyTrailerPreview(
 
     mediaElement.onloadedmetadata = () => {
       if (
-        trailer.startSeconds
-        && mediaElement.dataset.jmpFallbackApplied !== 'true'
-        && Math.abs(mediaElement.currentTime - trailer.startSeconds) > 1
+        trailer.startSeconds &&
+        mediaElement.dataset.jmpFallbackApplied !== 'true' &&
+        Math.abs(mediaElement.currentTime - trailer.startSeconds) > 1
       ) {
         try {
           mediaElement.currentTime = trailer.startSeconds;

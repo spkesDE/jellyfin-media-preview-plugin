@@ -1,15 +1,10 @@
-import type {
-  JellyfinApiClient,
-  JellyfinCurrentUser
-} from '../types/jellyfin';
+import type { JellyfinApiClient, JellyfinCurrentUser } from '../types/jellyfin';
 
 export function getGlobalApiClient(): JellyfinApiClient | null {
   return window.ApiClient || window.apiClient || null;
 }
 
-export function getCurrentUserId(
-  apiClient: JellyfinApiClient | null
-): string | null {
+export function getCurrentUserId(apiClient: JellyfinApiClient | null): string | null {
   if (!apiClient) {
     return null;
   }
@@ -19,10 +14,7 @@ export function getCurrentUserId(
   }
 
   if (typeof apiClient.getCurrentUser === 'function') {
-    const currentUser = apiClient.getCurrentUser() as
-      | JellyfinCurrentUser
-      | null
-      | undefined;
+    const currentUser = apiClient.getCurrentUser() as JellyfinCurrentUser | null | undefined;
 
     if (currentUser?.Id) {
       return currentUser.Id;
@@ -32,16 +24,12 @@ export function getCurrentUserId(
   return apiClient._serverInfo?.UserId || null;
 }
 
-export function getAccessToken(
-  apiClient: JellyfinApiClient | null
-): string | null {
+export function getAccessToken(apiClient: JellyfinApiClient | null): string | null {
   if (!apiClient) {
     return null;
   }
 
-  const tokenFromMethod = typeof apiClient.accessToken === 'function'
-    ? apiClient.accessToken()
-    : apiClient.accessToken;
+  const tokenFromMethod = typeof apiClient.accessToken === 'function' ? apiClient.accessToken() : apiClient.accessToken;
 
   return tokenFromMethod || apiClient._serverInfo?.AccessToken || null;
 }
@@ -54,19 +42,20 @@ export function getApiContextKey(
     return null;
   }
 
-  const serverAddress = typeof apiClient.serverAddress === 'function'
-    ? apiClient.serverAddress()
-    : apiClient._serverAddress || apiClient._serverInfo?.ManualAddress;
-  const serverIdentity = apiClient._serverInfo?.Id
-    || String(serverAddress || window.location.origin).replace(/\/+$/, '').toLowerCase();
+  const serverAddress =
+    typeof apiClient.serverAddress === 'function'
+      ? apiClient.serverAddress()
+      : apiClient._serverAddress || apiClient._serverInfo?.ManualAddress;
+  const serverIdentity =
+    apiClient._serverInfo?.Id ||
+    String(serverAddress || window.location.origin)
+      .replace(/\/+$/, '')
+      .toLowerCase();
 
   return `${serverIdentity}\u001f${userId}`;
 }
 
-function normalizeApiKey(
-  url: URL,
-  fallbackToken: string | null
-): void {
+function normalizeApiKey(url: URL, fallbackToken: string | null): void {
   const token =
     url.searchParams.get('ApiKey') ||
     url.searchParams.get('api_key') ||
@@ -84,10 +73,7 @@ function normalizeApiKey(
 
 export function buildApiUrl(
   path: string,
-  query?: Record<
-    string,
-    string | number | boolean | null | undefined
-  >
+  query?: Record<string, string | number | boolean | null | undefined>
 ): string | null {
   const apiClient = getGlobalApiClient();
   if (!apiClient) {
@@ -112,29 +98,19 @@ export function buildApiUrl(
   const serverAddress =
     typeof apiClient.serverAddress === 'function'
       ? apiClient.serverAddress()
-      : (
-          apiClient._serverAddress ||
-          apiClient._serverInfo?.ManualAddress ||
-          ''
-        );
+      : apiClient._serverAddress || apiClient._serverInfo?.ManualAddress || '';
 
   if (!serverAddress) {
     return null;
   }
 
-  const normalized =
-    `${serverAddress.replace(/\/+$/, '')}/` +
-    path.replace(/^\/+/, '');
+  const normalized = `${serverAddress.replace(/\/+$/, '')}/` + path.replace(/^\/+/, '');
 
   const url = new URL(normalized, window.location.origin);
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
-      if (
-        value !== undefined &&
-        value !== null &&
-        value !== ''
-      ) {
+      if (value !== undefined && value !== null && value !== '') {
         url.searchParams.set(key, String(value));
       }
     });
@@ -145,9 +121,7 @@ export function buildApiUrl(
   return url.toString();
 }
 
-export function getAuthHeaders(
-  apiClient: JellyfinApiClient | null
-): Record<string, string> {
+export function getAuthHeaders(apiClient: JellyfinApiClient | null): Record<string, string> {
   const accessToken = getAccessToken(apiClient);
 
   if (!accessToken) {

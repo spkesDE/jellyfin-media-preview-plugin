@@ -14,8 +14,7 @@ const tabs: Array<{ id: ConfigTab; label: string; badge?: string }> = [
 ];
 
 function isVisible(tab: ConfigTab): boolean {
-  return (tab !== 'trailer' || store.canUseTrailer.value)
-    && (tab !== 'trickplay' || store.canUseTrickplay.value);
+  return (tab !== 'trailer' || store.canUseTrailer.value) && (tab !== 'trickplay' || store.canUseTrickplay.value);
 }
 
 function select(tab: ConfigTab): void {

@@ -68,8 +68,7 @@ function getJellyfinCardOverlay(card: HTMLElement): HTMLElement | null {
     return null;
   }
 
-  const overlay = Array.from(scalableHost.children)
-    .find((child) => child.classList.contains('cardOverlayContainer'));
+  const overlay = Array.from(scalableHost.children).find((child) => child.classList.contains('cardOverlayContainer'));
   return overlay instanceof HTMLElement ? overlay : null;
 }
 
@@ -110,9 +109,7 @@ export function isCrossfadePreviewTransition(): boolean {
 }
 
 function applyTransitionStyle(element: HTMLElement): void {
-  element.style.transition = hasPreviewTransition()
-    ? `opacity ${getPreviewTransitionDurationMs()}ms ease`
-    : 'none';
+  element.style.transition = hasPreviewTransition() ? `opacity ${getPreviewTransitionDurationMs()}ms ease` : 'none';
 }
 
 function clearPreviewTransitionTimer(state: CardState | null | undefined): void {
@@ -238,9 +235,7 @@ export function getInactivePreviewFrame(state: CardState | null | undefined): HT
     return null;
   }
 
-  return state.activePreviewFrameSlot === 'secondary'
-    ? ensurePreviewFrame(state)
-    : ensurePreviewFrameSecondary(state);
+  return state.activePreviewFrameSlot === 'secondary' ? ensurePreviewFrame(state) : ensurePreviewFrameSecondary(state);
 }
 
 export function setActivePreviewFrameSlot(state: CardState | null | undefined, slot: 'primary' | 'secondary'): void {
@@ -322,9 +317,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
    * the item instead of receiving the click. The common scalable host keeps
    * the action above both siblings; older card layouts keep using rootHost.
    */
-  const trailerActionsHost =
-    (card.querySelector('.cardScalable') as HTMLElement | null) ||
-    state.rootHost;
+  const trailerActionsHost = (card.querySelector('.cardScalable') as HTMLElement | null) || state.rootHost;
 
   if (!state.trailerActions) {
     const trailerActions = document.createElement('div');
@@ -705,10 +698,7 @@ export function crossfadePreviewFrameLayers(
   }, getPreviewTransitionDurationMs());
 }
 
-export function hidePreviewFrame(
-  state: CardState | null | undefined,
-  options?: { immediate?: boolean }
-): void {
+export function hidePreviewFrame(state: CardState | null | undefined, options?: { immediate?: boolean }): void {
   if (!state?.previewFrame && !state?.previewFrameSecondary) {
     return;
   }

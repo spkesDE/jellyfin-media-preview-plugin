@@ -5,10 +5,7 @@ import test from 'node:test';
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
 
 test('keyboard and focus previews initialize without hover hardware', async () => {
-  const [main, delegatedEvents] = await Promise.all([
-    read('src/main.ts'),
-    read('src/interaction/delegatedEvents.ts')
-  ]);
+  const [main, delegatedEvents] = await Promise.all([read('src/main.ts'), read('src/interaction/delegatedEvents.ts')]);
 
   assert.doesNotMatch(main, /matchMedia[\s\S]*Skipping media preview/);
   assert.match(delegatedEvents, /addEventListener\('focusin'/);
@@ -30,7 +27,10 @@ test('preview caches are scoped to the active server and user', async () => {
 test('trailer cleanup is independent from static frame restoration', async () => {
   const lifecycle = await read('src/cards/lifecycle.ts');
 
-  assert.match(lifecycle, /config\.restoreOnLeave \|\| activePreviewSource === PREVIEW_SOURCE_TRAILER \|\| state\.trailerMedia/);
+  assert.match(
+    lifecycle,
+    /config\.restoreOnLeave \|\| activePreviewSource === PREVIEW_SOURCE_TRAILER \|\| state\.trailerMedia/
+  );
   assert.match(lifecycle, /clearTrailerMedia\(state\)/);
 });
 

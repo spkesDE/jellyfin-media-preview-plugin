@@ -84,7 +84,9 @@
   background: rgba(10, 14, 20, 0.76);
   color: #fff;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
-  transition: transform 0.18s ease, background 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease;
 }
 
 .jmp-expanded-trailer-close:hover {

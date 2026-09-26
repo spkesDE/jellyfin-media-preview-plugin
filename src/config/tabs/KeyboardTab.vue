@@ -8,7 +8,13 @@ const store = useConfigStore();
 </script>
 
 <template>
-  <section id="mediaPreviewPanel-keyboard" class="jmp-section jmp-section-plain" data-tab-section="keyboard" role="tabpanel" aria-labelledby="mediaPreviewTab-keyboard">
+  <section
+    id="mediaPreviewPanel-keyboard"
+    class="jmp-section jmp-section-plain"
+    data-tab-section="keyboard"
+    role="tabpanel"
+    aria-labelledby="mediaPreviewTab-keyboard"
+  >
     <div class="jmp-subgrid">
       <ConfigCard
         title="Activation"
@@ -22,8 +28,19 @@ const store = useConfigStore();
 
     <div v-if="store.config.KeyboardPreviewEnabled" class="jmp-subgrid">
       <ConfigCard title="Activation Timing" help="Decide when a focused card should start its preview.">
-        <ConfigNumber v-model="store.config.KeyboardPreviewDelayMs" label="Keyboard Preview Delay (ms)" :min="0" :step="50" />
-        <ConfigNumber v-model="store.config.KeyboardPreviewStartPercent" label="Keyboard Start Position (%)" :min="0" :max="100" :step="1" />
+        <ConfigNumber
+          v-model="store.config.KeyboardPreviewDelayMs"
+          label="Keyboard Preview Delay (ms)"
+          :min="0"
+          :step="50"
+        />
+        <ConfigNumber
+          v-model="store.config.KeyboardPreviewStartPercent"
+          label="Keyboard Start Position (%)"
+          :min="0"
+          :max="100"
+          :step="1"
+        />
       </ConfigCard>
 
       <ConfigCard title="Navigation" help="Control how previews react once the card is focused.">

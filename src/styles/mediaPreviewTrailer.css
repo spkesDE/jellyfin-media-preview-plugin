@@ -51,7 +51,10 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  transition: transform 0.18s ease, background 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    opacity 0.18s ease;
 }
 
 .jmp-trailer-expand:hover {

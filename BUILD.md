@@ -87,6 +87,13 @@ Run the frontend and contract tests without rebuilding bundles:
 npm test
 ```
 
+Format the repository or verify formatting without changing files:
+
+```powershell
+npm run format
+npm run format:check
+```
+
 Build the plugin:
 
 ```powershell

@@ -1,13 +1,6 @@
-export type PreviewSource =
-  | 'trickplay'
-  | 'trailer'
-  | 'prefer-trickplay'
-  | 'prefer-trailer';
+export type PreviewSource = 'trickplay' | 'trailer' | 'prefer-trickplay' | 'prefer-trailer';
 export type ContentTypePreviewSource = PreviewSource | 'inherit';
-export type FrontendInjectionMethod =
-  | 'automatic'
-  | 'file-transformation'
-  | 'javascript-injector';
+export type FrontendInjectionMethod = 'automatic' | 'file-transformation' | 'javascript-injector';
 
 export interface LibraryPreviewSourceOverride {
   libraryId: string;
@@ -24,11 +17,7 @@ export type PortraitCardCompressionMode = 'distance' | 'neighbors';
 export type PreviewBackdropMode = 'off' | 'dim' | 'vignette' | 'dim-vignette' | 'blur' | 'dim-blur';
 export type PreviewTransitionMode = 'off' | 'fade' | 'crossfade';
 export type YouTubeCropStrength = 'off' | 'light' | 'medium' | 'strong';
-export type TrailerExpandButtonPosition =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right';
+export type TrailerExpandButtonPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
 export interface PluginConfig {
   enabled: boolean;

@@ -7,8 +7,9 @@ export function normalizeOverrides(value: unknown): ConfigLibraryOverride[] {
   }
 
   return value
-    .filter((entry): entry is ConfigLibraryOverride =>
-      !!entry && typeof entry.LibraryId === 'string' && typeof entry.PreviewSource === 'string'
+    .filter(
+      (entry): entry is ConfigLibraryOverride =>
+        !!entry && typeof entry.LibraryId === 'string' && typeof entry.PreviewSource === 'string'
     )
     .map((entry) => ({ LibraryId: entry.LibraryId, PreviewSource: entry.PreviewSource }))
     .sort((left, right) => left.LibraryId.localeCompare(right.LibraryId));
@@ -19,7 +20,7 @@ function cloneConfig(config: StoreConfig): StoreConfig {
 }
 
 function readConfigObject(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' ? value as Record<string, unknown> : {};
+  return value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
 }
 
 export function loadConfig(value: unknown): StoreConfig {
@@ -39,7 +40,8 @@ export function createConfigSnapshot(config: StoreConfig): string {
 
 export function saveConfig(config: StoreConfig): StoreConfig {
   const payload = cloneConfig(config);
-  payload.LibraryPreviewSourceOverrides = normalizeOverrides(payload.LibraryPreviewSourceOverrides)
-    .filter((entry) => entry.PreviewSource !== 'inherit');
+  payload.LibraryPreviewSourceOverrides = normalizeOverrides(payload.LibraryPreviewSourceOverrides).filter(
+    (entry) => entry.PreviewSource !== 'inherit'
+  );
   return payload;
 }

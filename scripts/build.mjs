@@ -82,7 +82,10 @@ const vueSfcPlugin = {
       };
 
       const result = compileQueue.then(compile);
-      compileQueue = result.then(() => undefined, () => undefined);
+      compileQueue = result.then(
+        () => undefined,
+        () => undefined
+      );
       return result;
     });
   }

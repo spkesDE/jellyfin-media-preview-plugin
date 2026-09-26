@@ -59,7 +59,9 @@ function loadYouTubePlayerApi(): Promise<YouTubePlayerApi> {
       previousReadyHandler?.();
     };
 
-    const existingScript = document.querySelector<HTMLScriptElement>('script[src="https://www.youtube.com/iframe_api"]');
+    const existingScript = document.querySelector<HTMLScriptElement>(
+      'script[src="https://www.youtube.com/iframe_api"]'
+    );
     if (existingScript) {
       existingScript.addEventListener('error', () => reject(new Error('Failed to load the YouTube iframe API.')), {
         once: true
@@ -144,14 +146,16 @@ export function monitorYouTubeEmbed(
 
   iframe.addEventListener('load', handleIframeLoad);
 
-  loadYouTubePlayerApi().then((loadedApi) => {
-    api = loadedApi;
-    startPlayer();
-  }).catch(() => {
-    if (!disposed) {
-      callbacks.onMonitorUnavailable?.();
-    }
-  });
+  loadYouTubePlayerApi()
+    .then((loadedApi) => {
+      api = loadedApi;
+      startPlayer();
+    })
+    .catch(() => {
+      if (!disposed) {
+        callbacks.onMonitorUnavailable?.();
+      }
+    });
 
   return () => {
     disposed = true;
@@ -193,7 +197,9 @@ export function extractYouTubeVideoId(url: string | null | undefined): string | 
       }
     }
   } catch {
-    const directMatch = String(url).match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})(?:[^A-Za-z0-9_-]|$)/i);
+    const directMatch = String(url).match(
+      /(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})(?:[^A-Za-z0-9_-]|$)/i
+    );
     return directMatch ? directMatch[1] : null;
   }
 
@@ -217,21 +223,21 @@ export function buildYouTubeEmbedUrl(
   const controlsEnabled = !!resolvedOptions.controls;
   const startSeconds = Math.max(0, Math.floor(Number(resolvedOptions.startSeconds) || 0));
 
-  return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}`
-    + '?autoplay=1'
-    + `&mute=${muted ? '1' : '0'}`
-    + `&controls=${controlsEnabled ? '1' : '0'}`
-    + '&rel=0'
-    + '&playsinline=1'
-    + '&modestbranding=1'
-    + '&showinfo=0'
-    + '&iv_load_policy=3'
-    + '&disablekb=1'
-    + '&fs=0'
-    + '&enablejsapi=1'
-    + `&origin=${encodeURIComponent(window.location.origin)}`
-    + (startSeconds > 0 ? `&start=${encodeURIComponent(startSeconds)}` : '')
-    + (resolvedOptions.loop === false
-      ? ''
-      : `&loop=1&playlist=${encodeURIComponent(videoId)}`);
+  return (
+    `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}` +
+    '?autoplay=1' +
+    `&mute=${muted ? '1' : '0'}` +
+    `&controls=${controlsEnabled ? '1' : '0'}` +
+    '&rel=0' +
+    '&playsinline=1' +
+    '&modestbranding=1' +
+    '&showinfo=0' +
+    '&iv_load_policy=3' +
+    '&disablekb=1' +
+    '&fs=0' +
+    '&enablejsapi=1' +
+    `&origin=${encodeURIComponent(window.location.origin)}` +
+    (startSeconds > 0 ? `&start=${encodeURIComponent(startSeconds)}` : '') +
+    (resolvedOptions.loop === false ? '' : `&loop=1&playlist=${encodeURIComponent(videoId)}`)
+  );
 }

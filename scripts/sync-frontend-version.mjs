@@ -53,9 +53,6 @@ if (checkOnly) {
   packageJson.data.version = requestedVersion;
   packageLock.data.version = requestedVersion;
   lockRoot.version = requestedVersion;
-  await Promise.all([
-    writeJson(packageJsonPath, packageJson),
-    writeJson(packageLockPath, packageLock)
-  ]);
+  await Promise.all([writeJson(packageJsonPath, packageJson), writeJson(packageLockPath, packageLock)]);
   console.log(`Synchronized frontend package version to ${requestedVersion}.`);
 }

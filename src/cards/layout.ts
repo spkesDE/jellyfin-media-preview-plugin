@@ -33,9 +33,7 @@ export function getCardLayoutKind(card: HTMLElement | null): 'portrait' | 'backd
 }
 
 export function getPreviewModeForCard(card: HTMLElement | null): PreviewMode {
-  return getCardLayoutKind(card) === 'portrait'
-    ? config.portraitCardPreviewMode
-    : config.backdropCardPreviewMode;
+  return getCardLayoutKind(card) === 'portrait' ? config.portraitCardPreviewMode : config.backdropCardPreviewMode;
 }
 
 export function getPreviewBackdropMode(): PreviewBackdropMode {
@@ -45,7 +43,9 @@ export function getPreviewBackdropMode(): PreviewBackdropMode {
 }
 
 export function getYouTubeOverscanMultiplier(): number {
-  switch (VALID_YOUTUBE_CROP_STRENGTHS.has(config.youTubeCropStrength) ? config.youTubeCropStrength : YOUTUBE_CROP_MEDIUM) {
+  switch (
+    VALID_YOUTUBE_CROP_STRENGTHS.has(config.youTubeCropStrength) ? config.youTubeCropStrength : YOUTUBE_CROP_MEDIUM
+  ) {
     case YOUTUBE_CROP_OFF:
       return 1;
     case YOUTUBE_CROP_LIGHT:
@@ -83,16 +83,17 @@ export function getPreviewBackdropStyles(): {
 
   if (mode === PREVIEW_BACKDROP_VIGNETTE || mode === PREVIEW_BACKDROP_DIM_VIGNETTE) {
     const innerAlpha = Math.max(0, Math.min(0.45, intensity * 0.18));
-    const outerAlpha = Math.max(0.16, Math.min(0.92, 0.22 + (intensity * 0.62)));
+    const outerAlpha = Math.max(0.16, Math.min(0.92, 0.22 + intensity * 0.62));
     const vignette = `radial-gradient(circle at center, rgba(0, 0, 0, ${innerAlpha.toFixed(3)}) 22%, rgba(0, 0, 0, ${outerAlpha.toFixed(3)}) 100%)`;
 
-    styles.background = mode === PREVIEW_BACKDROP_DIM_VIGNETTE && styles.background !== 'transparent'
-      ? `${vignette}, ${styles.background}`
-      : vignette;
+    styles.background =
+      mode === PREVIEW_BACKDROP_DIM_VIGNETTE && styles.background !== 'transparent'
+        ? `${vignette}, ${styles.background}`
+        : vignette;
   }
 
   if (mode === PREVIEW_BACKDROP_BLUR || mode === PREVIEW_BACKDROP_DIM_BLUR) {
-    const blurPx = Math.max(1, Math.round(4 + (intensity * 12)));
+    const blurPx = Math.max(1, Math.round(4 + intensity * 12));
     styles.backdropFilter = `blur(${blurPx}px)`;
     styles.webkitBackdropFilter = styles.backdropFilter;
   }

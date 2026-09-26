@@ -93,12 +93,12 @@ For most libraries, `Prefer Trickplay` is a good starting point. If your library
 
 ## Preview Sources
 
-| Source | Best for |
-|---|---|
-| Trickplay | Lightweight previews from Jellyfin thumbnail sheets |
-| Local trailers | Video previews served by your Jellyfin server |
-| YouTube trailers | Trailer previews when Jellyfin already has YouTube trailer metadata |
-| Direct Play fallback | The media item itself when Prefer Trailers has no playable trailer |
+| Source               | Best for                                                            |
+| -------------------- | ------------------------------------------------------------------- |
+| Trickplay            | Lightweight previews from Jellyfin thumbnail sheets                 |
+| Local trailers       | Video previews served by your Jellyfin server                       |
+| YouTube trailers     | Trailer previews when Jellyfin already has YouTube trailer metadata |
+| Direct Play fallback | The media item itself when Prefer Trailers has no playable trailer  |
 
 If no supported preview source is available for an item, the card stays unchanged.
 

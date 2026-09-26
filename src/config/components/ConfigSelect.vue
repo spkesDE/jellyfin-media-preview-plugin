@@ -19,11 +19,7 @@ const focused = ref(false);
 
 <template>
   <div class="selectContainer">
-    <label
-      class="selectLabel"
-      :class="{ selectLabelFocused: focused }"
-      :for="fieldId"
-    >
+    <label class="selectLabel" :class="{ selectLabelFocused: focused }" :for="fieldId">
       {{ label }}
     </label>
     <select
@@ -40,7 +36,7 @@ const focused = ref(false);
       </option>
     </select>
     <div class="selectArrowContainer" aria-hidden="true">
-      <div style="visibility: hidden; display: none;">0</div>
+      <div style="visibility: hidden; display: none">0</div>
       <span class="selectArrow material-icons keyboard_arrow_down"></span>
     </div>
   </div>

@@ -10,12 +10,17 @@ const FAILED_DIRECT_PLAY_RETRY_MS = 2 * 60 * 1000;
 const failedDirectPlayItems = new Map<string, number>();
 
 function getContainer(mediaSource: JellyfinMediaSource | null | undefined): string | null {
-  return String(mediaSource?.Container || '').split(',')[0].trim().toLowerCase() || null;
+  return (
+    String(mediaSource?.Container || '')
+      .split(',')[0]
+      .trim()
+      .toLowerCase() || null
+  );
 }
 
 function getAspectRatio(mediaSource: JellyfinMediaSource | null | undefined): AspectRatio {
-  const videoStream = mediaSource?.MediaStreams?.find((stream) =>
-    !!stream && (stream.Type === 'Video' || stream.Type === 1) && stream.Width && stream.Height
+  const videoStream = mediaSource?.MediaStreams?.find(
+    (stream) => !!stream && (stream.Type === 'Video' || stream.Type === 1) && stream.Width && stream.Height
   );
 
   return videoStream?.Width && videoStream.Height
@@ -56,12 +61,13 @@ function createDirectPlayCandidate(
   const aspectRatio = getAspectRatio(mediaSource);
   const runtimeSeconds = Math.max(0, Number(item.RunTimeTicks) || 0) / 10_000_000;
   const startSeconds = Math.floor(runtimeSeconds * Math.max(0, Math.min(1, percent)));
-  const directSrc = container && SUPPORTED_DIRECT_PLAY_CONTAINERS.has(container)
-    ? buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.${encodeURIComponent(container)}`, {
-      Static: true,
-      mediaSourceId: mediaSource.Id
-    })
-    : null;
+  const directSrc =
+    container && SUPPORTED_DIRECT_PLAY_CONTAINERS.has(container)
+      ? buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.${encodeURIComponent(container)}`, {
+          Static: true,
+          mediaSourceId: mediaSource.Id
+        })
+      : null;
   const transcodeSrc = buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.mp4`, {
     mediaSourceId: mediaSource.Id,
     VideoCodec: 'h264',
@@ -105,9 +111,9 @@ export async function getDirectPlayPreview(itemId: string, percent: number): Pro
     }
 
     const mediaSources = Array.isArray(item.MediaSources) ? item.MediaSources : [];
-    const mediaSource = mediaSources.find((source) =>
-      SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')
-    ) || mediaSources[0];
+    const mediaSource =
+      mediaSources.find((source) => SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')) ||
+      mediaSources[0];
     const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource, percent) : null;
     if (!candidate) {
       return null;

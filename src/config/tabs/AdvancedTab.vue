@@ -14,7 +14,13 @@ const frontendInjectionOptions: SelectOption[] = [
 </script>
 
 <template>
-  <section id="mediaPreviewPanel-advanced" class="jmp-section jmp-section-plain" data-tab-section="advanced" role="tabpanel" aria-labelledby="mediaPreviewTab-advanced">
+  <section
+    id="mediaPreviewPanel-advanced"
+    class="jmp-section jmp-section-plain"
+    data-tab-section="advanced"
+    role="tabpanel"
+    aria-labelledby="mediaPreviewTab-advanced"
+  >
     <div class="jmp-subgrid">
       <ConfigCard
         title="Frontend Injection"
@@ -35,7 +41,10 @@ const frontendInjectionOptions: SelectOption[] = [
         <ConfigNumber v-model="store.config.TrickplayWidth" label="Preferred Trickplay Width" :min="1" :step="1" />
       </ConfigCard>
 
-      <ConfigCard title="Diagnostics" help="Use this when you need to inspect matching, preview resolution, or rendering behavior in the browser console.">
+      <ConfigCard
+        title="Diagnostics"
+        help="Use this when you need to inspect matching, preview resolution, or rendering behavior in the browser console."
+      >
         <ConfigCheckbox v-model="store.config.Debug" label="Enable Debug Logging" />
       </ConfigCard>
     </div>

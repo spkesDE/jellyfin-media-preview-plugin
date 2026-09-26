@@ -98,44 +98,47 @@ function recoverFromUnavailableTrailer(
     return;
   }
 
-  getPreviewUrl(itemId, percent, itemType).then((preview) => {
-    if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
-      return;
-    }
-
-    if (!preview) {
-      restorePortraitCardWidth(state);
-      if (config.showNoPreviewMessage) {
-        getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
-          if (state.previewActive && requestToken === state.latestRequestToken && isEngaged()) {
-            showUnavailableMessage(state, getNoPreviewMessage(previewSource));
-          }
-        });
+  getPreviewUrl(itemId, percent, itemType)
+    .then((preview) => {
+      if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
+        return;
       }
-      return;
-    }
 
-    hideUnavailableMessage(state);
-    applyPreview(card, preview, percent, {
-      onTrailerUnavailable: () => recoverFromUnavailableTrailer(
-        card,
-        state,
-        itemId,
-        itemType,
-        percent,
-        requestToken,
-        isEngaged,
-        startAutoScrubOnFallback
-      )
+      if (!preview) {
+        restorePortraitCardWidth(state);
+        if (config.showNoPreviewMessage) {
+          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+            if (state.previewActive && requestToken === state.latestRequestToken && isEngaged()) {
+              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+            }
+          });
+        }
+        return;
+      }
+
+      hideUnavailableMessage(state);
+      applyPreview(card, preview, percent, {
+        onTrailerUnavailable: () =>
+          recoverFromUnavailableTrailer(
+            card,
+            state,
+            itemId,
+            itemType,
+            percent,
+            requestToken,
+            isEngaged,
+            startAutoScrubOnFallback
+          )
+      });
+
+      if (startAutoScrubOnFallback && !isVideoPreviewSource(preview.source)) {
+        startAutoScrub(card);
+      }
+    })
+    .catch((error) => {
+      restorePortraitCardWidth(state);
+      debugLog('Failed to recover from an unavailable trailer.', itemId, error);
     });
-
-    if (startAutoScrubOnFallback && !isVideoPreviewSource(preview.source)) {
-      startAutoScrub(card);
-    }
-  }).catch((error) => {
-    restorePortraitCardWidth(state);
-    debugLog('Failed to recover from an unavailable trailer.', itemId, error);
-  });
 }
 
 function startHoverCountdown(
@@ -196,15 +199,15 @@ function getInitialHoverPercent(
 }
 
 function getDefaultPreloadPercent(): number {
-  return config.hoverMode === HOVER_MODE_AUTO
-    ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
-    : 0.5;
+  return config.hoverMode === HOVER_MODE_AUTO ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1) : 0.5;
 }
 
 function previewSourceUsesTrickplay(source: string): boolean {
-  return source === PREVIEW_SOURCE_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRAILER;
+  return (
+    source === PREVIEW_SOURCE_TRICKPLAY ||
+    source === PREVIEW_SOURCE_PREFER_TRICKPLAY ||
+    source === PREVIEW_SOURCE_PREFER_TRAILER
+  );
 }
 
 function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {
@@ -252,62 +255,65 @@ function scheduleHoverActivation(
       showLoadingIndicator(state);
     }
 
-    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
-      if (!state.previewActive || requestToken !== state.latestRequestToken) {
-        hideLoadingIndicator(state);
-        resetHoverCountdown(state);
-        return;
-      }
-
-      if (!state.previewActive || !preview) {
-        hideLoadingIndicator(state);
-        resetHoverCountdown(state);
-        debugCardSummary(card, 'Hover activation found no preview source.', {
-          itemId,
-          previewSource: config.previewSource
-        });
-        if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
-          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
-            if (state.previewActive && requestToken === state.latestRequestToken && state.pointerInside) {
-              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
-            }
-          });
+    getPreviewUrl(itemId, initialPercent, itemType)
+      .then((preview) => {
+        if (!state.previewActive || requestToken !== state.latestRequestToken) {
+          hideLoadingIndicator(state);
+          resetHoverCountdown(state);
+          return;
         }
-        return;
-      }
 
-      resetHoverCountdown(state);
-      hideUnavailableMessage(state);
-      hideLoadingIndicator(state);
-      applyPreview(card, preview, initialPercent, {
-        onTrailerUnavailable: () => recoverFromUnavailableTrailer(
-          card,
-          state,
-          itemId,
-          itemType,
-          initialPercent,
-          requestToken,
-          () => state.pointerInside,
-          config.hoverMode === HOVER_MODE_AUTO
-        )
+        if (!state.previewActive || !preview) {
+          hideLoadingIndicator(state);
+          resetHoverCountdown(state);
+          debugCardSummary(card, 'Hover activation found no preview source.', {
+            itemId,
+            previewSource: config.previewSource
+          });
+          if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
+            getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+              if (state.previewActive && requestToken === state.latestRequestToken && state.pointerInside) {
+                showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+              }
+            });
+          }
+          return;
+        }
+
+        resetHoverCountdown(state);
+        hideUnavailableMessage(state);
+        hideLoadingIndicator(state);
+        applyPreview(card, preview, initialPercent, {
+          onTrailerUnavailable: () =>
+            recoverFromUnavailableTrailer(
+              card,
+              state,
+              itemId,
+              itemType,
+              initialPercent,
+              requestToken,
+              () => state.pointerInside,
+              config.hoverMode === HOVER_MODE_AUTO
+            )
+        });
+
+        if (isVideoPreviewSource(preview.source)) {
+          return;
+        }
+
+        if (config.hoverMode === HOVER_MODE_AUTO) {
+          startAutoScrub(card);
+        }
+      })
+      .catch((error) => {
+        if (requestToken !== state.latestRequestToken) {
+          return;
+        }
+
+        resetHoverCountdown(state);
+        hideLoadingIndicator(state);
+        debugLog('Hover activation failed.', itemId, error);
       });
-
-      if (isVideoPreviewSource(preview.source)) {
-        return;
-      }
-
-      if (config.hoverMode === HOVER_MODE_AUTO) {
-        startAutoScrub(card);
-      }
-    }).catch((error) => {
-      if (requestToken !== state.latestRequestToken) {
-        return;
-      }
-
-      resetHoverCountdown(state);
-      hideLoadingIndicator(state);
-      debugLog('Hover activation failed.', itemId, error);
-    });
   }, effectiveDelayMs);
 
   startHoverCountdown(card, state, effectiveDelayMs);
@@ -335,46 +341,49 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
       showLoadingIndicator(state);
     }
 
-    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
-      if (!state.previewActive || requestToken !== state.latestRequestToken) {
-        hideLoadingIndicator(state);
-        return;
-      }
-
-      if (!preview) {
-        hideLoadingIndicator(state);
-        if (config.showNoPreviewMessage && state.focusInside) {
-          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
-            if (state.previewActive && requestToken === state.latestRequestToken && state.focusInside) {
-              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
-            }
-          });
+    getPreviewUrl(itemId, initialPercent, itemType)
+      .then((preview) => {
+        if (!state.previewActive || requestToken !== state.latestRequestToken) {
+          hideLoadingIndicator(state);
+          return;
         }
-        return;
-      }
 
-      hideUnavailableMessage(state);
-      hideLoadingIndicator(state);
-      applyPreview(card, preview, initialPercent, {
-        onTrailerUnavailable: () => recoverFromUnavailableTrailer(
-          card,
-          state,
-          itemId,
-          itemType,
-          initialPercent,
-          requestToken,
-          () => state.focusInside,
-          false
-        )
+        if (!preview) {
+          hideLoadingIndicator(state);
+          if (config.showNoPreviewMessage && state.focusInside) {
+            getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+              if (state.previewActive && requestToken === state.latestRequestToken && state.focusInside) {
+                showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+              }
+            });
+          }
+          return;
+        }
+
+        hideUnavailableMessage(state);
+        hideLoadingIndicator(state);
+        applyPreview(card, preview, initialPercent, {
+          onTrailerUnavailable: () =>
+            recoverFromUnavailableTrailer(
+              card,
+              state,
+              itemId,
+              itemType,
+              initialPercent,
+              requestToken,
+              () => state.focusInside,
+              false
+            )
+        });
+      })
+      .catch((error) => {
+        if (requestToken !== state.latestRequestToken) {
+          return;
+        }
+
+        hideLoadingIndicator(state);
+        debugLog('Keyboard preview activation failed.', itemId, error);
       });
-    }).catch((error) => {
-      if (requestToken !== state.latestRequestToken) {
-        return;
-      }
-
-      hideLoadingIndicator(state);
-      debugLog('Keyboard preview activation failed.', itemId, error);
-    });
   }, delayMs);
 }
 
@@ -389,19 +398,21 @@ export function runPreviewUpdate(card: HTMLElement, percent: number): void {
   state.latestRequestToken += 1;
   const requestToken = state.latestRequestToken;
 
-  getPreviewUrl(itemId, percent, itemType).then((preview) => {
-    if (!preview) {
-      return;
-    }
+  getPreviewUrl(itemId, percent, itemType)
+    .then((preview) => {
+      if (!preview) {
+        return;
+      }
 
-    if (!state.previewActive || requestToken !== state.latestRequestToken) {
-      return;
-    }
+      if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        return;
+      }
 
-    applyPreview(card, preview, percent);
-  }).catch((error) => {
-    debugLog('Preview update failed.', itemId, error);
-  });
+      applyPreview(card, preview, percent);
+    })
+    .catch((error) => {
+      debugLog('Preview update failed.', itemId, error);
+    });
 }
 
 export function schedulePreviewUpdate(card: HTMLElement, percent: number): void {
@@ -441,9 +452,10 @@ export function schedulePreviewUpdate(card: HTMLElement, percent: number): void 
     return;
   }
 
-  const minHoldMs = config.hoverMode === HOVER_MODE_AUTO
-    ? clampAdaptiveDelay(getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo))
-    : getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo);
+  const minHoldMs =
+    config.hoverMode === HOVER_MODE_AUTO
+      ? clampAdaptiveDelay(getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo))
+      : getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo);
   const elapsedSinceLastRender = Date.now() - (state.lastTrickplayRenderAt || 0);
   if (elapsedSinceLastRender >= minHoldMs) {
     queueUpdateOnFrame();
@@ -454,12 +466,18 @@ export function schedulePreviewUpdate(card: HTMLElement, percent: number): void 
     return;
   }
 
-  state.queuedMoveTimer = window.setTimeout(() => {
-    queueUpdateOnFrame();
-  }, Math.max(0, minHoldMs - elapsedSinceLastRender));
+  state.queuedMoveTimer = window.setTimeout(
+    () => {
+      queueUpdateOnFrame();
+    },
+    Math.max(0, minHoldMs - elapsedSinceLastRender)
+  );
 }
 
-export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }): void {
+export function handlePointerEnter(
+  card: HTMLElement,
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+): void {
   if (!config.enabled || event.pointerType !== 'mouse' || runtimeState.expandedTrailerSession) {
     return;
   }
@@ -483,7 +501,10 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   scheduleHoverActivation(card, state, event);
 }
 
-export function handlePointerMove(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }): void {
+export function handlePointerMove(
+  card: HTMLElement,
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+): void {
   if (runtimeState.expandedTrailerSession || (event.pointerType && event.pointerType !== 'mouse')) {
     return;
   }
@@ -614,13 +635,10 @@ export function handleKeyboardPreviewKey(card: HTMLElement, event: KeyboardEvent
 
   let nextPercent: number | null = null;
   const step = clamp((Number(config.keyboardArrowStepPercent) || 8) / 100, 0.01, 1);
-  const currentPercent = state.currentTrickplayInfo && state.lastRenderedTrickplayFrameIndex !== null
-    ? clamp(
-      state.lastRenderedTrickplayFrameIndex / Math.max(1, state.currentTrickplayInfo.thumbnailCount - 1),
-      0,
-      1
-    )
-    : clamp((Number(config.keyboardPreviewStartPercent) || 50) / 100, 0, 1);
+  const currentPercent =
+    state.currentTrickplayInfo && state.lastRenderedTrickplayFrameIndex !== null
+      ? clamp(state.lastRenderedTrickplayFrameIndex / Math.max(1, state.currentTrickplayInfo.thumbnailCount - 1), 0, 1)
+      : clamp((Number(config.keyboardPreviewStartPercent) || 50) / 100, 0, 1);
 
   if (event.key === 'ArrowLeft') {
     nextPercent = Math.max(0, currentPercent - step);
