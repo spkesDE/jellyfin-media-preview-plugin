@@ -1,4 +1,5 @@
 export const YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES = new Set([100, 101, 150]);
+const YOUTUBE_VIDEO_ID_PATTERN = /^[A-Za-z0-9_-]{11}$/;
 
 interface YouTubePlayerErrorEvent {
   data: number;
@@ -170,7 +171,8 @@ export function extractYouTubeVideoId(url: string | null | undefined): string | 
     const hostname = parsedUrl.hostname.replace(/^www\./i, '').toLowerCase();
 
     if (hostname === 'youtu.be') {
-      return parsedUrl.pathname.replace(/^\/+/, '').split('/')[0] || null;
+      const candidate = parsedUrl.pathname.replace(/^\/+/, '').split('/')[0] || '';
+      return YOUTUBE_VIDEO_ID_PATTERN.test(candidate) ? candidate : null;
     }
 
     if (
@@ -179,18 +181,19 @@ export function extractYouTubeVideoId(url: string | null | undefined): string | 
       hostname === 'music.youtube.com' ||
       hostname === 'youtube-nocookie.com'
     ) {
-      if (parsedUrl.searchParams.get('v')) {
-        return parsedUrl.searchParams.get('v');
+      const queryCandidate = parsedUrl.searchParams.get('v') || '';
+      if (YOUTUBE_VIDEO_ID_PATTERN.test(queryCandidate)) {
+        return queryCandidate;
       }
 
       const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
-      const embedIndex = pathParts.indexOf('embed');
-      if (embedIndex !== -1 && pathParts[embedIndex + 1]) {
-        return pathParts[embedIndex + 1];
+      if (pathParts.length >= 2 && ['embed', 'shorts', 'live'].includes(pathParts[0])) {
+        const pathCandidate = pathParts[1];
+        return YOUTUBE_VIDEO_ID_PATTERN.test(pathCandidate) ? pathCandidate : null;
       }
     }
   } catch {
-    const directMatch = String(url).match(/(?:youtu\.be\/|v=|embed\/)([A-Za-z0-9_-]{6,})/i);
+    const directMatch = String(url).match(/(?:youtu\.be\/|v=|embed\/|shorts\/|live\/)([A-Za-z0-9_-]{11})(?:[^A-Za-z0-9_-]|$)/i);
     return directMatch ? directMatch[1] : null;
   }
 
