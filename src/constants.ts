@@ -3,6 +3,7 @@ export const STYLE_ID = 'jellyfin-media-preview-style';
 export const NAMESPACE = 'JellyfinMediaPreview';
 export const PREVIEW_SOURCE_TRICKPLAY = 'trickplay';
 export const PREVIEW_SOURCE_TRAILER = 'trailer';
+export const PREVIEW_SOURCE_DIRECT_PLAY = 'direct-play';
 export const PREVIEW_SOURCE_PREFER_TRICKPLAY = 'prefer-trickplay';
 export const PREVIEW_SOURCE_PREFER_TRAILER = 'prefer-trailer';
 export const PREVIEW_SOURCE_INHERIT = 'inherit';
@@ -113,3 +114,4 @@ export const VALID_TRAILER_EXPAND_BUTTON_POSITIONS = new Set([
 ] as const);
 
 export const SUPPORTED_TYPES = new Set(['Movie', 'Episode', 'Series', 'Season', 'Video']);
+export const DIRECT_PLAY_TYPES = new Set(['Movie', 'Episode', 'Video']);

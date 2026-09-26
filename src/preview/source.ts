@@ -10,6 +10,7 @@ import {
 } from '../constants';
 import { getTrailerPreview } from './trailer';
 import { getTrickplayPreview } from './trickplay';
+import { getDirectPlayPreview } from './directPlay';
 import { getLibraryIdForItem } from './library';
 import type { PreviewResult } from '../types/preview';
 
@@ -88,7 +89,7 @@ function getPreviewForSource(itemId: string, percent: number, effectiveSource: s
         return preview;
       }
 
-      return getTrickplayPreview(itemId, percent);
+      return getDirectPlayPreview(itemId, percent);
     });
   }
 

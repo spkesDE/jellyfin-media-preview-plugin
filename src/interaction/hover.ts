@@ -5,6 +5,7 @@ import {
   NO_PREVIEW_MESSAGE_ANY,
   NO_PREVIEW_MESSAGE_TRAILER,
   NO_PREVIEW_MESSAGE_TRICKPLAY,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
@@ -79,6 +80,10 @@ function getNoPreviewMessage(previewSource: string): string {
   return NO_PREVIEW_MESSAGE_ANY;
 }
 
+function isVideoPreviewSource(source: string | null | undefined): boolean {
+  return source === PREVIEW_SOURCE_TRAILER || source === PREVIEW_SOURCE_DIRECT_PLAY;
+}
+
 function recoverFromUnavailableTrailer(
   card: HTMLElement,
   state: ReturnType<typeof getOrCreateCardState>,
@@ -125,7 +130,7 @@ function recoverFromUnavailableTrailer(
       )
     });
 
-    if (startAutoScrubOnFallback && preview.source !== PREVIEW_SOURCE_TRAILER) {
+    if (startAutoScrubOnFallback && !isVideoPreviewSource(preview.source)) {
       startAutoScrub(card);
     }
   }).catch((error) => {
@@ -288,7 +293,7 @@ function scheduleHoverActivation(
         )
       });
 
-      if (preview.source === PREVIEW_SOURCE_TRAILER) {
+      if (isVideoPreviewSource(preview.source)) {
         return;
       }
 
@@ -498,7 +503,7 @@ export function handlePointerMove(card: HTMLElement, event: PointerEvent | { poi
     }
   }
 
-  if (!state.previewActive || state.activePreviewSource === PREVIEW_SOURCE_TRAILER || config.hoverMode === HOVER_MODE_AUTO) {
+  if (!state.previewActive || isVideoPreviewSource(state.activePreviewSource) || config.hoverMode === HOVER_MODE_AUTO) {
     return;
   }
 
@@ -604,7 +609,7 @@ export function handleKeyboardPreviewKey(card: HTMLElement, event: KeyboardEvent
     return;
   }
 
-  if (!config.keyboardArrowScrubEnabled || !state.previewActive || state.activePreviewSource === PREVIEW_SOURCE_TRAILER) {
+  if (!config.keyboardArrowScrubEnabled || !state.previewActive || isVideoPreviewSource(state.activePreviewSource)) {
     return;
   }
 

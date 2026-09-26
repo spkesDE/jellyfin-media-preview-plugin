@@ -15,6 +15,7 @@ import { destroyExpandedTrailerDom } from './trailerOverlay/expandedTrailer';
 import { clearPreviewCaches } from './core/storage';
 import { clearTrickplayPreloads } from './preview/preload';
 import { clearUnavailableTrailerCacheState } from './preview/trailer';
+import { clearDirectPlayFallbackState } from './preview/directPlay';
 
 export function destroy(): void {
   destroyExpandedTrailerDom();
@@ -33,6 +34,7 @@ export function destroy(): void {
   destroyCardBindings();
   clearPreviewCaches();
   clearUnavailableTrailerCacheState();
+  clearDirectPlayFallbackState();
 }
 
 export function start(): void {

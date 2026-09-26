@@ -19,7 +19,7 @@ Hover a movie, series, or episode card and the plugin can show a quick preview u
 - Hover previews on supported Jellyfin Web cards
 - Trickplay thumbnail previews
 - Local trailer and YouTube trailer previews
-- Source priority settings, including Trickplay-first or trailer-first fallback
+- Source priority settings, including Trickplay-first or trailer-first with Direct Play fallback
 - Optional trailer audio after browser interaction
 - Keyboard and focus previews for web-based TV, touch, and hybrid clients
 - Lightweight visual options for poster backdrops
@@ -98,6 +98,7 @@ For most libraries, `Prefer Trickplay` is a good starting point. If your library
 | Trickplay | Lightweight previews from Jellyfin thumbnail sheets |
 | Local trailers | Video previews served by your Jellyfin server |
 | YouTube trailers | Trailer previews when Jellyfin already has YouTube trailer metadata |
+| Direct Play fallback | The media item itself when Prefer Trailers has no playable trailer |
 
 If no supported preview source is available for an item, the card stays unchanged.
 

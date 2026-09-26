@@ -2,6 +2,7 @@ import { config } from '../config';
 import {
   AUTO_SCRUB_MODE_PING_PONG,
   AUTO_SCRUB_MODE_SWEEP,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_TRAILER
 } from '../constants';
 import { getItemIdFromCard } from '../cards/discovery';
@@ -18,7 +19,8 @@ import type { CardState } from '../types/state';
 function canContinueAutoScrub(state: CardState, generation: number): boolean {
   return state.autoScrubGeneration === generation
     && !!state.previewActive
-    && state.activePreviewSource !== PREVIEW_SOURCE_TRAILER;
+    && state.activePreviewSource !== PREVIEW_SOURCE_TRAILER
+    && state.activePreviewSource !== PREVIEW_SOURCE_DIRECT_PLAY;
 }
 
 function scheduleSmoothAutoScrubFrame(

@@ -1,5 +1,5 @@
 import { config } from '../config';
-import { PREVIEW_SOURCE_TRAILER } from '../constants';
+import { PREVIEW_SOURCE_DIRECT_PLAY, PREVIEW_SOURCE_TRAILER } from '../constants';
 import { getPreviewModeForCard } from '../cards/layout';
 import {
   applyPreviewBackdrop,
@@ -24,8 +24,9 @@ import {
   YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES
 } from '../trailerOverlay/youtube';
 import { collapseExpandedTrailer } from '../trailerOverlay/expandedTrailer';
-import { markYouTubeTrailerUnavailable } from './trailer';
-import type { TrailerPreview } from '../types/preview';
+import { markYouTubeTrailerUnavailable, markVideoTrailerUnavailable } from './trailer';
+import { markDirectPlayUnavailable } from './directPlay';
+import type { VideoPreview } from '../types/preview';
 import type { CardState } from '../types/state';
 
 export function updateTrailerAudioState(mediaElement: HTMLVideoElement | HTMLIFrameElement | null): void {
@@ -122,6 +123,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
 
   const videoElement = state.trailerMedia as HTMLVideoElement;
   videoElement.onerror = null;
+  videoElement.onloadedmetadata = null;
   videoElement.pause();
   videoElement.removeAttribute('src');
   delete videoElement.dataset.jmpFallbackApplied;
@@ -130,7 +132,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
 
 export function applyTrailerPreview(
   card: HTMLElement,
-  preview: TrailerPreview | null | undefined,
+  preview: VideoPreview | null | undefined,
   options?: { onUnavailable?: () => void }
 ): void {
   const state = getOrCreateCardState(card);
@@ -168,7 +170,7 @@ export function applyTrailerPreview(
 
   state.lastPreviewKey = previewKey;
   state.previewActive = true;
-  state.activePreviewSource = PREVIEW_SOURCE_TRAILER;
+  state.activePreviewSource = preview.source;
   hidePreviewFrame(state);
   resetPreviewBackdrop(state);
   applyPreviewBackdrop(state);
@@ -189,10 +191,11 @@ export function applyTrailerPreview(
   state.currentTrailer = trailer;
   applyMediaLayout(state.trailerLayer, mediaElement, hostRect, previewMode, sourceWidth, sourceHeight, rootBorderRadius);
   setTrailerLayerVisible(state, true);
-  if (config.trailerExpandButtonEnabled) {
+  const isExpandableTrailer = preview.source === PREVIEW_SOURCE_TRAILER;
+  if (isExpandableTrailer && config.trailerExpandButtonEnabled) {
     ensureTrailerActions(card, state);
   }
-  setTrailerExpandVisible(state, true);
+  setTrailerExpandVisible(state, isExpandableTrailer);
   state.trailerLayer.style.background = 'transparent';
   mediaElement.style.background = 'transparent';
   state.trailerLayer.classList.toggle('jmp-debug-visible', !!config.debug);
@@ -259,6 +262,19 @@ export function applyTrailerPreview(
   } else if (mediaElement instanceof HTMLVideoElement) {
     updateTrailerAudioState(mediaElement);
 
+    const recoverFromVideoFailure = () => {
+      if (preview.source === PREVIEW_SOURCE_DIRECT_PLAY) {
+        markDirectPlayUnavailable(preview.itemId);
+      } else {
+        markVideoTrailerUnavailable(preview.itemId, trailer);
+      }
+      state.lastPreviewKey = null;
+      state.activePreviewSource = null;
+      clearTrailerMedia(state);
+      hideMetadataOverlay(state);
+      options?.onUnavailable?.();
+    };
+
     mediaElement.onerror = () => {
       if (trailer.fallbackSrc && mediaElement.dataset.jmpFallbackApplied !== 'true') {
         debugLog('Local trailer direct playback failed. Falling back to transcoded MP4.', trailer.title || trailer.src);
@@ -271,6 +287,24 @@ export function applyTrailerPreview(
           fallbackPromise.catch((error) => {
             debugLog('Transcoded trailer autoplay failed.', trailer.title || trailer.fallbackSrc, error);
           });
+        }
+        return;
+      }
+
+      debugLog('Video preview source failed.', trailer.title || trailer.src);
+      recoverFromVideoFailure();
+    };
+
+    mediaElement.onloadedmetadata = () => {
+      if (
+        trailer.startSeconds
+        && mediaElement.dataset.jmpFallbackApplied !== 'true'
+        && Math.abs(mediaElement.currentTime - trailer.startSeconds) > 1
+      ) {
+        try {
+          mediaElement.currentTime = trailer.startSeconds;
+        } catch {
+          // Some direct streams are not seekable until more metadata is available.
         }
       }
     };

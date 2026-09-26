@@ -14,6 +14,7 @@ const UNAVAILABLE_TRAILER_CACHE_REFRESH_MS = 5 * 60 * 1000;
 const UNAVAILABLE_TRAILER_CACHE_RETRY_MS = 30 * 1000;
 const serverUnavailableYouTubeVideoIds = new Set<string>();
 const locallyUnavailableYouTubeVideoIds = new Map<string, number>();
+const locallyUnavailableTrailerCandidates = new Map<string, number>();
 let unavailableYouTubeVideoIdsRequest: Promise<void> | null = null;
 let unavailableYouTubeVideoIdsLastAttemptAt = 0;
 let unavailableYouTubeVideoIdsLastLoadedAt = 0;
@@ -111,6 +112,18 @@ export function clearUnavailableTrailerCacheState(): void {
   unavailableYouTubeVideoIdsLastLoadedAt = 0;
   serverUnavailableYouTubeVideoIds.clear();
   locallyUnavailableYouTubeVideoIds.clear();
+  locallyUnavailableTrailerCandidates.clear();
+}
+
+function getTrailerCandidateKey(itemId: string, candidate: TrailerCandidate): string {
+  return `${itemId}|${candidate.provider}|${candidate.youtubeId || candidate.src || candidate.embedUrl || candidate.title}`;
+}
+
+export function markVideoTrailerUnavailable(itemId: string, candidate: TrailerCandidate): void {
+  locallyUnavailableTrailerCandidates.set(
+    getTrailerCandidateKey(itemId, candidate),
+    Date.now() + 5 * 60 * 1000
+  );
 }
 
 export function markYouTubeTrailerUnavailable(
@@ -317,14 +330,30 @@ export function isLocalTrailerCandidate(candidate: TrailerCandidate | null | und
 }
 
 export function isTrailerCandidateAllowed(
-  candidate: TrailerCandidate | null | undefined
+  candidate: TrailerCandidate | null | undefined,
+  itemId?: string
 ): boolean {
   if (!candidate) {
     return false;
   }
 
   if (isLocalTrailerCandidate(candidate)) {
-    return true;
+    // Local files can fail transiently because of a codec or transcode error.
+    // Skip a failed candidate briefly so recovery can advance to the next one.
+    if (!itemId) {
+      return true;
+    }
+  }
+
+  if (itemId) {
+    const candidateKey = getTrailerCandidateKey(itemId, candidate);
+    const retryAt = locallyUnavailableTrailerCandidates.get(candidateKey);
+    if (retryAt && retryAt > Date.now()) {
+      return false;
+    }
+    if (retryAt) {
+      locallyUnavailableTrailerCandidates.delete(candidateKey);
+    }
   }
 
   if (candidate.provider === 'youtube' && candidate.youtubeId) {
@@ -407,7 +436,7 @@ export function getTrailerPreview(
       return null;
     }
 
-    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry));
+    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry, itemId));
     if (!candidate) {
       return null;
     }

@@ -90,7 +90,7 @@ export function createConfigStore(): ConfigStore {
   const previewSourceNote = computed(() => ({
     trailer: 'Only Trailer: local trailer first, then supported remote trailer. No Trickplay fallback.',
     trickplay: 'Only Trickplay: always use Jellyfin scrub images.',
-    'prefer-trailer': 'Prefer Trailer: local trailer, then supported remote trailer, then Trickplay.',
+    'prefer-trailer': 'Prefer Trailer: local trailer, then supported remote trailer, then Direct Play.',
     'prefer-trickplay': 'Prefer Trickplay: Trickplay first, then trailer if needed.'
   })[config.PreviewSource]);
 
