@@ -66,7 +66,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public bool Debug { get; set; } = false;
 
-    public string PreviewSource { get; set; } = "prefer-trailer";
+    public string PreviewSource { get; set; } = "trickplay";
 
     public bool ShowNoPreviewMessage { get; set; } = false;
 
@@ -78,7 +78,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int UnavailableTrailerRetryDays { get; set; } = 30;
 
-    public string HoverMode { get; set; } = "auto";
+    public string HoverMode { get; set; } = "scrub";
 
     public bool HoverCountdownEnabled { get; set; } = false;
 
@@ -118,7 +118,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int PreviewTransitionDurationMs { get; set; } = 180;
 
-    public string YouTubeCropStrength { get; set; } = "off";
+    public string YouTubeCropStrength { get; set; } = "medium";
 
     public bool TrailerExpandButtonEnabled { get; set; } = true;
 
