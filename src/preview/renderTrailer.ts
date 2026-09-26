@@ -103,6 +103,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   setTrailerExpandVisible(state, false);
   resetPreviewBackdrop(state);
   state.currentTrailer = null;
+  state.trailerPlaybackStartedAt = 0;
 
   if (!state.trailerMedia) {
     return;
@@ -120,8 +121,10 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   }
 
   const videoElement = state.trailerMedia as HTMLVideoElement;
+  videoElement.onerror = null;
   videoElement.pause();
   videoElement.removeAttribute('src');
+  delete videoElement.dataset.jmpFallbackApplied;
   videoElement.load();
 }
 

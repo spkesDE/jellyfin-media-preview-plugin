@@ -1,5 +1,6 @@
 import {
   ADMIN_NAV_LINK_ATTR,
+  PREVIEW_SOURCE_TRAILER,
   PREVIEW_TRANSITION_CROSSFADE,
   PREVIEW_TRANSITION_OFF,
   STATE_ATTR,
@@ -823,6 +824,8 @@ export function restoreCard(card: HTMLElement): void {
     return;
   }
 
+  const activePreviewSource = state.activePreviewSource;
+
   if (state.hoverTimer) {
     window.clearTimeout(state.hoverTimer);
     state.hoverTimer = null;
@@ -854,6 +857,11 @@ export function restoreCard(card: HTMLElement): void {
 
   if (config.restoreOnLeave) {
     hidePreviewFrame(state);
+  }
+
+  // Leaving a static Trickplay frame visible is cheap, but background videos
+  // and embeds must never accumulate across cards when poster restoration is disabled.
+  if (config.restoreOnLeave || activePreviewSource === PREVIEW_SOURCE_TRAILER || state.trailerMedia) {
     clearTrailerMedia(state);
   }
 
