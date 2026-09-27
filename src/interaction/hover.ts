@@ -3,6 +3,7 @@ import {
   DEBUG_LEAVE_HOLD_MS,
   HOVER_MODE_AUTO,
   NO_PREVIEW_MESSAGE_ANY,
+  NO_PREVIEW_MESSAGE_DIRECT_PLAY,
   NO_PREVIEW_MESSAGE_TRAILER,
   NO_PREVIEW_MESSAGE_TRICKPLAY,
   PREVIEW_SOURCE_DIRECT_PLAY,
@@ -70,6 +71,10 @@ function getNoPreviewMessage(previewSource: string): string {
 
   if (previewSource === PREVIEW_SOURCE_TRICKPLAY) {
     return NO_PREVIEW_MESSAGE_TRICKPLAY;
+  }
+
+  if (previewSource === PREVIEW_SOURCE_DIRECT_PLAY) {
+    return NO_PREVIEW_MESSAGE_DIRECT_PLAY;
   }
 
   if (previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY || previewSource === PREVIEW_SOURCE_PREFER_TRAILER) {
@@ -203,11 +208,7 @@ function getDefaultPreloadPercent(): number {
 }
 
 function previewSourceUsesTrickplay(source: string): boolean {
-  return (
-    source === PREVIEW_SOURCE_TRICKPLAY ||
-    source === PREVIEW_SOURCE_PREFER_TRICKPLAY ||
-    source === PREVIEW_SOURCE_PREFER_TRAILER
-  );
+  return source === PREVIEW_SOURCE_TRICKPLAY || source === PREVIEW_SOURCE_PREFER_TRICKPLAY;
 }
 
 function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {

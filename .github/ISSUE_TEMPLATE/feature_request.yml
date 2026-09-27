@@ -23,6 +23,7 @@ body:
       label: Area
       options:
         - Trickplay previews
+        - Direct Play previews
         - Trailer previews
         - Hover behavior
         - Audio / autoplay

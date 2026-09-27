@@ -8,8 +8,9 @@ export const PREVIEW_SOURCE_PREFER_TRICKPLAY = 'prefer-trickplay';
 export const PREVIEW_SOURCE_PREFER_TRAILER = 'prefer-trailer';
 export const PREVIEW_SOURCE_INHERIT = 'inherit';
 export const NO_PREVIEW_MESSAGE_TRAILER = 'No Trailer Found';
+export const NO_PREVIEW_MESSAGE_DIRECT_PLAY = 'No Direct Play Preview Available';
 export const NO_PREVIEW_MESSAGE_TRICKPLAY = 'No Trickplay Found';
-export const NO_PREVIEW_MESSAGE_ANY = 'No Trailer/Trickplay Found';
+export const NO_PREVIEW_MESSAGE_ANY = 'No Preview Available';
 export const HOVER_MODE_SCRUB = 'scrub';
 export const HOVER_MODE_AUTO = 'auto';
 export const AUTO_SCRUB_MODE_STEP = 'step';
@@ -47,6 +48,7 @@ export const EXPANDED_TRAILER_TRANSITION_MS = 240;
 
 export const VALID_PREVIEW_SOURCES = new Set([
   PREVIEW_SOURCE_TRICKPLAY,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_PREFER_TRAILER
@@ -55,6 +57,7 @@ export const VALID_PREVIEW_SOURCES = new Set([
 export const VALID_CONTENT_TYPE_PREVIEW_SOURCES = new Set([
   PREVIEW_SOURCE_INHERIT,
   PREVIEW_SOURCE_TRICKPLAY,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_PREFER_TRAILER

@@ -15,6 +15,7 @@ const positionOptions: SelectOption[] = [
 ];
 const defaultSourceOptions: SelectOption[] = [
   { value: 'trickplay', label: 'Only Trickplay' },
+  { value: 'direct-play', label: 'Only Direct Play' },
   { value: 'trailer', label: 'Only Trailer' },
   { value: 'prefer-trickplay', label: 'Prefer Trickplay' },
   { value: 'prefer-trailer', label: 'Prefer Trailer' }
@@ -58,7 +59,7 @@ function updateLibraryOverride(libraryId: string, value: string): void {
         <ConfigCheckbox v-model="store.config.Enabled" label="Enable Hover Preview" />
         <ConfigNumber v-model="store.config.HoverDelayMs" label="Hover Delay (ms)" :min="0" :step="50" />
         <p class="jmp-note">The optional countdown uses this same hover delay.</p>
-        <ConfigCheckbox v-model="store.config.ShowNoPreviewMessage" label='Show "No Trailer/Trickplay Found" Message' />
+        <ConfigCheckbox v-model="store.config.ShowNoPreviewMessage" label='Show "No Preview Available" Message' />
         <ConfigCheckbox v-model="store.config.RestoreOnLeave" label="Restore Poster On Mouse Leave" />
 
         <div class="jmp-blockDivider">

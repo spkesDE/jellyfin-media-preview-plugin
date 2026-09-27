@@ -1,6 +1,7 @@
 import { config } from '../config';
 import {
   PREVIEW_SOURCE_INHERIT,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
@@ -74,6 +75,10 @@ function getPreviewForSource(itemId: string, percent: number, effectiveSource: s
 
   if (effectiveSource === PREVIEW_SOURCE_TRAILER) {
     return getTrailerPreview(itemId);
+  }
+
+  if (effectiveSource === PREVIEW_SOURCE_DIRECT_PLAY) {
+    return getDirectPlayPreview(itemId);
   }
 
   if (effectiveSource === PREVIEW_SOURCE_PREFER_TRICKPLAY) {

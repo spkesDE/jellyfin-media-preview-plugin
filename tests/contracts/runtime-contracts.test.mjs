@@ -50,6 +50,20 @@ test('prefer-trailer advances to Direct Play instead of Trickplay', async () => 
   assert.match(directPlay, /directPlayTranscodeFallbackEnabled/);
 });
 
+test('Direct Play is selectable at every preview rule level', async () => {
+  const [constants, source, settings, backend] = await Promise.all([
+    read('src/constants.ts'),
+    read('src/preview/source.ts'),
+    read('src/config/tabs/GeneralTab.vue'),
+    read('Jellyfin.Plugin.MediaPreview/Configuration/PluginConfigurationNormalizer.cs')
+  ]);
+
+  assert.match(constants, /VALID_PREVIEW_SOURCES[\s\S]*PREVIEW_SOURCE_DIRECT_PLAY/);
+  assert.match(source, /effectiveSource === PREVIEW_SOURCE_DIRECT_PLAY[\s\S]*getDirectPlayPreview/);
+  assert.match(settings, /value: 'direct-play', label: 'Only Direct Play'/);
+  assert.match(backend, /ValidContentTypePreviewSources[\s\S]*"direct-play"/);
+});
+
 test('backend and frontend defaults remain aligned', async () => {
   const [backend, runtimeDefaults, settingsDefaults] = await Promise.all([
     read('Jellyfin.Plugin.MediaPreview/Configuration/PluginConfiguration.cs'),

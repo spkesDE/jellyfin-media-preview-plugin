@@ -18,7 +18,7 @@ function modeUsesTrailer(mode: PreviewSource): boolean {
 }
 
 function modeUsesTrickplay(mode: PreviewSource): boolean {
-  return mode !== 'trailer';
+  return mode === 'trickplay' || mode === 'prefer-trickplay';
 }
 
 export interface ConfigStore {
@@ -78,6 +78,7 @@ export function createConfigStore(): ConfigStore {
     () =>
       ({
         trailer: 'Only Trailer: local trailer first, then supported remote trailer. No Trickplay fallback.',
+        'direct-play': 'Only Direct Play: preview the playable media item itself without checking trailers.',
         trickplay: 'Only Trickplay: always use Jellyfin scrub images.',
         'prefer-trailer': 'Prefer Trailer: local trailer, then supported remote trailer, then Direct Play.',
         'prefer-trickplay': 'Prefer Trickplay: Trickplay first, then trailer if needed.'

@@ -12,6 +12,7 @@ internal static class PluginConfigurationNormalizer
     private static readonly HashSet<string> ValidPreviewSources = new(StringComparer.Ordinal)
     {
         "trickplay",
+        "direct-play",
         "trailer",
         "prefer-trickplay",
         "prefer-trailer"
@@ -21,6 +22,7 @@ internal static class PluginConfigurationNormalizer
     {
         "inherit",
         "trickplay",
+        "direct-play",
         "trailer",
         "prefer-trickplay",
         "prefer-trailer"

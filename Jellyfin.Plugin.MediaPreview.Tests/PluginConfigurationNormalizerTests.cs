@@ -48,4 +48,32 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.Equal(480, normalized.DirectPlayTranscodeMaxHeight);
         Assert.Equal(1500, normalized.DirectPlayTranscodeVideoBitrateKbps);
     }
+
+    [Fact]
+    public void DirectPlayIsAcceptedAtEveryRuleLevel()
+    {
+        PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
+        {
+            PreviewSource = "direct-play",
+            MoviePreviewSource = "direct-play",
+            SeriesPreviewSource = "direct-play",
+            EpisodePreviewSource = "direct-play",
+            VideoPreviewSource = "direct-play",
+            LibraryPreviewSourceOverrides =
+            [
+                new LibraryPreviewSourceOverride
+                {
+                    LibraryId = "movies",
+                    PreviewSource = "direct-play"
+                }
+            ]
+        });
+
+        Assert.Equal("direct-play", normalized.PreviewSource);
+        Assert.Equal("direct-play", normalized.MoviePreviewSource);
+        Assert.Equal("direct-play", normalized.SeriesPreviewSource);
+        Assert.Equal("direct-play", normalized.EpisodePreviewSource);
+        Assert.Equal("direct-play", normalized.VideoPreviewSource);
+        Assert.Equal("direct-play", Assert.Single(normalized.LibraryPreviewSourceOverrides).PreviewSource);
+    }
 }

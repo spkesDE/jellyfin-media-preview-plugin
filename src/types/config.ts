@@ -1,4 +1,4 @@
-export type PreviewSource = 'trickplay' | 'trailer' | 'prefer-trickplay' | 'prefer-trailer';
+export type PreviewSource = 'trickplay' | 'direct-play' | 'trailer' | 'prefer-trickplay' | 'prefer-trailer';
 export type ContentTypePreviewSource = PreviewSource | 'inherit';
 export type FrontendInjectionMethod = 'automatic' | 'file-transformation' | 'javascript-injector';
 

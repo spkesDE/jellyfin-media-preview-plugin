@@ -26,6 +26,7 @@ body:
       options:
         - Hover behavior
         - Trickplay previews
+        - Direct Play previews
         - Local trailers
         - YouTube trailers
         - Audio / autoplay
