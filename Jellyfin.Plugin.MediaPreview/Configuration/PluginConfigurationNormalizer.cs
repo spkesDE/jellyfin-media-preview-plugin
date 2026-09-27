@@ -136,6 +136,7 @@ internal static class PluginConfigurationNormalizer
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),
+            DirectPlayPreviewEnabled = source.DirectPlayPreviewEnabled,
             DirectPlayStartPercent = Clamp(source.DirectPlayStartPercent, 0, 90, 20),
             DirectPlayPlaybackRate = Clamp(source.DirectPlayPlaybackRate, 0.5, 2, 1.5),
             DirectPlayPreviewDurationSeconds = Clamp(source.DirectPlayPreviewDurationSeconds, 0, 300, 15),

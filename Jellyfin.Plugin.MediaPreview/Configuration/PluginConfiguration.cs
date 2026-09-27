@@ -74,6 +74,8 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrailerVolumePercent { get; set; } = 35;
 
+    public bool DirectPlayPreviewEnabled { get; set; } = true;
+
     public int DirectPlayStartPercent { get; set; } = 20;
 
     public double DirectPlayPlaybackRate { get; set; } = 1.5;

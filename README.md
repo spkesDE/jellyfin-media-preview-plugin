@@ -104,7 +104,8 @@ If no supported preview source is available for an item, the card stays unchange
 
 Direct Play previews start 20% into the item by default, play at 1.5x speed, stay muted, and pause after 15 seconds.
 These values are configurable under `Media Preview -> Trailer`. The optional Jellyfin transcode fallback can be
-disabled completely or limited by height and bitrate.
+disabled completely or limited by height and bitrate. Direct Play previews themselves can also be disabled globally;
+this disables both `Only Direct Play` and the Direct Play step of `Prefer Trailer`.
 
 ## Troubleshooting
 

@@ -13,6 +13,7 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.Equal("trickplay", defaults.PreviewSource);
         Assert.Equal("scrub", defaults.HoverMode);
         Assert.Equal("medium", defaults.YouTubeCropStrength);
+        Assert.True(defaults.DirectPlayPreviewEnabled);
         Assert.Equal(20, defaults.DirectPlayStartPercent);
         Assert.Equal(1.5, defaults.DirectPlayPlaybackRate);
         Assert.Equal(15, defaults.DirectPlayPreviewDurationSeconds);

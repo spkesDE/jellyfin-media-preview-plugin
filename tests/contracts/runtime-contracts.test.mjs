@@ -47,6 +47,7 @@ test('prefer-trailer advances to Direct Play instead of Trickplay', async () => 
   assert.match(renderer, /markDirectPlayUnavailable/);
   assert.match(renderer, /mediaElement\.playbackRate = playbackRate/);
   assert.match(renderer, /previewDurationSeconds/);
+  assert.match(directPlay, /!config\.directPlayPreviewEnabled/);
   assert.match(directPlay, /directPlayTranscodeFallbackEnabled/);
 });
 
@@ -75,18 +76,21 @@ test('backend and frontend defaults remain aligned', async () => {
   assert.match(backend, /HoverMode[^=]*= "scrub"/);
   assert.match(backend, /YouTubeCropStrength[^=]*= "medium"/);
   assert.match(backend, /DirectPlayStartPercent[^=]*= 20/);
+  assert.match(backend, /DirectPlayPreviewEnabled[^=]*= true/);
   assert.match(backend, /DirectPlayPlaybackRate[^=]*= 1\.5/);
   assert.match(backend, /DirectPlayTranscodeFallbackEnabled[^=]*= true/);
   assert.match(runtimeDefaults, /previewSource: PREVIEW_SOURCE_TRICKPLAY/);
   assert.match(runtimeDefaults, /hoverMode: 'scrub'/);
   assert.match(runtimeDefaults, /youTubeCropStrength: 'medium'/);
   assert.match(runtimeDefaults, /directPlayStartPercent: 20/);
+  assert.match(runtimeDefaults, /directPlayPreviewEnabled: true/);
   assert.match(runtimeDefaults, /directPlayPlaybackRate: 1\.5/);
   assert.match(runtimeDefaults, /directPlayTranscodeFallbackEnabled: true/);
   assert.match(settingsDefaults, /PreviewSource: 'trickplay'/);
   assert.match(settingsDefaults, /HoverMode: 'scrub'/);
   assert.match(settingsDefaults, /YouTubeCropStrength: 'medium'/);
   assert.match(settingsDefaults, /DirectPlayStartPercent: 20/);
+  assert.match(settingsDefaults, /DirectPlayPreviewEnabled: true/);
   assert.match(settingsDefaults, /DirectPlayPlaybackRate: 1\.5/);
   assert.match(settingsDefaults, /DirectPlayTranscodeFallbackEnabled: true/);
 });

@@ -41,6 +41,7 @@ const standaloneFallbackConfig: PluginConfig = {
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  directPlayPreviewEnabled: true,
   directPlayStartPercent: 20,
   directPlayPlaybackRate: 1.5,
   directPlayPreviewDurationSeconds: 15,
@@ -229,6 +230,7 @@ export function normalizeConfig(): void {
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.directPlayPreviewEnabled = config.directPlayPreviewEnabled !== false;
   config.directPlayStartPercent = clamp(numberOrFallback(config.directPlayStartPercent, 20), 0, 90);
   config.directPlayPlaybackRate = clamp(numberOrFallback(config.directPlayPlaybackRate, 1.5), 0.5, 2);
   config.directPlayPreviewDurationSeconds = clamp(

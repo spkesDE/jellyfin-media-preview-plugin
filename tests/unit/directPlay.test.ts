@@ -3,6 +3,7 @@ import { config } from '../../src/config';
 import { createDirectPlayCandidate, resolveDirectPlayStartSeconds } from '../../src/preview/directPlay';
 
 const originalSettings = {
+  directPlayPreviewEnabled: config.directPlayPreviewEnabled,
   directPlayStartPercent: config.directPlayStartPercent,
   directPlayPlaybackRate: config.directPlayPlaybackRate,
   directPlayPreviewDurationSeconds: config.directPlayPreviewDurationSeconds,
@@ -65,6 +66,14 @@ describe('Direct Play preview policy', () => {
     expect(directCandidate?.fallbackSrc).toBeNull();
     expect(
       createDirectPlayCandidate({ Id: 'movie', RunTimeTicks: 6_000_000_000 }, { Id: 'source', Container: 'mkv' })
+    ).toBeNull();
+  });
+
+  it('can disable Direct Play previews globally', () => {
+    config.directPlayPreviewEnabled = false;
+
+    expect(
+      createDirectPlayCandidate({ Id: 'movie', RunTimeTicks: 6_000_000_000 }, { Id: 'source', Container: 'mp4' })
     ).toBeNull();
   });
 

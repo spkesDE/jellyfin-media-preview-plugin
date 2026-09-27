@@ -30,6 +30,7 @@ export const CONFIG_DEFAULTS = {
   ShowNoPreviewMessage: false,
   TrailerAudioEnabled: false,
   TrailerVolumePercent: 35,
+  DirectPlayPreviewEnabled: true,
   DirectPlayStartPercent: 20,
   DirectPlayPlaybackRate: 1.5,
   DirectPlayPreviewDurationSeconds: 15,

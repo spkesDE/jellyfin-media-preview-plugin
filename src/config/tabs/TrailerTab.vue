@@ -52,12 +52,14 @@ const positionOptions: SelectOption[] = [
         title="Direct Play Preview"
         help="Control how the media item itself is previewed when Prefer Trailer cannot find a playable trailer."
       >
+        <ConfigCheckbox v-model="store.config.DirectPlayPreviewEnabled" label="Enable Direct Play Preview" />
         <ConfigNumber
           v-model="store.config.DirectPlayStartPercent"
           label="Skip Into Item (%)"
           :min="0"
           :max="90"
           :step="1"
+          :disabled="!store.config.DirectPlayPreviewEnabled"
         />
         <ConfigNumber
           v-model="store.config.DirectPlayPlaybackRate"
@@ -65,6 +67,7 @@ const positionOptions: SelectOption[] = [
           :min="0.5"
           :max="2"
           :step="0.25"
+          :disabled="!store.config.DirectPlayPreviewEnabled"
         />
         <ConfigNumber
           v-model="store.config.DirectPlayPreviewDurationSeconds"
@@ -72,6 +75,7 @@ const positionOptions: SelectOption[] = [
           :min="0"
           :max="300"
           :step="1"
+          :disabled="!store.config.DirectPlayPreviewEnabled"
         />
         <p class="jmp-note">
           The start point is capped so the configured preview window still fits before the item ends. Direct Play
@@ -83,14 +87,18 @@ const positionOptions: SelectOption[] = [
         title="Direct Play Transcode Fallback"
         help="Use a bounded Jellyfin transcode only when the browser cannot play the original media directly."
       >
-        <ConfigCheckbox v-model="store.config.DirectPlayTranscodeFallbackEnabled" label="Enable Transcode Fallback" />
+        <ConfigCheckbox
+          v-model="store.config.DirectPlayTranscodeFallbackEnabled"
+          label="Enable Transcode Fallback"
+          :disabled="!store.config.DirectPlayPreviewEnabled"
+        />
         <ConfigNumber
           v-model="store.config.DirectPlayTranscodeMaxHeight"
           label="Maximum Transcode Height (px)"
           :min="240"
           :max="2160"
           :step="120"
-          :disabled="!store.config.DirectPlayTranscodeFallbackEnabled"
+          :disabled="!store.config.DirectPlayPreviewEnabled || !store.config.DirectPlayTranscodeFallbackEnabled"
         />
         <ConfigNumber
           v-model="store.config.DirectPlayTranscodeVideoBitrateKbps"
@@ -98,7 +106,7 @@ const positionOptions: SelectOption[] = [
           :min="250"
           :max="20000"
           :step="250"
-          :disabled="!store.config.DirectPlayTranscodeFallbackEnabled"
+          :disabled="!store.config.DirectPlayPreviewEnabled || !store.config.DirectPlayTranscodeFallbackEnabled"
         />
         <p class="jmp-note">
           Disable this to skip Direct Play previews when the source container is not browser-compatible or direct

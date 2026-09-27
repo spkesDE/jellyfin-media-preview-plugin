@@ -66,7 +66,7 @@ export function createDirectPlayCandidate(
   item: JellyfinItem,
   mediaSource: JellyfinMediaSource
 ): TrailerCandidate | null {
-  if (!item.Id) {
+  if (!config.directPlayPreviewEnabled || !item.Id) {
     return null;
   }
 
@@ -117,7 +117,7 @@ export function createDirectPlayCandidate(
 }
 
 export async function getDirectPlayPreview(itemId: string): Promise<DirectPlayPreview | null> {
-  if (!itemId || isDirectPlayTemporarilyUnavailable(itemId)) {
+  if (!config.directPlayPreviewEnabled || !itemId || isDirectPlayTemporarilyUnavailable(itemId)) {
     return null;
   }
 
