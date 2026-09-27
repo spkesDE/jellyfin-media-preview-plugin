@@ -10,49 +10,54 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    name: build
+    name: Build and test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
 
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
       - name: Install frontend dependencies
         run: npm ci
 
-      - name: Typecheck frontend
-        run: npm run typecheck
+      - name: Restore backend dependencies
+        run: dotnet restore Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj
+
+      - name: Verify formatting
+        run: npm run format:check
 
       - name: Lint frontend
         run: npm run lint
 
-      - name: Test frontend and contracts
+      - name: Typecheck frontend
+        run: npm run typecheck
+
+      - name: Test frontend and source contracts
         run: npm test
 
-      - name: Build frontend bundle
+      - name: Build frontend bundles
         run: npm run bundle
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
-
-      - name: Restore
-        run: dotnet restore Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj
-
-      - name: Check formatting
-        run: npm run format:check
-
-      - name: Build
-        run: dotnet build Jellyfin.Plugin.MediaPreview/Jellyfin.Plugin.MediaPreview.csproj --configuration Release --no-restore -p:UseSharedCompilation=false
+      - name: Build backend and tests
+        run: dotnet build Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj --configuration Release --no-restore -p:UseSharedCompilation=false
 
       - name: Test backend
-        run: dotnet test Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj --configuration Release --no-restore
+        run: dotnet test Jellyfin.Plugin.MediaPreview.Tests/Jellyfin.Plugin.MediaPreview.Tests.csproj --configuration Release --no-build

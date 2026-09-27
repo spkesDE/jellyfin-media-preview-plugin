@@ -6,7 +6,10 @@ on:
       - 'v*'
 
 permissions:
+  artifact-metadata: write
+  attestations: write
   contents: read
+  id-token: write
 
 concurrency:
   group: release-${{ github.ref_name }}
@@ -26,7 +29,7 @@ jobs:
           permission-contents: write
 
       - name: Check out tag
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           token: ${{ steps.app-token.outputs.token }}
@@ -74,13 +77,13 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: npm
 
       - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: '10.0.x'
 
@@ -111,6 +114,11 @@ jobs:
 
           "checksum=$checksum" >> $env:GITHUB_OUTPUT
           "timestamp=$timestamp" >> $env:GITHUB_OUTPUT
+
+      - name: Attest release artifact
+        uses: actions/attest@v4
+        with:
+          subject-path: release/MediaPreview.zip
 
       - name: Create GitHub release
         env:
