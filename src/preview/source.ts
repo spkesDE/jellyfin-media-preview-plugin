@@ -87,7 +87,13 @@ function getPreviewForSource(itemId: string, percent: number, effectiveSource: s
         return preview;
       }
 
-      return getTrailerPreview(itemId);
+      return getTrailerPreview(itemId).then<PreviewResult | null>((trailerPreview) => {
+        if (trailerPreview) {
+          return trailerPreview;
+        }
+
+        return getDirectPlayPreview(itemId);
+      });
     });
   }
 

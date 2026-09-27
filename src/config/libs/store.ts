@@ -30,7 +30,6 @@ export interface ConfigStore {
   saveState: ComputedRef<SaveState>;
   canUseTrailer: ComputedRef<boolean>;
   canUseTrickplay: ComputedRef<boolean>;
-  previewSourceNote: ComputedRef<string>;
   motionProfile: ComputedRef<{ glyph: string; title: string; text: string }>;
   presetValues: ComputedRef<{ min: number; max: number; duration: number }>;
   loadConfig(): Promise<void>;
@@ -72,17 +71,6 @@ export function createConfigStore(): ConfigStore {
   const isDirty = computed(() => createConfigSnapshot(config) !== lastSavedSnapshot.value);
   const saveState = computed<SaveState>(() =>
     savedFeedback.value && !isDirty.value ? 'saved' : isDirty.value ? 'dirty' : 'clean'
-  );
-
-  const previewSourceNote = computed(
-    () =>
-      ({
-        trailer: 'Only Trailer: local trailer first, then supported remote trailer. No Trickplay fallback.',
-        'direct-play': 'Only Direct Play: preview the playable media item itself without checking trailers.',
-        trickplay: 'Only Trickplay: always use Jellyfin scrub images.',
-        'prefer-trailer': 'Prefer Trailer: local trailer, then supported remote trailer, then Direct Play.',
-        'prefer-trickplay': 'Prefer Trickplay: Trickplay first, then trailer if needed.'
-      })[config.PreviewSource]
   );
 
   const motionProfile = computed(
@@ -205,7 +193,6 @@ export function createConfigStore(): ConfigStore {
     saveState,
     canUseTrailer,
     canUseTrickplay,
-    previewSourceNote,
     motionProfile,
     presetValues,
     loadConfig,

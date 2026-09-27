@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, useId } from 'vue';
+import ConfigHelpTooltip from './ConfigHelpTooltip.vue';
 
 export interface SelectOption {
   value: string;
@@ -8,6 +9,7 @@ export interface SelectOption {
 
 defineProps<{
   label: string;
+  helpText?: string;
   modelValue?: unknown;
   options: SelectOption[];
   disabled?: boolean;
@@ -19,9 +21,12 @@ const focused = ref(false);
 
 <template>
   <div class="selectContainer">
-    <label class="selectLabel" :class="{ selectLabelFocused: focused }" :for="fieldId">
-      {{ label }}
-    </label>
+    <div class="jmp-configLabelRow">
+      <label class="selectLabel" :class="{ selectLabelFocused: focused }" :for="fieldId">
+        {{ label }}
+      </label>
+      <ConfigHelpTooltip v-if="helpText" :text="helpText" :label="`${label}: ${helpText}`" />
+    </div>
     <select
       :id="fieldId"
       class="emby-select emby-select-withcolor"
@@ -41,3 +46,12 @@ const focused = ref(false);
     </div>
   </div>
 </template>
+
+<style scoped>
+.jmp-configLabelRow {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+  width: fit-content;
+}
+</style>

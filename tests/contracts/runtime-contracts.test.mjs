@@ -51,6 +51,15 @@ test('prefer-trailer advances to Direct Play instead of Trickplay', async () => 
   assert.match(directPlay, /directPlayTranscodeFallbackEnabled/);
 });
 
+test('prefer-trickplay exhausts video fallbacks through Direct Play', async () => {
+  const source = await read('src/preview/source.ts');
+
+  assert.match(
+    source,
+    /PREVIEW_SOURCE_PREFER_TRICKPLAY[\s\S]*getTrickplayPreview[\s\S]*getTrailerPreview[\s\S]*getDirectPlayPreview/
+  );
+});
+
 test('Direct Play is selectable at every preview rule level', async () => {
   const [constants, source, settings, backend] = await Promise.all([
     read('src/constants.ts'),
@@ -62,6 +71,7 @@ test('Direct Play is selectable at every preview rule level', async () => {
   assert.match(constants, /VALID_PREVIEW_SOURCES[\s\S]*PREVIEW_SOURCE_DIRECT_PLAY/);
   assert.match(source, /effectiveSource === PREVIEW_SOURCE_DIRECT_PLAY[\s\S]*getDirectPlayPreview/);
   assert.match(settings, /value: 'direct-play', label: 'Only Direct Play'/);
+  assert.match(settings, /ConfigHelpTooltip|help-text/);
   assert.match(backend, /ValidContentTypePreviewSources[\s\S]*"direct-play"/);
 });
 

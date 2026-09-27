@@ -26,6 +26,21 @@ const librarySourceOptions: SelectOption[] = [
   ...defaultSourceOptions
 ];
 
+const sourceDescriptions: Record<ContentTypePreviewSource, string> = {
+  inherit: 'Continue to the next rule: library → media type → default.',
+  trickplay: 'Only Trickplay: use Jellyfin scrub images. No video fallback.',
+  'direct-play': 'Only Direct Play: play the media item itself, then use the optional bounded transcode fallback.',
+  trailer: 'Only Trailer: local trailer → supported remote or YouTube trailer. No other source fallback.',
+  'prefer-trickplay':
+    'Prefer Trickplay: Trickplay → local trailer → supported remote or YouTube trailer → Direct Play → optional transcode.',
+  'prefer-trailer':
+    'Prefer Trailer: local trailer → supported remote or YouTube trailer → Direct Play → optional transcode.'
+};
+
+function describeSource(value: unknown): string {
+  return sourceDescriptions[String(value || 'inherit') as ContentTypePreviewSource] || sourceDescriptions.inherit;
+}
+
 function formatCollectionType(value?: string): string {
   return (
     {
@@ -109,6 +124,7 @@ function updateLibraryOverride(libraryId: string, value: string): void {
             :key="library.Id"
             :model-value="store.getLibraryOverride(library.Id)"
             :label="`${library.Name} (${formatCollectionType(library.CollectionType)})`"
+            :help-text="describeSource(store.getLibraryOverride(library.Id))"
             :options="librarySourceOptions"
             @update:model-value="updateLibraryOverride(library.Id, $event)"
           />
@@ -123,16 +139,28 @@ function updateLibraryOverride(libraryId: string, value: string): void {
           help="Used only when the current library has no explicit rule."
         >
           <div class="jmp-compactGrid">
-            <ConfigSelect v-model="store.config.MoviePreviewSource" label="Movies" :options="inheritedSourceOptions" />
-            <ConfigSelect v-model="store.config.SeriesPreviewSource" label="Series" :options="inheritedSourceOptions" />
+            <ConfigSelect
+              v-model="store.config.MoviePreviewSource"
+              label="Movies"
+              :help-text="describeSource(store.config.MoviePreviewSource)"
+              :options="inheritedSourceOptions"
+            />
+            <ConfigSelect
+              v-model="store.config.SeriesPreviewSource"
+              label="Series"
+              :help-text="describeSource(store.config.SeriesPreviewSource)"
+              :options="inheritedSourceOptions"
+            />
             <ConfigSelect
               v-model="store.config.EpisodePreviewSource"
               label="Episodes"
+              :help-text="describeSource(store.config.EpisodePreviewSource)"
               :options="inheritedSourceOptions"
             />
             <ConfigSelect
               v-model="store.config.VideoPreviewSource"
               label="Other Videos"
+              :help-text="describeSource(store.config.VideoPreviewSource)"
               :options="inheritedSourceOptions"
             />
           </div>
@@ -148,9 +176,9 @@ function updateLibraryOverride(libraryId: string, value: string): void {
           <ConfigSelect
             v-model="store.config.PreviewSource"
             label="Default Preview Mode"
+            :help-text="describeSource(store.config.PreviewSource)"
             :options="defaultSourceOptions"
           />
-          <p class="jmp-note">{{ store.previewSourceNote.value }}</p>
         </ConfigCard>
       </div>
     </div>
