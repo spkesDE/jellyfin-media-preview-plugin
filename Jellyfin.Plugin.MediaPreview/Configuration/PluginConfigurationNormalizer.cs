@@ -134,6 +134,12 @@ internal static class PluginConfigurationNormalizer
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),
+            DirectPlayStartPercent = Clamp(source.DirectPlayStartPercent, 0, 90, 20),
+            DirectPlayPlaybackRate = Clamp(source.DirectPlayPlaybackRate, 0.5, 2, 1.5),
+            DirectPlayPreviewDurationSeconds = Clamp(source.DirectPlayPreviewDurationSeconds, 0, 300, 15),
+            DirectPlayTranscodeFallbackEnabled = source.DirectPlayTranscodeFallbackEnabled,
+            DirectPlayTranscodeMaxHeight = Clamp(source.DirectPlayTranscodeMaxHeight, 240, 2160, 480),
+            DirectPlayTranscodeVideoBitrateKbps = Clamp(source.DirectPlayTranscodeVideoBitrateKbps, 250, 20000, 1500),
             UnavailableTrailerCacheEnabled = source.UnavailableTrailerCacheEnabled,
             UnavailableTrailerRetryDays = Clamp(source.UnavailableTrailerRetryDays, 1, 365, 30),
             HoverDelayMs = Math.Max(0, source.HoverDelayMs),
@@ -189,6 +195,11 @@ internal static class PluginConfigurationNormalizer
     private static int Clamp(int value, int min, int max, int fallback)
     {
         return value < min || value > max ? fallback : value;
+    }
+
+    private static double Clamp(double value, double min, double max, double fallback)
+    {
+        return double.IsFinite(value) && value >= min && value <= max ? value : fallback;
     }
 
     private static string NormalizeChoice(string? value, HashSet<string> allowedValues, string fallback)

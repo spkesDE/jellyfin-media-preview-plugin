@@ -74,6 +74,18 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrailerVolumePercent { get; set; } = 35;
 
+    public int DirectPlayStartPercent { get; set; } = 20;
+
+    public double DirectPlayPlaybackRate { get; set; } = 1.5;
+
+    public int DirectPlayPreviewDurationSeconds { get; set; } = 15;
+
+    public bool DirectPlayTranscodeFallbackEnabled { get; set; } = true;
+
+    public int DirectPlayTranscodeMaxHeight { get; set; } = 480;
+
+    public int DirectPlayTranscodeVideoBitrateKbps { get; set; } = 1500;
+
     public bool UnavailableTrailerCacheEnabled { get; set; } = true;
 
     public int UnavailableTrailerRetryDays { get; set; } = 30;

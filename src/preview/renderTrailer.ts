@@ -29,8 +29,18 @@ import { markDirectPlayUnavailable } from './directPlay';
 import type { VideoPreview } from '../types/preview';
 import type { CardState } from '../types/state';
 
-export function updateTrailerAudioState(mediaElement: HTMLVideoElement | HTMLIFrameElement | null): void {
+export function updateTrailerAudioState(
+  mediaElement: HTMLVideoElement | HTMLIFrameElement | null,
+  forceMuted = false
+): void {
   if (!(mediaElement instanceof HTMLVideoElement)) {
+    return;
+  }
+
+  if (forceMuted) {
+    mediaElement.volume = 0;
+    mediaElement.muted = true;
+    mediaElement.defaultMuted = true;
     return;
   }
 
@@ -125,9 +135,14 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   const videoElement = state.trailerMedia as HTMLVideoElement;
   videoElement.onerror = null;
   videoElement.onloadedmetadata = null;
+  videoElement.ontimeupdate = null;
   videoElement.pause();
+  videoElement.playbackRate = 1;
+  videoElement.defaultPlaybackRate = 1;
+  videoElement.loop = true;
   videoElement.removeAttribute('src');
   delete videoElement.dataset.jmpFallbackApplied;
+  delete videoElement.dataset.jmpPreviewStartSeconds;
   videoElement.load();
 }
 
@@ -271,7 +286,30 @@ export function applyTrailerPreview(
       state.trailerPlaybackStartedAt = Date.now();
     }
   } else if (mediaElement instanceof HTMLVideoElement) {
-    updateTrailerAudioState(mediaElement);
+    const isDirectPlay = preview.source === PREVIEW_SOURCE_DIRECT_PLAY;
+    const playbackRate = isDirectPlay ? Math.max(0.5, Math.min(2, Number(trailer.playbackRate) || 1.5)) : 1;
+    const previewDurationSeconds = isDirectPlay ? Math.max(0, Number(trailer.previewDurationSeconds) || 0) : 0;
+
+    mediaElement.loop = !isDirectPlay;
+    mediaElement.defaultPlaybackRate = playbackRate;
+    mediaElement.playbackRate = playbackRate;
+    updateTrailerAudioState(mediaElement, isDirectPlay);
+
+    if (previewDurationSeconds > 0) {
+      mediaElement.dataset.jmpPreviewStartSeconds = String(Math.max(0, Number(trailer.startSeconds) || 0));
+      mediaElement.ontimeupdate = () => {
+        const previewStartSeconds = Number(mediaElement.dataset.jmpPreviewStartSeconds);
+        if (
+          Number.isFinite(previewStartSeconds) &&
+          mediaElement.currentTime - previewStartSeconds >= previewDurationSeconds
+        ) {
+          mediaElement.pause();
+        }
+      };
+    } else {
+      mediaElement.ontimeupdate = null;
+      delete mediaElement.dataset.jmpPreviewStartSeconds;
+    }
 
     const recoverFromVideoFailure = () => {
       if (preview.source === PREVIEW_SOURCE_DIRECT_PLAY) {
@@ -290,9 +328,12 @@ export function applyTrailerPreview(
       if (trailer.fallbackSrc && mediaElement.dataset.jmpFallbackApplied !== 'true') {
         debugLog('Local trailer direct playback failed. Falling back to transcoded MP4.', trailer.title || trailer.src);
         mediaElement.dataset.jmpFallbackApplied = 'true';
+        mediaElement.dataset.jmpPreviewStartSeconds = '0';
         mediaElement.src = trailer.fallbackSrc;
         mediaElement.load();
-        updateTrailerAudioState(mediaElement);
+        mediaElement.defaultPlaybackRate = playbackRate;
+        mediaElement.playbackRate = playbackRate;
+        updateTrailerAudioState(mediaElement, isDirectPlay);
         const fallbackPromise = mediaElement.play();
         if (fallbackPromise && typeof fallbackPromise.catch === 'function') {
           fallbackPromise.catch((error) => {
@@ -307,16 +348,27 @@ export function applyTrailerPreview(
     };
 
     mediaElement.onloadedmetadata = () => {
+      mediaElement.defaultPlaybackRate = playbackRate;
+      mediaElement.playbackRate = playbackRate;
       if (
-        trailer.startSeconds &&
+        Number.isFinite(trailer.startSeconds) &&
+        Number(trailer.startSeconds) > 0 &&
         mediaElement.dataset.jmpFallbackApplied !== 'true' &&
-        Math.abs(mediaElement.currentTime - trailer.startSeconds) > 1
+        Math.abs(mediaElement.currentTime - Number(trailer.startSeconds)) > 1
       ) {
         try {
-          mediaElement.currentTime = trailer.startSeconds;
+          mediaElement.currentTime = Number(trailer.startSeconds);
         } catch {
           // Some direct streams are not seekable until more metadata is available.
         }
+      }
+
+      if (previewDurationSeconds > 0) {
+        mediaElement.dataset.jmpPreviewStartSeconds = String(
+          mediaElement.dataset.jmpFallbackApplied === 'true'
+            ? Math.max(0, mediaElement.currentTime)
+            : Math.max(0, Number(trailer.startSeconds) || mediaElement.currentTime)
+        );
       }
     };
 

@@ -102,6 +102,10 @@ For most libraries, `Prefer Trickplay` is a good starting point. If your library
 
 If no supported preview source is available for an item, the card stays unchanged.
 
+Direct Play previews start 20% into the item by default, play at 1.5x speed, stay muted, and pause after 15 seconds.
+These values are configurable under `Media Preview -> Trailer`. The optional Jellyfin transcode fallback can be
+disabled completely or limited by height and bitrate.
+
 ## Troubleshooting
 
 If previews do not show up:

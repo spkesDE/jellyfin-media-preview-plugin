@@ -92,7 +92,7 @@ function getPreviewForSource(itemId: string, percent: number, effectiveSource: s
         return preview;
       }
 
-      return getDirectPlayPreview(itemId, percent);
+      return getDirectPlayPreview(itemId);
     });
   }
 

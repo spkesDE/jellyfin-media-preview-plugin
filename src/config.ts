@@ -41,6 +41,12 @@ const standaloneFallbackConfig: PluginConfig = {
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  directPlayStartPercent: 20,
+  directPlayPlaybackRate: 1.5,
+  directPlayPreviewDurationSeconds: 15,
+  directPlayTranscodeFallbackEnabled: true,
+  directPlayTranscodeMaxHeight: 480,
+  directPlayTranscodeVideoBitrateKbps: 1500,
   unavailableTrailerCacheEnabled: true,
   unavailableTrailerRetryDays: 30,
   hoverDelayMs: 300,
@@ -223,6 +229,20 @@ export function normalizeConfig(): void {
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.directPlayStartPercent = clamp(numberOrFallback(config.directPlayStartPercent, 20), 0, 90);
+  config.directPlayPlaybackRate = clamp(numberOrFallback(config.directPlayPlaybackRate, 1.5), 0.5, 2);
+  config.directPlayPreviewDurationSeconds = clamp(
+    numberOrFallback(config.directPlayPreviewDurationSeconds, 15),
+    0,
+    300
+  );
+  config.directPlayTranscodeFallbackEnabled = config.directPlayTranscodeFallbackEnabled !== false;
+  config.directPlayTranscodeMaxHeight = clamp(numberOrFallback(config.directPlayTranscodeMaxHeight, 480), 240, 2160);
+  config.directPlayTranscodeVideoBitrateKbps = clamp(
+    numberOrFallback(config.directPlayTranscodeVideoBitrateKbps, 1500),
+    250,
+    20000
+  );
   config.unavailableTrailerCacheEnabled = config.unavailableTrailerCacheEnabled !== false;
   config.unavailableTrailerRetryDays = clamp(numberOrFallback(config.unavailableTrailerRetryDays, 30), 1, 365);
   config.previewBackdropIntensityPercent = clamp(numberOrFallback(config.previewBackdropIntensityPercent, 35), 0, 100);

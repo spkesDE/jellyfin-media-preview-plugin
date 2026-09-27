@@ -1,4 +1,5 @@
 import { DIRECT_PLAY_TYPES, PREVIEW_SOURCE_DIRECT_PLAY } from '../constants';
+import { config } from '../config';
 import { buildApiUrl, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { debugLog } from '../core/logger';
 import { requestJson } from '../core/request';
@@ -48,10 +49,22 @@ export function clearDirectPlayFallbackState(): void {
   failedDirectPlayItems.clear();
 }
 
-function createDirectPlayCandidate(
+export function resolveDirectPlayStartSeconds(
+  runtimeSeconds: number,
+  startPercent: number,
+  previewDurationSeconds: number
+): number {
+  const normalizedRuntime = Math.max(0, Number(runtimeSeconds) || 0);
+  const requestedStart = Math.floor(normalizedRuntime * Math.max(0, Math.min(0.9, startPercent / 100)));
+  const duration = Math.max(0, Number(previewDurationSeconds) || 0);
+  const latestStart = duration > 0 ? Math.max(0, normalizedRuntime - duration) : normalizedRuntime;
+
+  return Math.min(requestedStart, latestStart);
+}
+
+export function createDirectPlayCandidate(
   item: JellyfinItem,
-  mediaSource: JellyfinMediaSource,
-  percent: number
+  mediaSource: JellyfinMediaSource
 ): TrailerCandidate | null {
   if (!item.Id) {
     return null;
@@ -60,7 +73,12 @@ function createDirectPlayCandidate(
   const container = getContainer(mediaSource);
   const aspectRatio = getAspectRatio(mediaSource);
   const runtimeSeconds = Math.max(0, Number(item.RunTimeTicks) || 0) / 10_000_000;
-  const startSeconds = Math.floor(runtimeSeconds * Math.max(0, Math.min(1, percent)));
+  const previewDurationSeconds = Math.max(0, Number(config.directPlayPreviewDurationSeconds) || 0);
+  const startSeconds = resolveDirectPlayStartSeconds(
+    runtimeSeconds,
+    Number(config.directPlayStartPercent) || 0,
+    previewDurationSeconds
+  );
   const directSrc =
     container && SUPPORTED_DIRECT_PLAY_CONTAINERS.has(container)
       ? buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.${encodeURIComponent(container)}`, {
@@ -68,12 +86,18 @@ function createDirectPlayCandidate(
           mediaSourceId: mediaSource.Id
         })
       : null;
-  const transcodeSrc = buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.mp4`, {
-    mediaSourceId: mediaSource.Id,
-    VideoCodec: 'h264',
-    AudioCodec: 'aac',
-    StartTimeTicks: Math.floor(startSeconds * 10_000_000)
-  });
+  const transcodeVideoBitrate = Math.max(250, Number(config.directPlayTranscodeVideoBitrateKbps) || 1500) * 1000;
+  const transcodeSrc = config.directPlayTranscodeFallbackEnabled
+    ? buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.mp4`, {
+        mediaSourceId: mediaSource.Id,
+        VideoCodec: 'h264',
+        AudioCodec: 'aac',
+        MaxHeight: Math.max(240, Number(config.directPlayTranscodeMaxHeight) || 480),
+        VideoBitRate: transcodeVideoBitrate,
+        MaxStreamingBitrate: transcodeVideoBitrate + 128_000,
+        StartTimeTicks: Math.floor(startSeconds * 10_000_000)
+      })
+    : null;
   const src = directSrc || transcodeSrc;
   if (!src) {
     return null;
@@ -86,11 +110,13 @@ function createDirectPlayCandidate(
     src,
     fallbackSrc: directSrc && transcodeSrc && directSrc !== transcodeSrc ? transcodeSrc : null,
     startSeconds: directSrc ? startSeconds : 0,
+    playbackRate: Math.max(0.5, Math.min(2, Number(config.directPlayPlaybackRate) || 1.5)),
+    previewDurationSeconds,
     aspectRatio
   };
 }
 
-export async function getDirectPlayPreview(itemId: string, percent: number): Promise<DirectPlayPreview | null> {
+export async function getDirectPlayPreview(itemId: string): Promise<DirectPlayPreview | null> {
   if (!itemId || isDirectPlayTemporarilyUnavailable(itemId)) {
     return null;
   }
@@ -114,7 +140,7 @@ export async function getDirectPlayPreview(itemId: string, percent: number): Pro
     const mediaSource =
       mediaSources.find((source) => SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')) ||
       mediaSources[0];
-    const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource, percent) : null;
+    const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource) : null;
     if (!candidate) {
       return null;
     }

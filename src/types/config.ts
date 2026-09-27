@@ -31,6 +31,12 @@ export interface PluginConfig {
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
+  directPlayStartPercent: number;
+  directPlayPlaybackRate: number;
+  directPlayPreviewDurationSeconds: number;
+  directPlayTranscodeFallbackEnabled: boolean;
+  directPlayTranscodeMaxHeight: number;
+  directPlayTranscodeVideoBitrateKbps: number;
   unavailableTrailerCacheEnabled: boolean;
   unavailableTrailerRetryDays: number;
   hoverDelayMs: number;

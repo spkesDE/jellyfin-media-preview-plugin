@@ -29,6 +29,8 @@ export interface TrailerCandidate {
   embedUrl?: string | null;
   youtubeId?: string | null;
   startSeconds?: number;
+  playbackRate?: number;
+  previewDurationSeconds?: number;
   aspectRatio: AspectRatio;
 }
 
