@@ -1,8 +1,8 @@
 import * as esbuild from 'esbuild';
-import { createHash } from 'node:crypto';
 import { readFile, rm } from 'node:fs/promises';
 import path from 'node:path';
-import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc';
+import vue from '@vitejs/plugin-vue';
+import { build as viteBuild } from 'vite';
 
 const isWatch = process.argv.includes('--watch');
 const isProduction = !isWatch;
@@ -25,71 +25,37 @@ const cssTextPlugin = {
   }
 };
 
-const vueSfcPlugin = {
-  name: 'vue-sfc',
-  setup(build) {
-    let compileQueue = Promise.resolve();
-
-    build.onLoad({ filter: /\.vue$/ }, async (args) => {
-      const compile = async () => {
-        const source = await readFile(args.path, 'utf8');
-        const { descriptor, errors } = parse(source, { filename: args.path });
-
-        if (errors.length) {
-          return {
-            errors: errors.map((error) => ({
-              text: error instanceof Error ? error.message : String(error)
-            }))
-          };
-        }
-
-        const id = createHash('sha256').update(args.path).digest('hex').slice(0, 12);
-        if (!descriptor.script && !descriptor.scriptSetup) {
-          const compiledTemplate = compileTemplate({
-            source: descriptor.template?.content ?? '',
-            filename: args.path,
-            id
-          });
-
-          return {
-            contents: [
-              compiledTemplate.code,
-              'const __script = {};',
-              '__script.render = render;',
-              'export default __script;'
-            ].join('\n'),
-            loader: 'js',
-            resolveDir: path.dirname(args.path)
-          };
-        }
-
-        let compiledScript;
-        try {
-          compiledScript = compileScript(descriptor, {
-            id,
-            inlineTemplate: true
-          });
-        } catch (error) {
-          console.error(`Failed to compile Vue SFC: ${args.path}`);
-          throw error;
-        }
-
-        return {
-          contents: compiledScript.content,
-          loader: descriptor.script?.lang === 'js' ? 'js' : 'ts',
-          resolveDir: path.dirname(args.path)
-        };
-      };
-
-      const result = compileQueue.then(compile);
-      compileQueue = result.then(
-        () => undefined,
-        () => undefined
+function injectEmittedCss(styleId) {
+  return {
+    name: 'media-preview-inject-emitted-css',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const cssAssets = Object.entries(bundle).filter(
+        ([, output]) => output.type === 'asset' && output.fileName.endsWith('.css')
       );
-      return result;
-    });
-  }
-};
+      if (!cssAssets.length) return;
+
+      const css = cssAssets
+        .map(([, asset]) => (typeof asset.source === 'string' ? asset.source : new TextDecoder().decode(asset.source)))
+        .join('\n');
+      for (const [fileName] of cssAssets) delete bundle[fileName];
+
+      const injection = [
+        `const __styleId=${JSON.stringify(styleId)};`,
+        'if(!document.getElementById(__styleId)){',
+        'const __style=document.createElement("style");',
+        '__style.id=__styleId;',
+        `__style.textContent=${JSON.stringify(css)};`,
+        '(document.head||document.documentElement).appendChild(__style);',
+        '}'
+      ].join('');
+
+      for (const output of Object.values(bundle)) {
+        if (output.type === 'chunk' && output.isEntry) output.code = injection + output.code;
+      }
+    }
+  };
+}
 
 const sharedOptions = {
   bundle: true,
@@ -100,28 +66,56 @@ const sharedOptions = {
   legalComments: 'inline'
 };
 
-const contexts = await Promise.all([
-  esbuild.context({
-    ...sharedOptions,
-    entryPoints: ['src/main.ts'],
-    globalName: 'JellyfinMediaPreviewBundle',
-    outfile: 'dist/mediapreview.bundle.js',
-    plugins: [cssTextPlugin]
-  }),
-  esbuild.context({
-    ...sharedOptions,
-    entryPoints: ['src/config/main.ts'],
-    globalName: 'JellyfinMediaPreviewConfigBundle',
-    outfile: 'dist/config.bundle.js',
-    plugins: [vueSfcPlugin, cssTextPlugin]
-  })
-]);
+const runtimeContext = await esbuild.context({
+  ...sharedOptions,
+  entryPoints: ['src/main.ts'],
+  globalName: 'JellyfinMediaPreviewBundle',
+  outfile: 'dist/mediapreview.bundle.js',
+  plugins: [cssTextPlugin]
+});
+
+const configBuild = () =>
+  viteBuild({
+    configFile: false,
+    mode: isWatch ? 'development' : 'production',
+    logLevel: isWatch ? 'info' : 'warn',
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(isWatch ? 'development' : 'production')
+    },
+    plugins: [vue(), injectEmittedCss('media-preview-component-styles')],
+    build: {
+      target: 'es2020',
+      outDir: 'dist',
+      emptyOutDir: false,
+      minify: isProduction,
+      sourcemap: !isProduction,
+      cssCodeSplit: false,
+      lib: {
+        entry: path.resolve('src/config/main.ts'),
+        name: 'JellyfinMediaPreviewConfigBundle',
+        formats: ['iife'],
+        fileName: () => 'config.bundle.js'
+      },
+      rollupOptions: {
+        output: {
+          entryFileNames: 'config.bundle.js'
+        },
+        watch: isWatch ? {} : undefined
+      }
+    }
+  });
 
 if (isWatch) {
-  await Promise.all(contexts.map((ctx) => ctx.watch()));
+  await Promise.all([runtimeContext.watch(), configBuild()]);
 } else {
-  await Promise.all(contexts.map((ctx) => ctx.rebuild()));
-  await Promise.all(contexts.map((ctx) => ctx.dispose()));
+  await Promise.all([runtimeContext.rebuild(), configBuild()]);
+  await runtimeContext.dispose();
+
+  const configBundle = await readFile(path.join('dist', 'config.bundle.js'), 'utf8');
+  if (!configBundle.includes('media-preview-component-styles') || !configBundle.includes('[data-v-')) {
+    throw new Error('The production configuration bundle is missing compiled Vue component styles.');
+  }
+
   await Promise.all([
     rm('dist/mediapreview.bundle.js.map', { force: true }),
     rm('dist/config.bundle.js.map', { force: true })

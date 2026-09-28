@@ -95,3 +95,109 @@ function move(index: number, offset: number): void {
     </Draggable>
   </section>
 </template>
+
+<style scoped>
+.jmp-preferenceEditor {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
+  background: var(--jf-palette-action-hover, rgb(255 255 255 / 8%));
+}
+
+.jmp-preferenceTitle {
+  margin: 0 0 0.65rem;
+  color: var(--jf-palette-text-primary, #fff);
+  font-weight: 600;
+}
+
+.jmp-preferenceList {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.jmp-preferenceFallbacks {
+  margin-top: 0.45rem;
+}
+
+.jmp-preferenceItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 2.8rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
+  background: var(--jf-palette-background-paper, #202020);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.jmp-preferenceItem.is-fixed {
+  padding-inline: 0.75rem;
+  border-color: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
+  background: var(--jf-palette-primary-dark, var(--theme-primary-color, #006da3));
+}
+
+.jmp-preferenceItem.is-dragging {
+  opacity: 0.45;
+}
+
+.jmp-preferenceLock,
+.jmp-dragHandle {
+  margin-right: 0.45rem;
+  color: var(--jf-palette-text-secondary, rgb(255 255 255 / 70%));
+}
+
+.jmp-preferenceLock,
+.jmp-dragHandle svg,
+.jmp-preferenceMoveButtons svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: currentColor;
+}
+
+.jmp-dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+
+.jmp-dragHandle:active {
+  cursor: grabbing;
+}
+
+.jmp-preferenceLabel,
+.jmp-preferenceToggle {
+  min-width: 0;
+  color: var(--jf-palette-text-primary, #fff);
+}
+
+.jmp-preferenceToggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.jmp-preferenceState {
+  color: var(--jf-palette-text-secondary, rgb(255 255 255 / 70%));
+  font-size: 0.78rem;
+}
+
+.jmp-preferenceMoveButtons {
+  display: flex;
+}
+
+.jmp-preferenceMoveButtons button {
+  width: 2rem;
+  height: 2rem;
+}
+</style>

@@ -89,19 +89,17 @@ test('advanced source chains expose local and remote trailers separately', async
   assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);
 });
 
-test('production config CSS contains tooltip and preference editor styles', async () => {
-  const [configCss, tooltip, preferenceEditor] = await Promise.all([
-    read('src/config/config.css'),
+test('production config build compiles and injects scoped component styles', async () => {
+  const [buildScript, tooltip, preferenceEditor] = await Promise.all([
+    read('scripts/build.mjs'),
     read('src/config/components/ConfigHelpTooltip.vue'),
     read('src/config/components/PreferenceChainEditor.vue')
   ]);
 
-  assert.match(configCss, /\.ec-helpTrigger/);
-  assert.match(configCss, /\.ec-helpTooltip/);
-  assert.match(configCss, /\.jmp-preferenceList/);
-  assert.match(configCss, /\.jmp-preferenceItem\.is-fixed/);
-  assert.doesNotMatch(tooltip, /<style(?:\s|>)/);
-  assert.doesNotMatch(preferenceEditor, /<style(?:\s|>)/);
+  assert.match(buildScript, /plugins: \[vue\(\), injectEmittedCss\('media-preview-component-styles'\)\]/);
+  assert.match(buildScript, /configBundle\.includes\('\[data-v-'\)/);
+  assert.match(tooltip, /<style scoped>[\s\S]*\.ec-helpTrigger/);
+  assert.match(preferenceEditor, /<style scoped>[\s\S]*\.jmp-preferenceItem\.is-fixed/);
 });
 
 test('backend and frontend defaults remain aligned', async () => {

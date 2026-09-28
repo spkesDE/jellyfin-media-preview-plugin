@@ -116,3 +116,93 @@ onBeforeUnmount(hide);
     >
   </Teleport>
 </template>
+
+<style scoped>
+.ec-helpTrigger {
+  align-items: center;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: inherit;
+  cursor: help;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  height: 1.05rem;
+  justify-content: center;
+  opacity: 0.68;
+  outline: none;
+  padding: 0;
+  width: 1.05rem;
+}
+
+.ec-helpTrigger:hover,
+.ec-helpTrigger:focus-visible {
+  opacity: 1;
+}
+
+.ec-helpTrigger:focus-visible {
+  box-shadow: 0 0 0 2px var(--jf-palette-secondary-main, var(--theme-primary-color, #00a4dc));
+}
+
+.ec-helpTooltip {
+  background: var(--jf-palette-background-paper, #202020);
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
+  box-sizing: border-box;
+  box-shadow: 0 0.45rem 1.3rem rgba(0, 0, 0, 0.4);
+  color: var(--jf-palette-text-primary, #fff);
+  font-size: 0.82rem;
+  font-weight: 400;
+  line-height: 1.35;
+  max-width: min(24rem, calc(100vw - 2rem));
+  padding: 0.65rem 0.75rem;
+  pointer-events: none;
+  position: fixed;
+  text-align: left;
+  width: max-content;
+  z-index: 9999;
+}
+
+.ec-helpTooltip::after {
+  content: '';
+  position: absolute;
+}
+
+.ec-helpTooltip.is-above::after {
+  border-left: 0.35rem solid transparent;
+  border-right: 0.35rem solid transparent;
+  border-top: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  left: var(--ec-tooltip-arrow-left, 50%);
+  top: 100%;
+  transform: translateX(-50%);
+}
+
+.ec-helpTooltip.is-below::after {
+  border-bottom: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  border-left: 0.35rem solid transparent;
+  border-right: 0.35rem solid transparent;
+  bottom: 100%;
+  left: var(--ec-tooltip-arrow-left, 50%);
+  transform: translateX(-50%);
+}
+
+.ec-helpTooltip.is-left::after {
+  border-bottom: 0.35rem solid transparent;
+  border-left: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  border-top: 0.35rem solid transparent;
+  left: 100%;
+  top: var(--ec-tooltip-arrow-top, 50%);
+  transform: translateY(-50%);
+}
+
+.ec-helpTooltip.is-right::after {
+  border-bottom: 0.35rem solid transparent;
+  border-right: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  border-top: 0.35rem solid transparent;
+  right: 100%;
+  top: var(--ec-tooltip-arrow-top, 50%);
+  transform: translateY(-50%);
+}
+</style>
