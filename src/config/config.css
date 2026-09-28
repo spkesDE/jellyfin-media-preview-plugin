@@ -13,6 +13,94 @@
   width: fit-content;
 }
 
+#MediaPreviewConfigPage .ec-helpTrigger {
+  align-items: center;
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  color: inherit;
+  cursor: help;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  height: 1.05rem;
+  justify-content: center;
+  opacity: 0.68;
+  outline: none;
+  padding: 0;
+  width: 1.05rem;
+}
+
+#MediaPreviewConfigPage .ec-helpTrigger:hover,
+#MediaPreviewConfigPage .ec-helpTrigger:focus-visible {
+  opacity: 1;
+}
+
+#MediaPreviewConfigPage .ec-helpTrigger:focus-visible {
+  box-shadow: 0 0 0 2px var(--jf-palette-secondary-main, var(--theme-primary-color, #00a4dc));
+}
+
+.ec-helpTooltip {
+  background: var(--jf-palette-background-paper, #202020);
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
+  box-sizing: border-box;
+  box-shadow: 0 0.45rem 1.3rem rgba(0, 0, 0, 0.4);
+  color: var(--jf-palette-text-primary, #fff);
+  font-size: 0.82rem;
+  font-weight: 400;
+  line-height: 1.35;
+  max-width: min(24rem, calc(100vw - 2rem));
+  padding: 0.65rem 0.75rem;
+  pointer-events: none;
+  position: fixed;
+  text-align: left;
+  width: max-content;
+  z-index: 9999;
+}
+
+.ec-helpTooltip::after {
+  content: '';
+  position: absolute;
+}
+
+.ec-helpTooltip.is-above::after {
+  border-left: 0.35rem solid transparent;
+  border-right: 0.35rem solid transparent;
+  border-top: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  left: var(--ec-tooltip-arrow-left, 50%);
+  top: 100%;
+  transform: translateX(-50%);
+}
+
+.ec-helpTooltip.is-below::after {
+  border-bottom: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  border-left: 0.35rem solid transparent;
+  border-right: 0.35rem solid transparent;
+  bottom: 100%;
+  left: var(--ec-tooltip-arrow-left, 50%);
+  transform: translateX(-50%);
+}
+
+.ec-helpTooltip.is-left::after {
+  border-bottom: 0.35rem solid transparent;
+  border-left: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  border-top: 0.35rem solid transparent;
+  left: 100%;
+  top: var(--ec-tooltip-arrow-top, 50%);
+  transform: translateY(-50%);
+}
+
+.ec-helpTooltip.is-right::after {
+  border-bottom: 0.35rem solid transparent;
+  border-right: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  border-top: 0.35rem solid transparent;
+  right: 100%;
+  top: var(--ec-tooltip-arrow-top, 50%);
+  transform: translateY(-50%);
+}
+
 #MediaPreviewConfigPage .jmp-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -76,6 +164,110 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.8rem;
   margin-bottom: 0.8rem;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceEditor {
+  min-width: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
+  background: var(--jf-palette-action-hover, rgb(255 255 255 / 8%));
+}
+
+#MediaPreviewConfigPage .jmp-preferenceTitle {
+  margin: 0 0 0.65rem;
+  color: var(--jf-palette-text-primary, #fff);
+  font-weight: 600;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceList {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceFallbacks {
+  margin-top: 0.45rem;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceItem {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 2.8rem;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
+  background: var(--jf-palette-background-paper, #202020);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceItem.is-fixed {
+  padding-inline: 0.75rem;
+  border-color: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
+  background: var(--jf-palette-primary-dark, var(--theme-primary-color, #006da3));
+}
+
+#MediaPreviewConfigPage .jmp-preferenceItem.is-dragging {
+  opacity: 0.45;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceLock,
+#MediaPreviewConfigPage .jmp-dragHandle {
+  margin-right: 0.45rem;
+  color: var(--jf-palette-text-secondary, rgb(255 255 255 / 70%));
+}
+
+#MediaPreviewConfigPage .jmp-preferenceLock,
+#MediaPreviewConfigPage .jmp-dragHandle svg,
+#MediaPreviewConfigPage .jmp-preferenceMoveButtons svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: currentColor;
+}
+
+#MediaPreviewConfigPage .jmp-dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.3rem;
+  border: 0;
+  background: transparent;
+  cursor: grab;
+}
+
+#MediaPreviewConfigPage .jmp-dragHandle:active {
+  cursor: grabbing;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceLabel,
+#MediaPreviewConfigPage .jmp-preferenceToggle {
+  min-width: 0;
+  color: var(--jf-palette-text-primary, #fff);
+}
+
+#MediaPreviewConfigPage .jmp-preferenceToggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceState {
+  color: var(--jf-palette-text-secondary, rgb(255 255 255 / 70%));
+  font-size: 0.78rem;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceMoveButtons {
+  display: flex;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceMoveButtons button {
+  width: 2rem;
+  height: 2rem;
 }
 
 #MediaPreviewConfigPage .jmp-advancedPreferenceCard {

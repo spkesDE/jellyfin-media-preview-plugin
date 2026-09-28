@@ -89,6 +89,21 @@ test('advanced source chains expose local and remote trailers separately', async
   assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);
 });
 
+test('production config CSS contains tooltip and preference editor styles', async () => {
+  const [configCss, tooltip, preferenceEditor] = await Promise.all([
+    read('src/config/config.css'),
+    read('src/config/components/ConfigHelpTooltip.vue'),
+    read('src/config/components/PreferenceChainEditor.vue')
+  ]);
+
+  assert.match(configCss, /\.ec-helpTrigger/);
+  assert.match(configCss, /\.ec-helpTooltip/);
+  assert.match(configCss, /\.jmp-preferenceList/);
+  assert.match(configCss, /\.jmp-preferenceItem\.is-fixed/);
+  assert.doesNotMatch(tooltip, /<style(?:\s|>)/);
+  assert.doesNotMatch(preferenceEditor, /<style(?:\s|>)/);
+});
+
 test('backend and frontend defaults remain aligned', async () => {
   const [backend, runtimeDefaults, settingsDefaults] = await Promise.all([
     read('Jellyfin.Plugin.MediaPreview/Configuration/PluginConfiguration.cs'),
