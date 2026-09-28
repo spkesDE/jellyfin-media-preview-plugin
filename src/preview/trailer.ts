@@ -2,7 +2,7 @@ import { config } from '../config';
 import { PREVIEW_SOURCE_TRAILER, SUPPORTED_TYPES } from '../constants';
 import { buildApiUrl, getApiContextKey, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { debugLog } from '../core/logger';
-import { getScopedPreviewCacheKey, trailerInfoCache } from '../core/storage';
+import { getScopedPreviewCacheKey, missingTrailerCache, trailerInfoCache } from '../core/storage';
 import { postJson, requestJson } from '../core/request';
 import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
@@ -12,6 +12,7 @@ const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 
 const UNAVAILABLE_TRAILER_CACHE_WAIT_MS = 1500;
 const UNAVAILABLE_TRAILER_CACHE_REFRESH_MS = 5 * 60 * 1000;
 const UNAVAILABLE_TRAILER_CACHE_RETRY_MS = 30 * 1000;
+const MISSING_TRAILER_CACHE_COOLDOWN_MS = 10 * 60 * 1000;
 const serverUnavailableYouTubeVideoIds = new Set<string>();
 const locallyUnavailableYouTubeVideoIds = new Map<string, number>();
 const locallyUnavailableTrailerCandidates = new Map<string, number>();
@@ -23,6 +24,20 @@ let unavailableYouTubeVideoIdsGeneration = 0;
 interface UnavailableTrailerListResponse {
   videoIds?: unknown;
   VideoIds?: unknown;
+}
+
+function isMissingTrailerCached(cacheKey: string): boolean {
+  const cachedAt = missingTrailerCache.get(cacheKey);
+  if (!cachedAt) {
+    return false;
+  }
+
+  if (Date.now() - cachedAt < MISSING_TRAILER_CACHE_COOLDOWN_MS) {
+    return true;
+  }
+
+  missingTrailerCache.delete(cacheKey);
+  return false;
 }
 
 function loadUnavailableYouTubeVideoIds(): Promise<void> {
@@ -379,6 +394,11 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
   }
   const cacheKey = getScopedPreviewCacheKey(contextKey, itemId);
 
+  if (isMissingTrailerCached(cacheKey)) {
+    debugLog('Skipping trailer fetch because a recent lookup found no usable candidates.', itemId);
+    return Promise.resolve(null);
+  }
+
   if (trailerInfoCache.has(cacheKey)) {
     return trailerInfoCache.get(cacheKey)!;
   }
@@ -410,6 +430,7 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
         itemId,
         candidates
       };
+      missingTrailerCache.delete(cacheKey);
       debugLog('Resolved trailer candidates.', trailerInfo);
       return trailerInfo;
     })
@@ -423,6 +444,7 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
   return request.then((result) => {
     if (!result) {
       trailerInfoCache.delete(cacheKey);
+      missingTrailerCache.set(cacheKey, Date.now());
     }
 
     return result;

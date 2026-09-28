@@ -54,6 +54,7 @@ export const metadataOverlayCache = new BoundedMap<string, Promise<MetadataOverl
 export const libraryIdCache = new BoundedMap<string, Promise<string | null>>(ITEM_CACHE_LIMIT);
 export const tilePreloadCache = new BoundedSet<string>(TILE_PRELOAD_CACHE_LIMIT);
 export const missingTrickplayCache = new BoundedMap<string, number>(ITEM_CACHE_LIMIT);
+export const missingTrailerCache = new BoundedMap<string, number>(ITEM_CACHE_LIMIT);
 
 export function getScopedPreviewCacheKey(contextKey: string, itemId: string): string {
   if (activePreviewCacheContext !== contextKey) {
@@ -71,6 +72,7 @@ function clearPreviewCacheEntries(): void {
   libraryIdCache.clear();
   tilePreloadCache.clear();
   missingTrickplayCache.clear();
+  missingTrailerCache.clear();
 }
 
 export function clearPreviewCaches(): void {
