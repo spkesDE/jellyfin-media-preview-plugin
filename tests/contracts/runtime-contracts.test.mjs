@@ -101,6 +101,7 @@ test('production config build compiles and injects scoped component styles', asy
   assert.match(buildScript, /plugins: \[vue\(\), injectEmittedCss\('media-preview-component-styles'\)\]/);
   assert.match(buildScript, /configBundle\.includes\('\[data-v-'\)/);
   assert.match(buildScript, /const strictDirective = '"use strict";'/);
+  assert.match(buildScript, /'\(\(\)=>\{'[\s\S]*`const __styleId=/);
   assert.match(buildScript, /trimmedConfigBundle\.startsWith\('"use strict";'\)/);
   assert.match(tooltip, /<style scoped>[\s\S]*\.ec-helpTrigger/);
   assert.match(preferenceEditor, /<style scoped>[\s\S]*\.jmp-preferenceItem\.is-fixed/);

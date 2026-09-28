@@ -41,13 +41,15 @@ function injectEmittedCss(styleId) {
       for (const [fileName] of cssAssets) delete bundle[fileName];
 
       const injection = [
+        '(()=>{',
         `const __styleId=${JSON.stringify(styleId)};`,
         'if(!document.getElementById(__styleId)){',
         'const __style=document.createElement("style");',
         '__style.id=__styleId;',
         `__style.textContent=${JSON.stringify(css)};`,
         '(document.head||document.documentElement).appendChild(__style);',
-        '}'
+        '}',
+        '})();'
       ].join('');
       const strictDirective = '"use strict";';
 
