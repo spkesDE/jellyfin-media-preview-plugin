@@ -23,6 +23,8 @@ export interface CardState {
   trailerLayer: HTMLDivElement | null;
   trailerActions: HTMLDivElement | null;
   trailerExpandButton: HTMLButtonElement | null;
+  trailerPlayPauseButton: HTMLButtonElement | null;
+  trailerMuteButton: HTMLButtonElement | null;
   trailerMedia: HTMLVideoElement | HTMLIFrameElement | null;
   trailerMediaKind: 'video' | 'iframe' | null;
   trailerMediaCleanup: (() => void) | null;

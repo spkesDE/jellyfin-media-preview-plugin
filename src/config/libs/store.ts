@@ -13,12 +13,27 @@ import type { AppearancePreview, ConfigLibrary, ConfigTab, SaveState } from './t
 
 const PLUGIN_ID = '2c2ee6c1-bcd7-48e4-a7e8-e6b4d77d3df2';
 
-function modeUsesTrailer(mode: PreviewSource): boolean {
-  return mode !== 'trickplay';
-}
+function modeUsesSource(mode: PreviewSource, source: 'trailer' | 'trickplay', config: StoreConfig): boolean {
+  if (mode === source) {
+    return true;
+  }
 
-function modeUsesTrickplay(mode: PreviewSource): boolean {
-  return mode === 'trickplay' || mode === 'prefer-trickplay';
+  if (source === 'trailer' && mode === 'prefer-trailer') {
+    return true;
+  }
+
+  const fallbackLists = {
+    'prefer-trailer': config.PreferTrailerFallbacks,
+    'prefer-trickplay': config.PreferTrickplayFallbacks,
+    'prefer-direct-play': config.PreferDirectPlayFallbacks
+  } as const;
+  const fallbacks = fallbackLists[mode as keyof typeof fallbackLists];
+  return !!fallbacks?.some(
+    (entry) =>
+      entry.Enabled &&
+      (entry.Source === source ||
+        (source === 'trailer' && (entry.Source === 'local-trailer' || entry.Source === 'remote-trailer')))
+  );
 }
 
 export interface ConfigStore {
@@ -66,8 +81,10 @@ export function createConfigStore(): ConfigStore {
     return modes;
   });
 
-  const canUseTrailer = computed(() => configuredModes.value.some(modeUsesTrailer));
-  const canUseTrickplay = computed(() => configuredModes.value.some(modeUsesTrickplay));
+  const canUseTrailer = computed(() => configuredModes.value.some((mode) => modeUsesSource(mode, 'trailer', config)));
+  const canUseTrickplay = computed(() =>
+    configuredModes.value.some((mode) => modeUsesSource(mode, 'trickplay', config))
+  );
   const isDirty = computed(() => createConfigSnapshot(config) !== lastSavedSnapshot.value);
   const saveState = computed<SaveState>(() =>
     savedFeedback.value && !isDirty.value ? 'saved' : isDirty.value ? 'dirty' : 'clean'

@@ -2,6 +2,7 @@ import { config } from '../config';
 import {
   PREVIEW_SOURCE_INHERIT,
   PREVIEW_SOURCE_DIRECT_PLAY,
+  PREVIEW_SOURCE_PREFER_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
@@ -14,6 +15,9 @@ import { getTrickplayPreview } from './trickplay';
 import { getDirectPlayPreview } from './directPlay';
 import { getLibraryIdForItem } from './library';
 import type { PreviewResult } from '../types/preview';
+import type { PreviewChainSource, PreviewFallbackSource } from '../types/config';
+
+type ResolvedPreviewSource = PreviewChainSource | 'trailer';
 
 export function getEffectivePreviewSource(): string {
   return VALID_PREVIEW_SOURCES.has(config.previewSource) ? config.previewSource : PREVIEW_SOURCE_TRICKPLAY;
@@ -68,46 +72,77 @@ export function getPreviewSourceForItem(itemId: string, itemType?: string | null
   return getLibraryIdForItem(itemId).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
 }
 
-function getPreviewForSource(itemId: string, percent: number, effectiveSource: string): Promise<PreviewResult | null> {
-  if (effectiveSource === PREVIEW_SOURCE_TRICKPLAY) {
+function getPreviewForSingleSource(
+  itemId: string,
+  percent: number,
+  source: ResolvedPreviewSource
+): Promise<PreviewResult | null> {
+  if (source === PREVIEW_SOURCE_TRICKPLAY) {
     return getTrickplayPreview(itemId, percent);
   }
 
-  if (effectiveSource === PREVIEW_SOURCE_TRAILER) {
+  if (source === PREVIEW_SOURCE_TRAILER) {
     return getTrailerPreview(itemId);
   }
 
-  if (effectiveSource === PREVIEW_SOURCE_DIRECT_PLAY) {
+  if (source === 'local-trailer') {
+    return getTrailerPreview(itemId, 'local');
+  }
+
+  if (source === 'remote-trailer') {
+    return getTrailerPreview(itemId, 'remote');
+  }
+
+  if (source === PREVIEW_SOURCE_DIRECT_PLAY) {
     return getDirectPlayPreview(itemId);
   }
 
-  if (effectiveSource === PREVIEW_SOURCE_PREFER_TRICKPLAY) {
-    return getTrickplayPreview(itemId, percent).then<PreviewResult | null>((preview) => {
-      if (preview) {
-        return preview;
-      }
-
-      return getTrailerPreview(itemId).then<PreviewResult | null>((trailerPreview) => {
-        if (trailerPreview) {
-          return trailerPreview;
-        }
-
-        return getDirectPlayPreview(itemId);
-      });
-    });
-  }
-
-  if (effectiveSource === PREVIEW_SOURCE_PREFER_TRAILER) {
-    return getTrailerPreview(itemId).then<PreviewResult | null>((preview) => {
-      if (preview) {
-        return preview;
-      }
-
-      return getDirectPlayPreview(itemId);
-    });
-  }
-
   return Promise.resolve(null);
+}
+
+export function getPreviewSourceChain(effectiveSource: string): ResolvedPreviewSource[] {
+  const preferredSources: Record<string, { primary: PreviewChainSource; fallbacks: PreviewFallbackSource[] }> = {
+    [PREVIEW_SOURCE_PREFER_TRICKPLAY]: {
+      primary: PREVIEW_SOURCE_TRICKPLAY,
+      fallbacks: config.preferTrickplayFallbacks
+    },
+    [PREVIEW_SOURCE_PREFER_TRAILER]: {
+      primary: 'local-trailer',
+      fallbacks: config.preferTrailerFallbacks
+    },
+    [PREVIEW_SOURCE_PREFER_DIRECT_PLAY]: {
+      primary: PREVIEW_SOURCE_DIRECT_PLAY,
+      fallbacks: config.preferDirectPlayFallbacks
+    }
+  };
+  const preferred = preferredSources[effectiveSource];
+  if (preferred) {
+    return [preferred.primary, ...preferred.fallbacks.filter((entry) => entry.enabled).map((entry) => entry.source)];
+  }
+
+  if (
+    effectiveSource === PREVIEW_SOURCE_TRICKPLAY ||
+    effectiveSource === PREVIEW_SOURCE_TRAILER ||
+    effectiveSource === PREVIEW_SOURCE_DIRECT_PLAY
+  ) {
+    return [effectiveSource];
+  }
+
+  return [];
+}
+
+export function previewSourceUsesTrickplay(effectiveSource: string): boolean {
+  return getPreviewSourceChain(effectiveSource).includes(PREVIEW_SOURCE_TRICKPLAY);
+}
+
+function getPreviewForSource(itemId: string, percent: number, effectiveSource: string): Promise<PreviewResult | null> {
+  const chain = getPreviewSourceChain(effectiveSource);
+
+  return chain.reduce<Promise<PreviewResult | null>>(
+    (previewPromise, source) =>
+      previewPromise.then((preview) => preview || getPreviewForSingleSource(itemId, percent, source)),
+    Promise.resolve(null)
+  );
 }
 
 export function getPreviewUrl(

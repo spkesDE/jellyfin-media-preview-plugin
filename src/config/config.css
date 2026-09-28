@@ -6,6 +6,13 @@
   max-width: none !important;
 }
 
+#MediaPreviewConfigPage .ec-configLabelRow {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+  width: fit-content;
+}
+
 #MediaPreviewConfigPage .jmp-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -61,6 +68,17 @@
 
 #MediaPreviewConfigPage .jmp-selectionIntro,
 #MediaPreviewConfigPage .jmp-selectionFallback {
+  grid-column: 1 / -1;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+#MediaPreviewConfigPage .jmp-advancedPreferenceCard {
   grid-column: 1 / -1;
 }
 
@@ -599,6 +617,10 @@
   }
 
   #MediaPreviewConfigPage .jmp-compactGrid {
+    grid-template-columns: 1fr;
+  }
+
+  #MediaPreviewConfigPage .jmp-preferenceGrid {
     grid-template-columns: 1fr;
   }
 }

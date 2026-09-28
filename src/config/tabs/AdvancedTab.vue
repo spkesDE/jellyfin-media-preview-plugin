@@ -4,6 +4,7 @@ import ConfigCard from '../components/ConfigCard.vue';
 import ConfigCheckbox from '../components/ConfigCheckbox.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
+import PreferenceChainEditor from '../components/PreferenceChainEditor.vue';
 
 const store = useConfigStore();
 const frontendInjectionOptions: SelectOption[] = [
@@ -22,6 +23,30 @@ const frontendInjectionOptions: SelectOption[] = [
     aria-labelledby="mediaPreviewTab-advanced"
   >
     <div class="jmp-subgrid">
+      <ConfigCard
+        class="jmp-advancedPreferenceCard"
+        title="Preferred Source Chains"
+        help="The first source stays fixed. Drag Local Trailer, Remote / YouTube Trailer, Trickplay, and Direct Play into the preferred order and disable any fallback you do not want."
+      >
+        <div class="jmp-preferenceGrid">
+          <PreferenceChainEditor
+            v-model="store.config.PreferTrailerFallbacks"
+            title="Prefer Trailer"
+            primary="local-trailer"
+          />
+          <PreferenceChainEditor
+            v-model="store.config.PreferTrickplayFallbacks"
+            title="Prefer Trickplay"
+            primary="trickplay"
+          />
+          <PreferenceChainEditor
+            v-model="store.config.PreferDirectPlayFallbacks"
+            title="Prefer Direct Play"
+            primary="direct-play"
+          />
+        </div>
+      </ConfigCard>
+
       <ConfigCard
         title="Frontend Injection"
         help="Choose how Media Preview loads into Jellyfin Web. Restart Jellyfin after changing this setting."

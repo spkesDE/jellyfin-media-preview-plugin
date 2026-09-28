@@ -28,6 +28,8 @@ export function getOrCreateCardState(card: HTMLElement): CardState {
       trailerLayer: null,
       trailerActions: null,
       trailerExpandButton: null,
+      trailerPlayPauseButton: null,
+      trailerMuteButton: null,
       trailerMedia: null,
       trailerMediaKind: null,
       trailerMediaCleanup: null,

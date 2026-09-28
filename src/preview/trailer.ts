@@ -429,13 +429,22 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
   });
 }
 
-export function getTrailerPreview(itemId: string): Promise<TrailerPreview | null> {
+export function getTrailerPreview(
+  itemId: string,
+  source: 'any' | 'local' | 'remote' = 'any'
+): Promise<TrailerPreview | null> {
   return Promise.all([getTrailerInfo(itemId), loadUnavailableYouTubeVideoIds()]).then(([info]) => {
     if (!info?.candidates?.length) {
       return null;
     }
 
-    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry, itemId));
+    const candidate = info.candidates.find((entry) => {
+      const matchesSource =
+        source === 'any' ||
+        (source === 'local' && entry.provider === 'local-trailer') ||
+        (source === 'remote' && entry.provider !== 'local-trailer');
+      return matchesSource && isTrailerCandidateAllowed(entry, itemId);
+    });
     if (!candidate) {
       return null;
     }

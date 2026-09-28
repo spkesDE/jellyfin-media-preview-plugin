@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { ContentTypePreviewSource } from '../../types/config';
+import type { ContentTypePreviewSource, PreviewChainSource } from '../../types/config';
 import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
 import ConfigCheckbox from '../components/ConfigCheckbox.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
+import type { ConfigPreviewFallbackSource } from '../libs/types';
 
 const store = useConfigStore();
 const positionOptions: SelectOption[] = [
@@ -18,7 +19,8 @@ const defaultSourceOptions: SelectOption[] = [
   { value: 'direct-play', label: 'Only Direct Play' },
   { value: 'trailer', label: 'Only Trailer' },
   { value: 'prefer-trickplay', label: 'Prefer Trickplay' },
-  { value: 'prefer-trailer', label: 'Prefer Trailer' }
+  { value: 'prefer-trailer', label: 'Prefer Trailer' },
+  { value: 'prefer-direct-play', label: 'Prefer Direct Play' }
 ];
 const inheritedSourceOptions: SelectOption[] = [{ value: 'inherit', label: 'Use Default' }, ...defaultSourceOptions];
 const librarySourceOptions: SelectOption[] = [
@@ -26,19 +28,37 @@ const librarySourceOptions: SelectOption[] = [
   ...defaultSourceOptions
 ];
 
-const sourceDescriptions: Record<ContentTypePreviewSource, string> = {
+const sourceDescriptions: Partial<Record<ContentTypePreviewSource, string>> = {
   inherit: 'Continue to the next rule: library → media type → default.',
   trickplay: 'Only Trickplay: use Jellyfin scrub images. No video fallback.',
   'direct-play': 'Only Direct Play: play the media item itself, then use the optional bounded transcode fallback.',
-  trailer: 'Only Trailer: local trailer → supported remote or YouTube trailer. No other source fallback.',
-  'prefer-trickplay':
-    'Prefer Trickplay: Trickplay → local trailer → supported remote or YouTube trailer → Direct Play → optional transcode.',
-  'prefer-trailer':
-    'Prefer Trailer: local trailer → supported remote or YouTube trailer → Direct Play → optional transcode.'
+  trailer: 'Only Trailer: local trailer → supported remote or YouTube trailer. No other source fallback.'
 };
 
+const sourceLabels: Record<PreviewChainSource, string> = {
+  trickplay: 'Trickplay',
+  'local-trailer': 'local trailer',
+  'remote-trailer': 'supported remote or YouTube trailer',
+  'direct-play': 'Direct Play → optional transcode'
+};
+
+function describePreferred(primary: PreviewChainSource, fallbacks: ConfigPreviewFallbackSource[]): string {
+  const chain = [primary, ...fallbacks.filter((entry) => entry.Enabled).map((entry) => entry.Source)];
+  return chain.map((source) => sourceLabels[source]).join(' → ');
+}
+
 function describeSource(value: unknown): string {
-  return sourceDescriptions[String(value || 'inherit') as ContentTypePreviewSource] || sourceDescriptions.inherit;
+  const source = String(value || 'inherit') as ContentTypePreviewSource;
+  if (source === 'prefer-trailer') {
+    return `Prefer Trailer: ${describePreferred('local-trailer', store.config.PreferTrailerFallbacks)}.`;
+  }
+  if (source === 'prefer-trickplay') {
+    return `Prefer Trickplay: ${describePreferred('trickplay', store.config.PreferTrickplayFallbacks)}.`;
+  }
+  if (source === 'prefer-direct-play') {
+    return `Prefer Direct Play: ${describePreferred('direct-play', store.config.PreferDirectPlayFallbacks)}.`;
+  }
+  return sourceDescriptions[source] || sourceDescriptions.inherit || '';
 }
 
 function formatCollectionType(value?: string): string {

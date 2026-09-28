@@ -5,6 +5,7 @@ import ConfigHelpTooltip from './ConfigHelpTooltip.vue';
 export interface SelectOption {
   value: string;
   label: string;
+  disabled?: boolean;
 }
 
 defineProps<{
@@ -21,7 +22,7 @@ const focused = ref(false);
 
 <template>
   <div class="selectContainer">
-    <div class="jmp-configLabelRow">
+    <div class="ec-selectLabelRow ec-configLabelRow">
       <label class="selectLabel" :class="{ selectLabelFocused: focused }" :for="fieldId">
         {{ label }}
       </label>
@@ -36,7 +37,7 @@ const focused = ref(false);
       @blur="focused = false"
       @change="emit('update:modelValue', ($event.target as HTMLSelectElement).value)"
     >
-      <option v-for="option in options" :key="option.value" :value="option.value">
+      <option v-for="option in options" :key="option.value" :value="option.value" :disabled="option.disabled">
         {{ option.label }}
       </option>
     </select>
@@ -46,12 +47,3 @@ const focused = ref(false);
     </div>
   </div>
 </template>
-
-<style scoped>
-.jmp-configLabelRow {
-  align-items: center;
-  display: flex;
-  gap: 0.4rem;
-  width: fit-content;
-}
-</style>

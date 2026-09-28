@@ -1,11 +1,10 @@
 import { buildApiUrl, getApiContextKey, getGlobalApiClient } from '../core/apiClient';
 import { tilePreloadCache } from '../core/storage';
 import { config } from '../config';
-import { PREVIEW_SOURCE_PREFER_TRICKPLAY, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
 import { getLibraryIdForItem } from './library';
-import { getContentTypePreviewSource, getResolvedPreviewSource } from './source';
+import { getContentTypePreviewSource, getResolvedPreviewSource, previewSourceUsesTrickplay } from './source';
 import { getTrickplayPreview } from './trickplay';
 import { runtimeState } from '../runtime';
 import type { TrickplayPreview } from '../types/preview';
@@ -41,10 +40,6 @@ function addTrickplayPreloadCacheKey(key: string): void {
 
 function getMaxConcurrentTrickplayPreloads(): number {
   return Math.max(1, Math.floor(Number(config.trickplayPreloadLimit) || 2));
-}
-
-function previewSourceUsesTrickplay(source: string): boolean {
-  return source === PREVIEW_SOURCE_TRICKPLAY || source === PREVIEW_SOURCE_PREFER_TRICKPLAY;
 }
 
 function getPreloadPreviewSource(itemId: string, itemType?: string | null): Promise<string> {

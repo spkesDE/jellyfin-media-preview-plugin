@@ -14,17 +14,16 @@ type Placement = 'above' | 'below' | 'left' | 'right';
 
 const placement = ref<Placement>('above');
 const coordinates = ref({ arrowLeft: 0, arrowTop: 0, left: 0, top: 0 });
+
 const tooltipStyle = computed(() => ({
-  '--jmp-tooltip-arrow-left': `${coordinates.value.arrowLeft}px`,
-  '--jmp-tooltip-arrow-top': `${coordinates.value.arrowTop}px`,
+  '--ec-tooltip-arrow-left': `${coordinates.value.arrowLeft}px`,
+  '--ec-tooltip-arrow-top': `${coordinates.value.arrowTop}px`,
   left: `${coordinates.value.left}px`,
   top: `${coordinates.value.top}px`
 }));
 
-function updatePosition(): void {
-  if (!open.value || !trigger.value || !tooltip.value) {
-    return;
-  }
+function updatePosition() {
+  if (!open.value || !trigger.value || !tooltip.value) return;
 
   const triggerRect = trigger.value.getBoundingClientRect();
   const tooltipRect = tooltip.value.getBoundingClientRect();
@@ -72,17 +71,15 @@ function updatePosition(): void {
   };
 }
 
-function show(): void {
-  if (open.value) {
-    return;
-  }
+function show() {
+  if (open.value) return;
   open.value = true;
   window.addEventListener('resize', updatePosition);
   window.addEventListener('scroll', updatePosition, true);
   void nextTick(updatePosition);
 }
 
-function hide(): void {
+function hide() {
   open.value = false;
   window.removeEventListener('resize', updatePosition);
   window.removeEventListener('scroll', updatePosition, true);
@@ -95,7 +92,7 @@ onBeforeUnmount(hide);
   <button
     ref="trigger"
     type="button"
-    class="jmp-helpTrigger"
+    class="ec-helpTrigger"
     :aria-label="props.label || props.text"
     :aria-describedby="tooltipId"
     @mouseenter="show"
@@ -104,14 +101,14 @@ onBeforeUnmount(hide);
     @blur="hide"
     @keydown.escape="hide"
   >
-    <span aria-hidden="true">i</span>
+    <span aria-hidden="true">?</span>
   </button>
   <Teleport to="body">
     <span
       v-show="open"
       :id="tooltipId"
       ref="tooltip"
-      class="jmp-helpTooltip"
+      class="ec-helpTooltip"
       :class="`is-${placement}`"
       :style="tooltipStyle"
       role="tooltip"
@@ -121,7 +118,7 @@ onBeforeUnmount(hide);
 </template>
 
 <style scoped>
-.jmp-helpTrigger {
+.ec-helpTrigger {
   align-items: center;
   background: transparent;
   border: 1px solid currentColor;
@@ -140,26 +137,26 @@ onBeforeUnmount(hide);
   width: 1.05rem;
 }
 
-.jmp-helpTrigger:hover,
-.jmp-helpTrigger:focus-visible {
+.ec-helpTrigger:hover,
+.ec-helpTrigger:focus-visible {
   opacity: 1;
 }
 
-.jmp-helpTrigger:focus-visible {
-  box-shadow: 0 0 0 2px #00a4dc;
+.ec-helpTrigger:focus-visible {
+  box-shadow: 0 0 0 2px var(--jf-palette-secondary-main, var(--theme-primary-color, #00a4dc));
 }
 
-.jmp-helpTooltip {
-  background: #202020;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 0.5rem;
+.ec-helpTooltip {
+  background: var(--jf-palette-background-paper, #202020);
+  border: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 14%));
+  border-radius: var(--jf-card-borderRadius, 0.25rem);
   box-sizing: border-box;
-  box-shadow: 0 0.45rem 1.3rem rgba(0, 0, 0, 0.45);
-  color: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0.45rem 1.3rem rgba(0, 0, 0, 0.4);
+  color: var(--jf-palette-text-primary, #fff);
   font-size: 0.82rem;
   font-weight: 400;
-  line-height: 1.4;
-  max-width: min(30rem, calc(100vw - 2rem));
+  line-height: 1.35;
+  max-width: min(24rem, calc(100vw - 2rem));
   padding: 0.65rem 0.75rem;
   pointer-events: none;
   position: fixed;
@@ -168,44 +165,44 @@ onBeforeUnmount(hide);
   z-index: 9999;
 }
 
-.jmp-helpTooltip::after {
+.ec-helpTooltip::after {
   content: '';
   position: absolute;
 }
 
-.jmp-helpTooltip.is-above::after {
+.ec-helpTooltip.is-above::after {
   border-left: 0.35rem solid transparent;
   border-right: 0.35rem solid transparent;
-  border-top: 0.35rem solid #202020;
-  left: var(--jmp-tooltip-arrow-left, 50%);
+  border-top: 0.35rem solid var(--jf-palette-background-paper, #202020);
+  left: var(--ec-tooltip-arrow-left, 50%);
   top: 100%;
   transform: translateX(-50%);
 }
 
-.jmp-helpTooltip.is-below::after {
-  border-bottom: 0.35rem solid #202020;
+.ec-helpTooltip.is-below::after {
+  border-bottom: 0.35rem solid var(--jf-palette-background-paper, #202020);
   border-left: 0.35rem solid transparent;
   border-right: 0.35rem solid transparent;
   bottom: 100%;
-  left: var(--jmp-tooltip-arrow-left, 50%);
+  left: var(--ec-tooltip-arrow-left, 50%);
   transform: translateX(-50%);
 }
 
-.jmp-helpTooltip.is-left::after {
+.ec-helpTooltip.is-left::after {
   border-bottom: 0.35rem solid transparent;
-  border-left: 0.35rem solid #202020;
+  border-left: 0.35rem solid var(--jf-palette-background-paper, #202020);
   border-top: 0.35rem solid transparent;
   left: 100%;
-  top: var(--jmp-tooltip-arrow-top, 50%);
+  top: var(--ec-tooltip-arrow-top, 50%);
   transform: translateY(-50%);
 }
 
-.jmp-helpTooltip.is-right::after {
+.ec-helpTooltip.is-right::after {
   border-bottom: 0.35rem solid transparent;
-  border-right: 0.35rem solid #202020;
+  border-right: 0.35rem solid var(--jf-palette-background-paper, #202020);
   border-top: 0.35rem solid transparent;
   right: 100%;
-  top: var(--jmp-tooltip-arrow-top, 50%);
+  top: var(--ec-tooltip-arrow-top, 50%);
   transform: translateY(-50%);
 }
 </style>

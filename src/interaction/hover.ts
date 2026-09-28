@@ -7,6 +7,7 @@ import {
   NO_PREVIEW_MESSAGE_TRAILER,
   NO_PREVIEW_MESSAGE_TRICKPLAY,
   PREVIEW_SOURCE_DIRECT_PLAY,
+  PREVIEW_SOURCE_PREFER_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
@@ -39,7 +40,12 @@ import { restorePortraitCardWidth } from '../cards/widePreview';
 import { runtimeState } from '../runtime';
 import { applyPreview } from '../preview';
 import { cancelScheduledTrickplayPreload, observeTrickplayPreload, scheduleTrickplayPreload } from '../preview/preload';
-import { getContentTypePreviewSource, getPreviewSourceForItem, getPreviewUrl } from '../preview/source';
+import {
+  getContentTypePreviewSource,
+  getPreviewSourceForItem,
+  getPreviewUrl,
+  previewSourceUsesTrickplay
+} from '../preview/source';
 import { clamp } from '../core/dom';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
 import { clearAutoScrub, startAutoScrub } from './autoScrub';
@@ -77,7 +83,11 @@ function getNoPreviewMessage(previewSource: string): string {
     return NO_PREVIEW_MESSAGE_DIRECT_PLAY;
   }
 
-  if (previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY || previewSource === PREVIEW_SOURCE_PREFER_TRAILER) {
+  if (
+    previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY ||
+    previewSource === PREVIEW_SOURCE_PREFER_TRAILER ||
+    previewSource === PREVIEW_SOURCE_PREFER_DIRECT_PLAY
+  ) {
     return NO_PREVIEW_MESSAGE_ANY;
   }
 
@@ -205,10 +215,6 @@ function getInitialHoverPercent(
 
 function getDefaultPreloadPercent(): number {
   return config.hoverMode === HOVER_MODE_AUTO ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1) : 0.5;
-}
-
-function previewSourceUsesTrickplay(source: string): boolean {
-  return source === PREVIEW_SOURCE_TRICKPLAY || source === PREVIEW_SOURCE_PREFER_TRICKPLAY;
 }
 
 function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {

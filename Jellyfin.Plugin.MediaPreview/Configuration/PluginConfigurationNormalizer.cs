@@ -15,7 +15,8 @@ internal static class PluginConfigurationNormalizer
         "direct-play",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer"
+        "prefer-trailer",
+        "prefer-direct-play"
     };
 
     private static readonly HashSet<string> ValidContentTypePreviewSources = new(StringComparer.Ordinal)
@@ -25,7 +26,8 @@ internal static class PluginConfigurationNormalizer
         "direct-play",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer"
+        "prefer-trailer",
+        "prefer-direct-play"
     };
 
     private static readonly HashSet<string> ValidHoverModes = new(StringComparer.Ordinal)
@@ -126,6 +128,24 @@ internal static class PluginConfigurationNormalizer
             EpisodePreviewSource = NormalizeChoice(source.EpisodePreviewSource, ValidContentTypePreviewSources, "inherit"),
             VideoPreviewSource = NormalizeChoice(source.VideoPreviewSource, ValidContentTypePreviewSources, "inherit"),
             LibraryPreviewSourceOverrides = NormalizeLibraryPreviewSourceOverrides(source.LibraryPreviewSourceOverrides),
+            PreferTrailerFallbacks = NormalizeFallbackSources(
+                source.PreferTrailerFallbacks,
+                "local-trailer",
+                ("remote-trailer", true),
+                ("direct-play", true),
+                ("trickplay", false)),
+            PreferTrickplayFallbacks = NormalizeFallbackSources(
+                source.PreferTrickplayFallbacks,
+                "trickplay",
+                ("local-trailer", true),
+                ("remote-trailer", true),
+                ("direct-play", true)),
+            PreferDirectPlayFallbacks = NormalizeFallbackSources(
+                source.PreferDirectPlayFallbacks,
+                "direct-play",
+                ("local-trailer", true),
+                ("remote-trailer", true),
+                ("trickplay", false)),
             MetadataOverlayEnabled = source.MetadataOverlayEnabled,
             MetadataOverlayPosition = NormalizeChoice(source.MetadataOverlayPosition, ValidTrailerExpandButtonPositions, "bottom-left"),
             MetadataOverlayShowTitle = source.MetadataOverlayShowTitle,
@@ -250,5 +270,55 @@ internal static class PluginConfigurationNormalizer
         }
 
         return [.. normalized.Values];
+    }
+
+    private static List<PreviewFallbackSource> NormalizeFallbackSources(
+        IEnumerable<PreviewFallbackSource>? sources,
+        string primarySource,
+        params (string Source, bool Enabled)[] defaults)
+    {
+        HashSet<string> allowedSources = new(StringComparer.Ordinal)
+        {
+            "trickplay",
+            "local-trailer",
+            "remote-trailer",
+            "direct-play"
+        };
+        allowedSources.Remove(primarySource);
+        HashSet<string> seen = new(StringComparer.Ordinal);
+        List<PreviewFallbackSource> normalized = [];
+
+        foreach (PreviewFallbackSource? entry in sources ?? [])
+        {
+            string source = entry?.Source?.Trim() ?? string.Empty;
+            if (source == "trailer")
+            {
+                foreach (string trailerSource in new[] { "local-trailer", "remote-trailer" })
+                {
+                    if (allowedSources.Contains(trailerSource) && seen.Add(trailerSource))
+                    {
+                        normalized.Add(new PreviewFallbackSource { Source = trailerSource, Enabled = entry!.Enabled });
+                    }
+                }
+
+                continue;
+            }
+            if (!allowedSources.Contains(source) || !seen.Add(source))
+            {
+                continue;
+            }
+
+            normalized.Add(new PreviewFallbackSource { Source = source, Enabled = entry!.Enabled });
+        }
+
+        foreach ((string source, bool enabled) in defaults)
+        {
+            if (seen.Add(source))
+            {
+                normalized.Add(new PreviewFallbackSource { Source = source, Enabled = enabled });
+            }
+        }
+
+        return normalized;
     }
 }

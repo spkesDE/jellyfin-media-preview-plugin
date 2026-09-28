@@ -89,7 +89,7 @@ When both are installed, `Automatic` prefers File Transformation. You can choose
 4. Save.
 5. Refresh Jellyfin Web.
 
-For most libraries, `Prefer Trickplay` is a good starting point. If your library has better trailer metadata than Trickplay coverage, try `Prefer Trailers`.
+For most libraries, `Prefer Trickplay` is a good starting point. If your library has better trailer metadata than Trickplay coverage, try `Prefer Trailer`.
 
 ## Preview Sources
 
@@ -104,13 +104,14 @@ If no supported preview source is available for an item, the card stays unchange
 
 The preferred modes use these fallback chains:
 
-- `Prefer Trickplay`: Trickplay → local trailer → supported remote or YouTube trailer → Direct Play → optional transcode
-- `Prefer Trailer`: local trailer → supported remote or YouTube trailer → Direct Play → optional transcode
+- `Prefer Trickplay`, `Prefer Trailer`, and `Prefer Direct Play` use configurable source chains.
+- The preferred source stays fixed on top. Local trailers, remote/YouTube trailers, Trickplay, and Direct Play can be reordered or disabled under `Media Preview -> Advanced`.
 
 Direct Play previews start 20% into the item by default, play at 1.5x speed, stay muted, and pause after 15 seconds.
-These values are configurable under `Media Preview -> Trailer`. The optional Jellyfin transcode fallback can be
+These values are configurable under `Media Preview -> Trailer`. Local trailer and Direct Play overlays also include
+pause/resume and mute/unmute controls. The optional Jellyfin transcode fallback can be
 disabled completely or limited by height and bitrate. Direct Play previews themselves can also be disabled globally;
-this disables both `Only Direct Play` and the Direct Play step of `Prefer Trailer`.
+this disables `Only Direct Play` and every Direct Play step in a preferred source chain.
 
 ## Troubleshooting
 

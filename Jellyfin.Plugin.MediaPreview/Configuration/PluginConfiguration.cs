@@ -46,6 +46,27 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public List<LibraryPreviewSourceOverride> LibraryPreviewSourceOverrides { get; set; } = [];
 
+    public List<PreviewFallbackSource> PreferTrailerFallbacks { get; set; } =
+    [
+        new() { Source = "remote-trailer", Enabled = true },
+        new() { Source = "direct-play", Enabled = true },
+        new() { Source = "trickplay", Enabled = false }
+    ];
+
+    public List<PreviewFallbackSource> PreferTrickplayFallbacks { get; set; } =
+    [
+        new() { Source = "local-trailer", Enabled = true },
+        new() { Source = "remote-trailer", Enabled = true },
+        new() { Source = "direct-play", Enabled = true }
+    ];
+
+    public List<PreviewFallbackSource> PreferDirectPlayFallbacks { get; set; } =
+    [
+        new() { Source = "local-trailer", Enabled = true },
+        new() { Source = "remote-trailer", Enabled = true },
+        new() { Source = "trickplay", Enabled = false }
+    ];
+
     public bool MetadataOverlayEnabled { get; set; } = false;
 
     public string MetadataOverlayPosition { get; set; } = "bottom-left";

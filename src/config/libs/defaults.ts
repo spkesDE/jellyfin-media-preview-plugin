@@ -14,7 +14,7 @@ import type {
   TrailerExpandButtonPosition,
   YouTubeCropStrength
 } from '../../types/config';
-import type { AppearancePreview, ConfigLibraryOverride } from './types';
+import type { AppearancePreview, ConfigLibraryOverride, ConfigPreviewFallbackSource } from './types';
 
 export type StoreConfigValue = string | number | boolean | unknown[];
 
@@ -27,6 +27,21 @@ export const CONFIG_DEFAULTS = {
   EpisodePreviewSource: 'inherit' as ContentTypePreviewSource,
   VideoPreviewSource: 'inherit' as ContentTypePreviewSource,
   LibraryPreviewSourceOverrides: [] as ConfigLibraryOverride[],
+  PreferTrailerFallbacks: [
+    { Source: 'remote-trailer', Enabled: true },
+    { Source: 'direct-play', Enabled: true },
+    { Source: 'trickplay', Enabled: false }
+  ] as ConfigPreviewFallbackSource[],
+  PreferTrickplayFallbacks: [
+    { Source: 'local-trailer', Enabled: true },
+    { Source: 'remote-trailer', Enabled: true },
+    { Source: 'direct-play', Enabled: true }
+  ] as ConfigPreviewFallbackSource[],
+  PreferDirectPlayFallbacks: [
+    { Source: 'local-trailer', Enabled: true },
+    { Source: 'remote-trailer', Enabled: true },
+    { Source: 'trickplay', Enabled: false }
+  ] as ConfigPreviewFallbackSource[],
   ShowNoPreviewMessage: false,
   TrailerAudioEnabled: false,
   TrailerVolumePercent: 35,

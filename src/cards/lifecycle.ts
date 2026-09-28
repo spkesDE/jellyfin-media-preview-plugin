@@ -325,6 +325,71 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     trailerActions.setAttribute('aria-hidden', 'true');
     trailerActions.style.display = 'none';
 
+    const createMediaButton = (className: string, title: string, path: string): HTMLButtonElement => {
+      const button = document.createElement('button');
+      button.className = `jmp-trailer-expand ${className}`;
+      button.type = 'button';
+      button.title = title;
+      button.setAttribute('aria-label', title);
+      button.innerHTML = [
+        '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">',
+        `<path d="${path}"></path>`,
+        '</svg>'
+      ].join('');
+      button.addEventListener('pointerdown', (event) => event.stopPropagation());
+      return button;
+    };
+
+    const trailerPlayPauseButton = createMediaButton(
+      'jmp-trailer-playPause',
+      'Pause preview',
+      'M6 5h4v14H6zm8 0h4v14h-4z'
+    );
+    trailerPlayPauseButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const media = state.trailerMedia;
+      if (!(media instanceof HTMLVideoElement)) {
+        return;
+      }
+      if (media.paused) {
+        const previewStartSeconds = Number(media.dataset.jmpPreviewStartSeconds);
+        const previewDurationSeconds = Number(state.currentTrailer?.previewDurationSeconds) || 0;
+        if (
+          previewDurationSeconds > 0 &&
+          Number.isFinite(previewStartSeconds) &&
+          media.currentTime - previewStartSeconds >= previewDurationSeconds - 0.1
+        ) {
+          media.currentTime = previewStartSeconds;
+        }
+        void media.play().catch(() => undefined);
+      } else {
+        media.pause();
+      }
+      syncTrailerMediaControls(state);
+    });
+
+    const trailerMuteButton = createMediaButton(
+      'jmp-trailer-mute',
+      'Unmute preview',
+      'M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.21.05-.42.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25A6.92 6.92 0 0 1 14 18.7v2.06a8.9 8.9 0 0 0 3.69-1.8L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z'
+    );
+    trailerMuteButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const media = state.trailerMedia;
+      if (!(media instanceof HTMLVideoElement)) {
+        return;
+      }
+      const shouldUnmute = media.muted || media.volume === 0;
+      if (shouldUnmute) {
+        media.volume = Math.max(0.01, Math.min(1, (Number(config.trailerVolumePercent) || 35) / 100));
+      }
+      media.muted = !shouldUnmute;
+      media.defaultMuted = !shouldUnmute;
+      syncTrailerMediaControls(state);
+    });
+
     const trailerExpandButton = document.createElement('button');
     trailerExpandButton.className = 'jmp-trailer-expand';
     trailerExpandButton.type = 'button';
@@ -344,17 +409,76 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       event.stopPropagation();
     });
 
-    trailerActions.appendChild(trailerExpandButton);
+    trailerActions.append(trailerPlayPauseButton, trailerMuteButton, trailerExpandButton);
     trailerActionsHost.appendChild(trailerActions);
 
     state.trailerActions = trailerActions;
     state.trailerExpandButton = trailerExpandButton;
+    state.trailerPlayPauseButton = trailerPlayPauseButton;
+    state.trailerMuteButton = trailerMuteButton;
   } else if (state.trailerActions.parentElement !== trailerActionsHost) {
     trailerActionsHost.appendChild(state.trailerActions);
   }
 
   applyTrailerExpandButtonSettings(state);
   return state.trailerActions;
+}
+
+function setTrailerActionIcon(button: HTMLButtonElement, path: string, label: string): void {
+  button.title = label;
+  button.setAttribute('aria-label', label);
+  const icon = button.querySelector('path');
+  icon?.setAttribute('d', path);
+}
+
+function updateTrailerActionsVisibility(state: CardState): void {
+  if (!state.trailerActions) {
+    return;
+  }
+  const shouldShow = [state.trailerExpandButton, state.trailerPlayPauseButton, state.trailerMuteButton].some(
+    (button) => button?.style.display !== 'none'
+  );
+  state.trailerActions.style.display = shouldShow ? 'flex' : 'none';
+  state.trailerActions.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+}
+
+export function syncTrailerMediaControls(state: CardState | null | undefined): void {
+  if (!(state?.trailerMedia instanceof HTMLVideoElement)) {
+    return;
+  }
+  const media = state.trailerMedia;
+  if (state.trailerPlayPauseButton) {
+    setTrailerActionIcon(
+      state.trailerPlayPauseButton,
+      media.paused ? 'M8 5v14l11-7z' : 'M6 5h4v14H6zm8 0h4v14h-4z',
+      media.paused ? 'Play preview' : 'Pause preview'
+    );
+  }
+  if (state.trailerMuteButton) {
+    const muted = media.muted || media.volume === 0;
+    setTrailerActionIcon(
+      state.trailerMuteButton,
+      muted
+        ? 'M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.21.05-.42.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25A6.92 6.92 0 0 1 14 18.7v2.06a8.9 8.9 0 0 0 3.69-1.8L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z'
+        : 'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.48 4.48 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z',
+      muted ? 'Unmute preview' : 'Mute preview'
+    );
+  }
+}
+
+export function setTrailerMediaControlsVisible(state: CardState | null | undefined, isVisible: boolean): void {
+  if (!state?.trailerActions) {
+    return;
+  }
+  [state.trailerPlayPauseButton, state.trailerMuteButton].forEach((button) => {
+    if (!button) {
+      return;
+    }
+    button.style.display = isVisible ? 'inline-flex' : 'none';
+    button.tabIndex = isVisible ? 0 : -1;
+  });
+  syncTrailerMediaControls(state);
+  updateTrailerActionsVisibility(state);
 }
 
 export function ensureMetadataOverlay(state: CardState | null | undefined): HTMLDivElement | null {
@@ -531,11 +655,11 @@ export function setTrailerExpandVisible(state: CardState | null | undefined, isV
 
   applyTrailerExpandButtonSettings(state);
   const shouldShow = isVisible && config.trailerExpandButtonEnabled;
-  state.trailerActions.style.display = shouldShow ? 'block' : 'none';
-  state.trailerActions.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
   if (state.trailerExpandButton) {
+    state.trailerExpandButton.style.display = shouldShow ? 'inline-flex' : 'none';
     state.trailerExpandButton.tabIndex = shouldShow ? 0 : -1;
   }
+  updateTrailerActionsVisibility(state);
 }
 
 export function applyMetadataOverlaySettings(state: CardState | null | undefined): void {
@@ -909,6 +1033,8 @@ export function destroyCardBindings(): void {
       removeManagedNode<HTMLDivElement>(state, 'trailerActions');
       state.trailerActions = null;
       state.trailerExpandButton = null;
+      state.trailerPlayPauseButton = null;
+      state.trailerMuteButton = null;
       removeManagedNode<HTMLDivElement>(state, 'metadataOverlay');
       state.metadataOverlay = null;
       state.metadataOverlayTitle = null;

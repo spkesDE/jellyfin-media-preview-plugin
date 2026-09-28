@@ -1,10 +1,17 @@
-export type PreviewSource = 'trickplay' | 'direct-play' | 'trailer' | 'prefer-trickplay' | 'prefer-trailer';
+export type PreviewSourceKind = 'trickplay' | 'direct-play' | 'trailer';
+export type PreviewChainSource = 'trickplay' | 'direct-play' | 'local-trailer' | 'remote-trailer';
+export type PreviewSource = PreviewSourceKind | 'prefer-trickplay' | 'prefer-trailer' | 'prefer-direct-play';
 export type ContentTypePreviewSource = PreviewSource | 'inherit';
 export type FrontendInjectionMethod = 'automatic' | 'file-transformation' | 'javascript-injector';
 
 export interface LibraryPreviewSourceOverride {
   libraryId: string;
   previewSource: ContentTypePreviewSource;
+}
+
+export interface PreviewFallbackSource {
+  source: PreviewChainSource;
+  enabled: boolean;
 }
 
 export type HoverMode = 'scrub' | 'auto';
@@ -28,6 +35,9 @@ export interface PluginConfig {
   episodePreviewSource: ContentTypePreviewSource;
   videoPreviewSource: ContentTypePreviewSource;
   libraryPreviewSourceOverrides: LibraryPreviewSourceOverride[];
+  preferTrailerFallbacks: PreviewFallbackSource[];
+  preferTrickplayFallbacks: PreviewFallbackSource[];
+  preferDirectPlayFallbacks: PreviewFallbackSource[];
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;

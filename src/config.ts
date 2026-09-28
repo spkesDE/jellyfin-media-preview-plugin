@@ -24,7 +24,13 @@ import {
   YOUTUBE_CROP_MEDIUM
 } from './constants';
 import { clamp } from './core/dom';
-import type { LibraryPreviewSourceOverride, PluginConfig, RuntimePluginConfig } from './types/config';
+import type {
+  LibraryPreviewSourceOverride,
+  PluginConfig,
+  PreviewChainSource,
+  PreviewFallbackSource,
+  RuntimePluginConfig
+} from './types/config';
 
 // Runtime in Jellyfin always prepends `window.JellyfinMediaPreviewPluginConfig`
 // from the server-side plugin configuration. These values are only a fallback
@@ -38,6 +44,21 @@ const standaloneFallbackConfig: PluginConfig = {
   episodePreviewSource: PREVIEW_SOURCE_INHERIT,
   videoPreviewSource: PREVIEW_SOURCE_INHERIT,
   libraryPreviewSourceOverrides: [],
+  preferTrailerFallbacks: [
+    { source: 'remote-trailer', enabled: true },
+    { source: 'direct-play', enabled: true },
+    { source: 'trickplay', enabled: false }
+  ],
+  preferTrickplayFallbacks: [
+    { source: 'local-trailer', enabled: true },
+    { source: 'remote-trailer', enabled: true },
+    { source: 'direct-play', enabled: true }
+  ],
+  preferDirectPlayFallbacks: [
+    { source: 'local-trailer', enabled: true },
+    { source: 'remote-trailer', enabled: true },
+    { source: 'trickplay', enabled: false }
+  ],
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
@@ -150,6 +171,21 @@ export function normalizeConfig(): void {
   config.libraryPreviewSourceOverrides = Array.isArray(config.libraryPreviewSourceOverrides)
     ? normalizeLibraryPreviewSourceOverrides(config.libraryPreviewSourceOverrides)
     : [];
+  config.preferTrailerFallbacks = normalizeFallbackSources(
+    config.preferTrailerFallbacks,
+    'local-trailer',
+    standaloneFallbackConfig.preferTrailerFallbacks
+  );
+  config.preferTrickplayFallbacks = normalizeFallbackSources(
+    config.preferTrickplayFallbacks,
+    'trickplay',
+    standaloneFallbackConfig.preferTrickplayFallbacks
+  );
+  config.preferDirectPlayFallbacks = normalizeFallbackSources(
+    config.preferDirectPlayFallbacks,
+    'direct-play',
+    standaloneFallbackConfig.preferDirectPlayFallbacks
+  );
 
   if (!VALID_TRAILER_EXPAND_BUTTON_POSITIONS.has(config.metadataOverlayPosition)) {
     config.metadataOverlayPosition = 'bottom-left';
@@ -281,4 +317,43 @@ function normalizeLibraryPreviewSourceOverrides(
   });
 
   return Array.from(normalized.values());
+}
+
+function normalizeFallbackSources(
+  value: unknown,
+  primary: PreviewChainSource,
+  defaults: PreviewFallbackSource[]
+): PreviewFallbackSource[] {
+  const allowed = new Set<PreviewChainSource>(['trickplay', 'local-trailer', 'remote-trailer', 'direct-play']);
+  allowed.delete(primary);
+  const seen = new Set<PreviewChainSource>();
+  const normalized: PreviewFallbackSource[] = [];
+
+  if (Array.isArray(value)) {
+    value.forEach((entry) => {
+      const record = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : null;
+      if (record?.source === 'trailer') {
+        (['local-trailer', 'remote-trailer'] as PreviewChainSource[]).forEach((source) => {
+          if (allowed.has(source) && !seen.has(source)) {
+            seen.add(source);
+            normalized.push({ source, enabled: record?.enabled === true });
+          }
+        });
+        return;
+      }
+      const source = record?.source as PreviewChainSource;
+      if (!allowed.has(source) || seen.has(source)) {
+        return;
+      }
+      seen.add(source);
+      normalized.push({ source, enabled: record?.enabled === true });
+    });
+  }
+
+  defaults.forEach((entry) => {
+    if (!seen.has(entry.source)) {
+      normalized.push({ ...entry });
+    }
+  });
+  return normalized;
 }

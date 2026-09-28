@@ -34,14 +34,16 @@ test('trailer cleanup is independent from static frame restoration', async () =>
   assert.match(lifecycle, /clearTrailerMedia\(state\)/);
 });
 
-test('prefer-trailer advances to Direct Play instead of Trickplay', async () => {
+test('preferred sources use configurable ordered fallback chains', async () => {
   const [source, directPlay, renderer] = await Promise.all([
     read('src/preview/source.ts'),
     read('src/preview/directPlay.ts'),
     read('src/preview/renderTrailer.ts')
   ]);
 
-  assert.match(source, /PREVIEW_SOURCE_PREFER_TRAILER[\s\S]*getTrailerPreview[\s\S]*getDirectPlayPreview/);
+  assert.match(source, /PREVIEW_SOURCE_PREFER_TRAILER[\s\S]*config\.preferTrailerFallbacks/);
+  assert.match(source, /PREVIEW_SOURCE_PREFER_DIRECT_PLAY[\s\S]*config\.preferDirectPlayFallbacks/);
+  assert.match(source, /fallbacks\.filter\(\(entry\) => entry\.enabled\)/);
   assert.match(directPlay, /provider: 'direct-play'/);
   assert.match(renderer, /markVideoTrailerUnavailable/);
   assert.match(renderer, /markDirectPlayUnavailable/);
@@ -51,13 +53,10 @@ test('prefer-trailer advances to Direct Play instead of Trickplay', async () => 
   assert.match(directPlay, /directPlayTranscodeFallbackEnabled/);
 });
 
-test('prefer-trickplay exhausts video fallbacks through Direct Play', async () => {
+test('prefer-trickplay reads its configured fallback chain', async () => {
   const source = await read('src/preview/source.ts');
 
-  assert.match(
-    source,
-    /PREVIEW_SOURCE_PREFER_TRICKPLAY[\s\S]*getTrickplayPreview[\s\S]*getTrailerPreview[\s\S]*getDirectPlayPreview/
-  );
+  assert.match(source, /PREVIEW_SOURCE_PREFER_TRICKPLAY[\s\S]*config\.preferTrickplayFallbacks/);
 });
 
 test('Direct Play is selectable at every preview rule level', async () => {
@@ -69,10 +68,25 @@ test('Direct Play is selectable at every preview rule level', async () => {
   ]);
 
   assert.match(constants, /VALID_PREVIEW_SOURCES[\s\S]*PREVIEW_SOURCE_DIRECT_PLAY/);
-  assert.match(source, /effectiveSource === PREVIEW_SOURCE_DIRECT_PLAY[\s\S]*getDirectPlayPreview/);
+  assert.match(source, /source === PREVIEW_SOURCE_DIRECT_PLAY[\s\S]*getDirectPlayPreview/);
   assert.match(settings, /value: 'direct-play', label: 'Only Direct Play'/);
+  assert.match(settings, /value: 'prefer-direct-play', label: 'Prefer Direct Play'/);
   assert.match(settings, /ConfigHelpTooltip|help-text/);
   assert.match(backend, /ValidContentTypePreviewSources[\s\S]*"direct-play"/);
+});
+
+test('advanced source chains expose local and remote trailers separately', async () => {
+  const [advanced, source, trailer] = await Promise.all([
+    read('src/config/tabs/AdvancedTab.vue'),
+    read('src/preview/source.ts'),
+    read('src/preview/trailer.ts')
+  ]);
+
+  assert.match(advanced, /primary="local-trailer"/);
+  assert.match(advanced, /Preferred Source Chains/);
+  assert.match(source, /'local-trailer'[\s\S]*getTrailerPreview\(itemId, 'local'\)/);
+  assert.match(source, /'remote-trailer'[\s\S]*getTrailerPreview\(itemId, 'remote'\)/);
+  assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);
 });
 
 test('backend and frontend defaults remain aligned', async () => {

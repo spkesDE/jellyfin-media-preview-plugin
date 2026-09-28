@@ -1,12 +1,15 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { config } from '../../src/config';
 import { VALID_CONTENT_TYPE_PREVIEW_SOURCES, VALID_PREVIEW_SOURCES } from '../../src/constants';
-import { getContentTypePreviewSource, getResolvedPreviewSource } from '../../src/preview/source';
+import { getContentTypePreviewSource, getPreviewSourceChain, getResolvedPreviewSource } from '../../src/preview/source';
 
 const originalConfig = {
   previewSource: config.previewSource,
   moviePreviewSource: config.moviePreviewSource,
-  libraryPreviewSourceOverrides: [...config.libraryPreviewSourceOverrides]
+  libraryPreviewSourceOverrides: [...config.libraryPreviewSourceOverrides],
+  preferTrailerFallbacks: [...config.preferTrailerFallbacks],
+  preferTrickplayFallbacks: [...config.preferTrickplayFallbacks],
+  preferDirectPlayFallbacks: [...config.preferDirectPlayFallbacks]
 };
 
 describe('Direct Play preview source rules', () => {
@@ -14,6 +17,9 @@ describe('Direct Play preview source rules', () => {
     config.previewSource = originalConfig.previewSource;
     config.moviePreviewSource = originalConfig.moviePreviewSource;
     config.libraryPreviewSourceOverrides = [...originalConfig.libraryPreviewSourceOverrides];
+    config.preferTrailerFallbacks = [...originalConfig.preferTrailerFallbacks];
+    config.preferTrickplayFallbacks = [...originalConfig.preferTrickplayFallbacks];
+    config.preferDirectPlayFallbacks = [...originalConfig.preferDirectPlayFallbacks];
   });
 
   it('is valid as a default and inherited rule source', () => {
@@ -32,5 +38,21 @@ describe('Direct Play preview source rules', () => {
 
     expect(getContentTypePreviewSource('Movie')).toBe('direct-play');
     expect(getResolvedPreviewSource('Movie', 'movies')).toBe('direct-play');
+  });
+
+  it('uses configured order and skips disabled preferred fallbacks', () => {
+    config.preferTrailerFallbacks = [
+      { source: 'trickplay', enabled: true },
+      { source: 'remote-trailer', enabled: false },
+      { source: 'direct-play', enabled: false }
+    ];
+    config.preferDirectPlayFallbacks = [
+      { source: 'trickplay', enabled: false },
+      { source: 'remote-trailer', enabled: true },
+      { source: 'local-trailer', enabled: true }
+    ];
+
+    expect(getPreviewSourceChain('prefer-trailer')).toEqual(['local-trailer', 'trickplay']);
+    expect(getPreviewSourceChain('prefer-direct-play')).toEqual(['direct-play', 'remote-trailer', 'local-trailer']);
   });
 });

@@ -11,7 +11,9 @@ import {
   hideProgress,
   resetPreviewBackdrop,
   setTrailerExpandVisible,
-  setTrailerLayerVisible
+  setTrailerMediaControlsVisible,
+  setTrailerLayerVisible,
+  syncTrailerMediaControls
 } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { expandPortraitCardForPreview } from '../cards/widePreview';
@@ -113,6 +115,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
 
   setTrailerLayerVisible(state, false);
   setTrailerExpandVisible(state, false);
+  setTrailerMediaControlsVisible(state, false);
   resetPreviewBackdrop(state);
   state.currentTrailer = null;
   state.trailerPlaybackStartedAt = 0;
@@ -136,6 +139,9 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   videoElement.onerror = null;
   videoElement.onloadedmetadata = null;
   videoElement.ontimeupdate = null;
+  videoElement.onplay = null;
+  videoElement.onpause = null;
+  videoElement.onvolumechange = null;
   videoElement.pause();
   videoElement.playbackRate = 1;
   videoElement.defaultPlaybackRate = 1;
@@ -215,10 +221,13 @@ export function applyTrailerPreview(
   );
   setTrailerLayerVisible(state, true);
   const isExpandableTrailer = preview.source === PREVIEW_SOURCE_TRAILER;
-  if (isExpandableTrailer && config.trailerExpandButtonEnabled) {
+  const hasInlineMediaControls =
+    trailer.kind === 'video' && (trailer.provider === 'local-trailer' || trailer.provider === 'direct-play');
+  if ((isExpandableTrailer && config.trailerExpandButtonEnabled) || hasInlineMediaControls) {
     ensureTrailerActions(card, state);
   }
   setTrailerExpandVisible(state, isExpandableTrailer);
+  setTrailerMediaControlsVisible(state, hasInlineMediaControls);
   state.trailerLayer.style.background = 'transparent';
   mediaElement.style.background = 'transparent';
   state.trailerLayer.classList.toggle('jmp-debug-visible', !!config.debug);
@@ -294,6 +303,9 @@ export function applyTrailerPreview(
     mediaElement.defaultPlaybackRate = playbackRate;
     mediaElement.playbackRate = playbackRate;
     updateTrailerAudioState(mediaElement, isDirectPlay);
+    mediaElement.onplay = () => syncTrailerMediaControls(state);
+    mediaElement.onpause = () => syncTrailerMediaControls(state);
+    mediaElement.onvolumechange = () => syncTrailerMediaControls(state);
 
     if (previewDurationSeconds > 0) {
       mediaElement.dataset.jmpPreviewStartSeconds = String(Math.max(0, Number(trailer.startSeconds) || 0));

@@ -20,6 +20,11 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.True(defaults.DirectPlayTranscodeFallbackEnabled);
         Assert.Equal(480, defaults.DirectPlayTranscodeMaxHeight);
         Assert.Equal(1500, defaults.DirectPlayTranscodeVideoBitrateKbps);
+        Assert.Collection(
+            defaults.PreferTrailerFallbacks,
+            entry => Assert.Equal("remote-trailer", entry.Source),
+            entry => Assert.Equal("direct-play", entry.Source),
+            entry => Assert.Equal("trickplay", entry.Source));
         Assert.Equal(defaults.PreviewSource, normalized.PreviewSource);
         Assert.Equal(defaults.HoverMode, normalized.HoverMode);
         Assert.Equal(defaults.YouTubeCropStrength, normalized.YouTubeCropStrength);
@@ -76,5 +81,40 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.Equal("direct-play", normalized.EpisodePreviewSource);
         Assert.Equal("direct-play", normalized.VideoPreviewSource);
         Assert.Equal("direct-play", Assert.Single(normalized.LibraryPreviewSourceOverrides).PreviewSource);
+    }
+
+    [Fact]
+    public void PreferredFallbacksPreserveOrderAndRepairInvalidEntries()
+    {
+        PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
+        {
+            PreviewSource = "prefer-direct-play",
+            PreferDirectPlayFallbacks =
+            [
+                new PreviewFallbackSource { Source = "trickplay", Enabled = true },
+                new PreviewFallbackSource { Source = "trickplay", Enabled = false },
+                new PreviewFallbackSource { Source = "direct-play", Enabled = true },
+                new PreviewFallbackSource { Source = "invalid", Enabled = true }
+            ]
+        });
+
+        Assert.Equal("prefer-direct-play", normalized.PreviewSource);
+        Assert.Collection(
+            normalized.PreferDirectPlayFallbacks,
+            entry =>
+            {
+                Assert.Equal("trickplay", entry.Source);
+                Assert.True(entry.Enabled);
+            },
+            entry =>
+            {
+                Assert.Equal("local-trailer", entry.Source);
+                Assert.True(entry.Enabled);
+            },
+            entry =>
+            {
+                Assert.Equal("remote-trailer", entry.Source);
+                Assert.True(entry.Enabled);
+            });
     }
 }

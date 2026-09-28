@@ -1,7 +1,7 @@
 import { EXPANDED_TRAILER_TRANSITION_MS } from '../constants';
 import { getPreviewModeForCard } from '../cards/layout';
 import { getOrCreateCardState } from '../cards/state';
-import { restoreCard, setTrailerExpandVisible } from '../cards/lifecycle';
+import { restoreCard, setTrailerExpandVisible, setTrailerMediaControlsVisible } from '../cards/lifecycle';
 import { canPlayTrailerAudio } from '../preview/renderTrailer';
 import { applyMediaLayout } from '../preview/mediaLayout';
 import { buildYouTubeEmbedUrl } from './youtube';
@@ -227,6 +227,7 @@ export function expandTrailer(card: HTMLElement): void {
   overlayState.overlay.setAttribute('aria-hidden', 'false');
   applyExpandedViewportRect(overlayState.viewport, runtimeState.expandedTrailerSession.sourceRect);
   setTrailerExpandVisible(state, false);
+  setTrailerMediaControlsVisible(state, false);
   state.trailerLayer.style.visibility = 'hidden';
 
   if (state.trailerMediaKind === 'iframe' && state.currentTrailer.youtubeId) {
