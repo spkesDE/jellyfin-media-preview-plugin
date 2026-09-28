@@ -84,6 +84,8 @@ test('advanced source chains expose local and remote trailers separately', async
 
   assert.match(advanced, /primary="local-trailer"/);
   assert.match(advanced, /Preferred Source Chains/);
+  assert.match(advanced, /title="Performance"/);
+  assert.doesNotMatch(advanced, /v-if="store\.canUseTrickplay\.value"/);
   assert.match(source, /'local-trailer'[\s\S]*getTrailerPreview\(itemId, 'local'\)/);
   assert.match(source, /'remote-trailer'[\s\S]*getTrailerPreview\(itemId, 'remote'\)/);
   assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);

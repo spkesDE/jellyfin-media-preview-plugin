@@ -59,7 +59,6 @@ const frontendInjectionOptions: SelectOption[] = [
       </ConfigCard>
 
       <ConfigCard
-        v-if="store.canUseTrickplay.value"
         title="Performance"
         help="Normally you can leave this alone unless you need to steer which Trickplay width Jellyfin should prefer."
       >
