@@ -13,27 +13,22 @@ const tabs: Array<{ id: ConfigTab; label: string; badge?: string }> = [
   { id: 'advanced', label: 'Advanced' }
 ];
 
-function isVisible(tab: ConfigTab): boolean {
-  return (tab !== 'trailer' || store.canUseTrailer.value) && (tab !== 'trickplay' || store.canUseTrickplay.value);
-}
-
 function select(tab: ConfigTab): void {
   store.selectTab(tab);
 }
 
 async function handleKeydown(event: KeyboardEvent, tab: ConfigTab): Promise<void> {
-  const visibleTabs = tabs.filter((candidate) => isVisible(candidate.id));
-  const currentIndex = visibleTabs.findIndex((candidate) => candidate.id === tab);
+  const currentIndex = tabs.findIndex((candidate) => candidate.id === tab);
   let nextIndex: number;
 
-  if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % visibleTabs.length;
-  else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + visibleTabs.length) % visibleTabs.length;
+  if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabs.length;
+  else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
   else if (event.key === 'Home') nextIndex = 0;
-  else if (event.key === 'End') nextIndex = visibleTabs.length - 1;
+  else if (event.key === 'End') nextIndex = tabs.length - 1;
   else return;
 
   event.preventDefault();
-  const nextTab = visibleTabs[nextIndex].id;
+  const nextTab = tabs[nextIndex].id;
   select(nextTab);
   await nextTick();
   document.querySelector<HTMLButtonElement>(`[data-tab-target="${nextTab}"]`)?.focus();
@@ -45,7 +40,6 @@ async function handleKeydown(event: KeyboardEvent, tab: ConfigTab): Promise<void
     <div class="jmp-tabBar" role="tablist" aria-label="Media Preview settings">
       <button
         v-for="tab in tabs"
-        v-show="isVisible(tab.id)"
         :key="tab.id"
         type="button"
         :id="`mediaPreviewTab-${tab.id}`"

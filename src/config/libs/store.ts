@@ -175,10 +175,6 @@ export function createConfigStore(): ConfigStore {
   }
 
   function selectTab(tab: ConfigTab): void {
-    if ((tab === 'trailer' && !canUseTrailer.value) || (tab === 'trickplay' && !canUseTrickplay.value)) {
-      activeTab.value = 'general';
-      return;
-    }
     activeTab.value = tab;
   }
 
