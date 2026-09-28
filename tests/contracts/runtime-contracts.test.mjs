@@ -104,6 +104,7 @@ test('production config build compiles and injects scoped component styles', asy
   assert.match(preferenceEditor, /<style scoped>[\s\S]*\.jmp-preferenceItem\.is-fixed/);
   assert.match(preferenceEditor, /fallback-class="jmp-preferenceDragPreview"/);
   assert.match(preferenceEditor, /:force-fallback="true"[\s\S]*:fallback-on-body="true"/);
+  assert.doesNotMatch(preferenceEditor, /opacity 0\.16s ease,[\s\S]*transform 0\.16s ease/);
   assert.doesNotMatch(preferenceEditor, /checkboxOutline|checkboxIcon-checked/);
 });
 

@@ -146,8 +146,7 @@ function move(index: number, offset: number): void {
   border-bottom: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 9%));
   transition:
     background-color 0.16s ease,
-    opacity 0.16s ease,
-    transform 0.16s ease;
+    opacity 0.16s ease;
 }
 
 .jmp-preferenceItem.is-fixed {
@@ -169,7 +168,7 @@ function move(index: number, offset: number): void {
   border-radius: 0.35rem;
   background: var(--jf-palette-background-paper, #202020);
   box-shadow: 0 0.8rem 2rem rgb(0 0 0 / 45%);
-  opacity: 0.98;
+  opacity: 0.96;
   pointer-events: none;
 }
 
