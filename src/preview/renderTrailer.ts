@@ -324,6 +324,16 @@ export function applyTrailerPreview(
     }
 
     const recoverFromVideoFailure = () => {
+      debugLog('Recovering from failed video preview through the remaining source chain.', {
+        itemId: preview.itemId,
+        source: preview.source,
+        provider: trailer.provider,
+        mediaErrorCode: mediaElement.error?.code || null,
+        mediaErrorMessage: mediaElement.error?.message || null,
+        networkState: mediaElement.networkState,
+        readyState: mediaElement.readyState,
+        fallbackApplied: mediaElement.dataset.jmpFallbackApplied === 'true'
+      });
       if (preview.source === PREVIEW_SOURCE_DIRECT_PLAY) {
         markDirectPlayUnavailable(preview.itemId);
       } else {
@@ -338,7 +348,15 @@ export function applyTrailerPreview(
 
     mediaElement.onerror = () => {
       if (trailer.fallbackSrc && mediaElement.dataset.jmpFallbackApplied !== 'true') {
-        debugLog('Local trailer direct playback failed. Falling back to transcoded MP4.', trailer.title || trailer.src);
+        debugLog('Direct video playback failed. Trying the transcoded MP4 fallback.', {
+          itemId: preview.itemId,
+          source: preview.source,
+          provider: trailer.provider,
+          mediaErrorCode: mediaElement.error?.code || null,
+          mediaErrorMessage: mediaElement.error?.message || null,
+          networkState: mediaElement.networkState,
+          readyState: mediaElement.readyState
+        });
         mediaElement.dataset.jmpFallbackApplied = 'true';
         mediaElement.dataset.jmpPreviewStartSeconds = '0';
         mediaElement.src = trailer.fallbackSrc;
@@ -349,13 +367,22 @@ export function applyTrailerPreview(
         const fallbackPromise = mediaElement.play();
         if (fallbackPromise && typeof fallbackPromise.catch === 'function') {
           fallbackPromise.catch((error) => {
-            debugLog('Transcoded trailer autoplay failed.', trailer.title || trailer.fallbackSrc, error);
+            debugLog('Transcoded video autoplay failed.', {
+              itemId: preview.itemId,
+              source: preview.source,
+              provider: trailer.provider,
+              error
+            });
           });
         }
         return;
       }
 
-      debugLog('Video preview source failed.', trailer.title || trailer.src);
+      debugLog('Video preview source failed.', {
+        itemId: preview.itemId,
+        source: preview.source,
+        provider: trailer.provider
+      });
       recoverFromVideoFailure();
     };
 
@@ -394,7 +421,12 @@ export function applyTrailerPreview(
     const playPromise = mediaElement.play();
     if (playPromise && typeof playPromise.catch === 'function') {
       playPromise.catch((error) => {
-        debugLog('Trailer autoplay failed.', trailer.title || trailer.src, error);
+        debugLog('Video preview autoplay failed.', {
+          itemId: preview.itemId,
+          source: preview.source,
+          provider: trailer.provider,
+          error
+        });
       });
     }
   }

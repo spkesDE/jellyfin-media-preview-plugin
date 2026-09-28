@@ -14,6 +14,7 @@ import { getTrailerPreview } from './trailer';
 import { getTrickplayPreview } from './trickplay';
 import { getDirectPlayPreview } from './directPlay';
 import { getLibraryIdForItem } from './library';
+import { debugLog } from '../core/logger';
 import type { PreviewResult } from '../types/preview';
 import type { PreviewChainSource, PreviewFallbackSource } from '../types/config';
 
@@ -138,12 +139,28 @@ export function previewSourceUsesTrickplay(effectiveSource: string): boolean {
 
 function getPreviewForSource(itemId: string, percent: number, effectiveSource: string): Promise<PreviewResult | null> {
   const chain = getPreviewSourceChain(effectiveSource);
+  debugLog('Resolving preview source chain.', {
+    itemId,
+    effectiveSource,
+    chain
+  });
 
-  return chain.reduce<Promise<PreviewResult | null>>(
-    (previewPromise, source) =>
-      previewPromise.then((preview) => preview || getPreviewForSingleSource(itemId, percent, source)),
-    Promise.resolve(null)
-  );
+  return chain.reduce<Promise<PreviewResult | null>>((previewPromise, source) => {
+    return previewPromise.then((preview) => {
+      if (preview) {
+        return preview;
+      }
+
+      debugLog('Trying preview source.', { itemId, source });
+      return getPreviewForSingleSource(itemId, percent, source).then((resolvedPreview) => {
+        debugLog(resolvedPreview ? 'Preview source resolved.' : 'Preview source unavailable; trying next source.', {
+          itemId,
+          source
+        });
+        return resolvedPreview;
+      });
+    });
+  }, Promise.resolve(null));
 }
 
 export function getPreviewUrl(

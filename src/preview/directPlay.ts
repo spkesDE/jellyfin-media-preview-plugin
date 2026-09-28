@@ -41,8 +41,16 @@ function isDirectPlayTemporarilyUnavailable(itemId: string): boolean {
   return false;
 }
 
+function getDirectPlayRetryRemainingMs(itemId: string): number {
+  return Math.max(0, (failedDirectPlayItems.get(itemId) || 0) - Date.now());
+}
+
 export function markDirectPlayUnavailable(itemId: string): void {
   failedDirectPlayItems.set(itemId, Date.now() + FAILED_DIRECT_PLAY_RETRY_MS);
+  debugLog('Direct Play marked temporarily unavailable after a media playback failure.', {
+    itemId,
+    retryAfterMs: FAILED_DIRECT_PLAY_RETRY_MS
+  });
 }
 
 export function clearDirectPlayFallbackState(): void {
@@ -117,13 +125,30 @@ export function createDirectPlayCandidate(
 }
 
 export async function getDirectPlayPreview(itemId: string): Promise<DirectPlayPreview | null> {
-  if (!config.directPlayPreviewEnabled || !itemId || isDirectPlayTemporarilyUnavailable(itemId)) {
+  if (!config.directPlayPreviewEnabled) {
+    debugLog('Skipping Direct Play because Direct Play Preview is disabled.', { itemId });
+    return null;
+  }
+  if (!itemId) {
+    debugLog('Skipping Direct Play because the item id is missing.');
+    return null;
+  }
+  if (isDirectPlayTemporarilyUnavailable(itemId)) {
+    debugLog('Skipping Direct Play after a recent media playback failure.', {
+      itemId,
+      retryRemainingMs: getDirectPlayRetryRemainingMs(itemId)
+    });
     return null;
   }
 
   const apiClient = getGlobalApiClient();
   const userId = getCurrentUserId(apiClient);
   if (!apiClient || !userId) {
+    debugLog('Skipping Direct Play because ApiClient or user id is missing.', {
+      itemId,
+      hasApiClient: !!apiClient,
+      hasUserId: !!userId
+    });
     return null;
   }
 
@@ -133,17 +158,48 @@ export async function getDirectPlayPreview(itemId: string): Promise<DirectPlayPr
       { Fields: 'MediaSources,RunTimeTicks' }
     );
     if (!item?.Id || !DIRECT_PLAY_TYPES.has(item.Type || '')) {
+      debugLog('Direct Play metadata is missing or the item type is not playable.', {
+        itemId,
+        resolvedItemId: item?.Id || null,
+        itemType: item?.Type || null
+      });
       return null;
     }
 
     const mediaSources = Array.isArray(item.MediaSources) ? item.MediaSources : [];
+    debugLog('Resolved Direct Play metadata.', {
+      itemId,
+      itemType: item.Type,
+      runtimeTicks: item.RunTimeTicks || null,
+      mediaSources: mediaSources.map((source) => ({
+        id: source.Id || null,
+        container: getContainer(source),
+        browserContainerCandidate: SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')
+      }))
+    });
     const mediaSource =
       mediaSources.find((source) => SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')) ||
       mediaSources[0];
     const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource) : null;
     if (!candidate) {
+      debugLog('Direct Play has no usable media candidate.', {
+        itemId,
+        mediaSourceCount: mediaSources.length,
+        selectedContainer: getContainer(mediaSource),
+        transcodeFallbackEnabled: config.directPlayTranscodeFallbackEnabled
+      });
       return null;
     }
+
+    debugLog('Direct Play candidate resolved.', {
+      itemId,
+      container: getContainer(mediaSource),
+      hasTranscodeFallback: !!candidate.fallbackSrc,
+      startsWithTranscode: !SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(mediaSource) || ''),
+      startSeconds: candidate.startSeconds,
+      playbackRate: candidate.playbackRate,
+      previewDurationSeconds: candidate.previewDurationSeconds
+    });
 
     return {
       source: PREVIEW_SOURCE_DIRECT_PLAY,
