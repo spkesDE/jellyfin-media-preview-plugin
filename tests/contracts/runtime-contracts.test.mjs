@@ -102,6 +102,9 @@ test('production config build compiles and injects scoped component styles', asy
   assert.match(buildScript, /trimmedConfigBundle\.startsWith\('"use strict";'\)/);
   assert.match(tooltip, /<style scoped>[\s\S]*\.ec-helpTrigger/);
   assert.match(preferenceEditor, /<style scoped>[\s\S]*\.jmp-preferenceItem\.is-fixed/);
+  assert.match(preferenceEditor, /fallback-class="jmp-preferenceDragPreview"/);
+  assert.match(preferenceEditor, /:force-fallback="true"[\s\S]*:fallback-on-body="true"/);
+  assert.doesNotMatch(preferenceEditor, /checkboxOutline|checkboxIcon-checked/);
 });
 
 test('backend and frontend defaults remain aligned', async () => {
