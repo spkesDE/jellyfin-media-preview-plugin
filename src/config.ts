@@ -45,6 +45,7 @@ const standaloneFallbackConfig: PluginConfig = {
   videoPreviewSource: PREVIEW_SOURCE_INHERIT,
   libraryPreviewSourceOverrides: [],
   preferTrailerFallbacks: [
+    { source: 'local-trailer', enabled: true },
     { source: 'remote-trailer', enabled: true },
     { source: 'direct-play', enabled: true },
     { source: 'trickplay', enabled: false }
@@ -174,7 +175,8 @@ export function normalizeConfig(): void {
   config.preferTrailerFallbacks = normalizeFallbackSources(
     config.preferTrailerFallbacks,
     'local-trailer',
-    standaloneFallbackConfig.preferTrailerFallbacks
+    standaloneFallbackConfig.preferTrailerFallbacks,
+    true
   );
   config.preferTrickplayFallbacks = normalizeFallbackSources(
     config.preferTrickplayFallbacks,
@@ -322,10 +324,13 @@ function normalizeLibraryPreviewSourceOverrides(
 function normalizeFallbackSources(
   value: unknown,
   primary: PreviewChainSource,
-  defaults: PreviewFallbackSource[]
+  defaults: PreviewFallbackSource[],
+  includePrimary = false
 ): PreviewFallbackSource[] {
   const allowed = new Set<PreviewChainSource>(['trickplay', 'local-trailer', 'remote-trailer', 'direct-play']);
-  allowed.delete(primary);
+  if (!includePrimary) {
+    allowed.delete(primary);
+  }
   const seen = new Set<PreviewChainSource>();
   const normalized: PreviewFallbackSource[] = [];
 
@@ -348,6 +353,11 @@ function normalizeFallbackSources(
       seen.add(source);
       normalized.push({ source, enabled: record?.enabled === true });
     });
+  }
+
+  if (includePrimary && !seen.has(primary)) {
+    seen.add(primary);
+    normalized.unshift({ source: primary, enabled: true });
   }
 
   defaults.forEach((entry) => {

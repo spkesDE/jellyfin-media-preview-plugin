@@ -3,10 +3,14 @@ import Draggable from 'vuedraggable';
 import type { PreviewChainSource } from '../../types/config';
 import type { ConfigPreviewFallbackSource } from '../libs/types';
 
-const props = defineProps<{
-  title: string;
-  primary: PreviewChainSource;
-}>();
+const props = withDefaults(
+  defineProps<{
+    title: string;
+    primary: PreviewChainSource;
+    fixedPrimary?: boolean;
+  }>(),
+  { fixedPrimary: true }
+);
 const model = defineModel<ConfigPreviewFallbackSource[]>({ required: true });
 
 const sourceLabels: Record<PreviewChainSource, string> = {
@@ -31,7 +35,7 @@ function move(index: number, offset: number): void {
 <template>
   <section class="jmp-preferenceEditor" :aria-label="title">
     <p class="jmp-preferenceTitle">{{ title }}</p>
-    <ol class="jmp-preferenceList">
+    <ol v-if="props.fixedPrimary" class="jmp-preferenceList">
       <li class="jmp-preferenceItem is-fixed">
         <span class="jmp-preferenceFixedHandle" aria-hidden="true">
           <svg class="jmp-preferenceLock" viewBox="0 0 24 24" focusable="false">

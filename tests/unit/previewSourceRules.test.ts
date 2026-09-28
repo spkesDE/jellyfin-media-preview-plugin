@@ -42,6 +42,7 @@ describe('Direct Play preview source rules', () => {
 
   it('uses configured order and skips disabled preferred fallbacks', () => {
     config.preferTrailerFallbacks = [
+      { source: 'local-trailer', enabled: true },
       { source: 'trickplay', enabled: true },
       { source: 'remote-trailer', enabled: false },
       { source: 'direct-play', enabled: false }
@@ -54,5 +55,16 @@ describe('Direct Play preview source rules', () => {
 
     expect(getPreviewSourceChain('prefer-trailer')).toEqual(['local-trailer', 'trickplay']);
     expect(getPreviewSourceChain('prefer-direct-play')).toEqual(['direct-play', 'remote-trailer', 'local-trailer']);
+  });
+
+  it('allows Remote Trailer to lead the Prefer Trailer chain', () => {
+    config.preferTrailerFallbacks = [
+      { source: 'remote-trailer', enabled: true },
+      { source: 'local-trailer', enabled: true },
+      { source: 'direct-play', enabled: false },
+      { source: 'trickplay', enabled: false }
+    ];
+
+    expect(getPreviewSourceChain('prefer-trailer')).toEqual(['remote-trailer', 'local-trailer']);
   });
 });

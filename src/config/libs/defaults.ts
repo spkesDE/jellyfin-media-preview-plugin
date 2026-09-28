@@ -28,6 +28,7 @@ export const CONFIG_DEFAULTS = {
   VideoPreviewSource: 'inherit' as ContentTypePreviewSource,
   LibraryPreviewSourceOverrides: [] as ConfigLibraryOverride[],
   PreferTrailerFallbacks: [
+    { Source: 'local-trailer', Enabled: true },
     { Source: 'remote-trailer', Enabled: true },
     { Source: 'direct-play', Enabled: true },
     { Source: 'trickplay', Enabled: false }

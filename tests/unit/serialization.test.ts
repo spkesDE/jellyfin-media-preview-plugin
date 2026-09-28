@@ -18,4 +18,30 @@ describe('preferred source serialization', () => {
       { Source: 'trickplay', Enabled: false }
     ]);
   });
+
+  it('migrates legacy Prefer Trailer settings and preserves Remote Trailer at position one', () => {
+    const legacy = loadConfig({
+      ...createDefaultConfig(),
+      PreferTrailerFallbacks: [
+        { Source: 'remote-trailer', Enabled: true },
+        { Source: 'direct-play', Enabled: true },
+        { Source: 'trickplay', Enabled: false }
+      ]
+    });
+    expect(legacy.PreferTrailerFallbacks[0]).toEqual({ Source: 'local-trailer', Enabled: true });
+
+    const remoteFirst = loadConfig({
+      ...createDefaultConfig(),
+      PreferTrailerFallbacks: [
+        { Source: 'remote-trailer', Enabled: true },
+        { Source: 'local-trailer', Enabled: true },
+        { Source: 'direct-play', Enabled: true },
+        { Source: 'trickplay', Enabled: false }
+      ]
+    });
+    expect(remoteFirst.PreferTrailerFallbacks.slice(0, 2)).toEqual([
+      { Source: 'remote-trailer', Enabled: true },
+      { Source: 'local-trailer', Enabled: true }
+    ]);
+  });
 });

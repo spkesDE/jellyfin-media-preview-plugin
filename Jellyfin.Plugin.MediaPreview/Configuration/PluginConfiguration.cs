@@ -48,6 +48,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public List<PreviewFallbackSource> PreferTrailerFallbacks { get; set; } =
     [
+        new() { Source = "local-trailer", Enabled = true },
         new() { Source = "remote-trailer", Enabled = true },
         new() { Source = "direct-play", Enabled = true },
         new() { Source = "trickplay", Enabled = false }

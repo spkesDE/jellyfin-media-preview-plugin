@@ -101,13 +101,13 @@ function getPreviewForSingleSource(
 }
 
 export function getPreviewSourceChain(effectiveSource: string): ResolvedPreviewSource[] {
-  const preferredSources: Record<string, { primary: PreviewChainSource; fallbacks: PreviewFallbackSource[] }> = {
+  const preferredSources: Record<string, { primary: PreviewChainSource | null; fallbacks: PreviewFallbackSource[] }> = {
     [PREVIEW_SOURCE_PREFER_TRICKPLAY]: {
       primary: PREVIEW_SOURCE_TRICKPLAY,
       fallbacks: config.preferTrickplayFallbacks
     },
     [PREVIEW_SOURCE_PREFER_TRAILER]: {
-      primary: 'local-trailer',
+      primary: null,
       fallbacks: config.preferTrailerFallbacks
     },
     [PREVIEW_SOURCE_PREFER_DIRECT_PLAY]: {
@@ -117,7 +117,8 @@ export function getPreviewSourceChain(effectiveSource: string): ResolvedPreviewS
   };
   const preferred = preferredSources[effectiveSource];
   if (preferred) {
-    return [preferred.primary, ...preferred.fallbacks.filter((entry) => entry.enabled).map((entry) => entry.source)];
+    const enabledSources = preferred.fallbacks.filter((entry) => entry.enabled).map((entry) => entry.source);
+    return preferred.primary ? [preferred.primary, ...enabledSources] : enabledSources;
   }
 
   if (

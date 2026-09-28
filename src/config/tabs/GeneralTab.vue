@@ -47,10 +47,17 @@ function describePreferred(primary: PreviewChainSource, fallbacks: ConfigPreview
   return chain.map((source) => sourceLabels[source]).join(' → ');
 }
 
+function describeConfigured(chain: ConfigPreviewFallbackSource[]): string {
+  return chain
+    .filter((entry) => entry.Enabled)
+    .map((entry) => sourceLabels[entry.Source])
+    .join(' → ');
+}
+
 function describeSource(value: unknown): string {
   const source = String(value || 'inherit') as ContentTypePreviewSource;
   if (source === 'prefer-trailer') {
-    return `Prefer Trailer: ${describePreferred('local-trailer', store.config.PreferTrailerFallbacks)}.`;
+    return `Prefer Trailer: ${describeConfigured(store.config.PreferTrailerFallbacks)}.`;
   }
   if (source === 'prefer-trickplay') {
     return `Prefer Trickplay: ${describePreferred('trickplay', store.config.PreferTrickplayFallbacks)}.`;

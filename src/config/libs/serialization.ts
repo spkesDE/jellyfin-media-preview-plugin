@@ -7,9 +7,10 @@ const FALLBACK_SOURCES: PreviewChainSource[] = ['trickplay', 'local-trailer', 'r
 export function normalizeFallbacks(
   value: unknown,
   primary: PreviewChainSource,
-  defaults: ConfigPreviewFallbackSource[]
+  defaults: ConfigPreviewFallbackSource[],
+  includePrimary = false
 ): ConfigPreviewFallbackSource[] {
-  const allowed = new Set(FALLBACK_SOURCES.filter((source) => source !== primary));
+  const allowed = new Set(FALLBACK_SOURCES.filter((source) => includePrimary || source !== primary));
   const seen = new Set<PreviewChainSource>();
   const normalized: ConfigPreviewFallbackSource[] = [];
 
@@ -32,6 +33,11 @@ export function normalizeFallbacks(
       seen.add(source);
       normalized.push({ Source: source, Enabled: record?.Enabled === true });
     });
+  }
+
+  if (includePrimary && !seen.has(primary)) {
+    seen.add(primary);
+    normalized.unshift({ Source: primary, Enabled: true });
   }
 
   defaults.forEach((entry) => {
@@ -74,7 +80,8 @@ export function loadConfig(value: unknown): StoreConfig {
     PreferTrailerFallbacks: normalizeFallbacks(
       source.PreferTrailerFallbacks,
       'local-trailer',
-      defaults.PreferTrailerFallbacks
+      defaults.PreferTrailerFallbacks,
+      true
     ),
     PreferTrickplayFallbacks: normalizeFallbacks(
       source.PreferTrickplayFallbacks,
@@ -96,7 +103,8 @@ export function createConfigSnapshot(config: StoreConfig): string {
   snapshot.PreferTrailerFallbacks = normalizeFallbacks(
     snapshot.PreferTrailerFallbacks,
     'local-trailer',
-    defaults.PreferTrailerFallbacks
+    defaults.PreferTrailerFallbacks,
+    true
   );
   snapshot.PreferTrickplayFallbacks = normalizeFallbacks(
     snapshot.PreferTrickplayFallbacks,
@@ -120,7 +128,8 @@ export function saveConfig(config: StoreConfig): StoreConfig {
   payload.PreferTrailerFallbacks = normalizeFallbacks(
     payload.PreferTrailerFallbacks,
     'local-trailer',
-    defaults.PreferTrailerFallbacks
+    defaults.PreferTrailerFallbacks,
+    true
   );
   payload.PreferTrickplayFallbacks = normalizeFallbacks(
     payload.PreferTrickplayFallbacks,

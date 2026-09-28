@@ -131,18 +131,21 @@ internal static class PluginConfigurationNormalizer
             PreferTrailerFallbacks = NormalizeFallbackSources(
                 source.PreferTrailerFallbacks,
                 "local-trailer",
+                true,
                 ("remote-trailer", true),
                 ("direct-play", true),
                 ("trickplay", false)),
             PreferTrickplayFallbacks = NormalizeFallbackSources(
                 source.PreferTrickplayFallbacks,
                 "trickplay",
+                false,
                 ("local-trailer", true),
                 ("remote-trailer", true),
                 ("direct-play", true)),
             PreferDirectPlayFallbacks = NormalizeFallbackSources(
                 source.PreferDirectPlayFallbacks,
                 "direct-play",
+                false,
                 ("local-trailer", true),
                 ("remote-trailer", true),
                 ("trickplay", false)),
@@ -275,6 +278,7 @@ internal static class PluginConfigurationNormalizer
     private static List<PreviewFallbackSource> NormalizeFallbackSources(
         IEnumerable<PreviewFallbackSource>? sources,
         string primarySource,
+        bool includePrimary,
         params (string Source, bool Enabled)[] defaults)
     {
         HashSet<string> allowedSources = new(StringComparer.Ordinal)
@@ -284,7 +288,10 @@ internal static class PluginConfigurationNormalizer
             "remote-trailer",
             "direct-play"
         };
-        allowedSources.Remove(primarySource);
+        if (!includePrimary)
+        {
+            allowedSources.Remove(primarySource);
+        }
         HashSet<string> seen = new(StringComparer.Ordinal);
         List<PreviewFallbackSource> normalized = [];
 
@@ -309,6 +316,11 @@ internal static class PluginConfigurationNormalizer
             }
 
             normalized.Add(new PreviewFallbackSource { Source = source, Enabled = entry!.Enabled });
+        }
+
+        if (includePrimary && seen.Add(primarySource))
+        {
+            normalized.Insert(0, new PreviewFallbackSource { Source = primarySource, Enabled = true });
         }
 
         foreach ((string source, bool enabled) in defaults)

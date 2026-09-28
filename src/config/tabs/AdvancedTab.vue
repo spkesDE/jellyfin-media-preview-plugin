@@ -26,13 +26,14 @@ const frontendInjectionOptions: SelectOption[] = [
       <ConfigCard
         class="jmp-advancedPreferenceCard"
         title="Preferred Source Chains"
-        help="The first source stays fixed. Drag Local Trailer, Remote / YouTube Trailer, Trickplay, and Direct Play into the preferred order and disable any fallback you do not want."
+        help="Drag sources into the preferred order and disable any fallback you do not want. Prefer Trailer is fully sortable; Trickplay and Direct Play stay fixed at the top of their own chains."
       >
         <div class="jmp-preferenceGrid">
           <PreferenceChainEditor
             v-model="store.config.PreferTrailerFallbacks"
             title="Prefer Trailer"
             primary="local-trailer"
+            :fixed-primary="false"
           />
           <PreferenceChainEditor
             v-model="store.config.PreferTrickplayFallbacks"
