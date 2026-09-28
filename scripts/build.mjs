@@ -49,9 +49,15 @@ function injectEmittedCss(styleId) {
         '(document.head||document.documentElement).appendChild(__style);',
         '}'
       ].join('');
+      const strictDirective = '"use strict";';
 
       for (const output of Object.values(bundle)) {
-        if (output.type === 'chunk' && output.isEntry) output.code = injection + output.code;
+        if (output.type === 'chunk' && output.isEntry) {
+          const entryCode = output.code.startsWith(strictDirective)
+            ? output.code.slice(strictDirective.length)
+            : output.code;
+          output.code = strictDirective + injection + entryCode;
+        }
       }
     }
   };
@@ -112,8 +118,12 @@ if (isWatch) {
   await runtimeContext.dispose();
 
   const configBundle = await readFile(path.join('dist', 'config.bundle.js'), 'utf8');
+  const trimmedConfigBundle = configBundle.trimEnd();
   if (!configBundle.includes('media-preview-component-styles') || !configBundle.includes('[data-v-')) {
     throw new Error('The production configuration bundle is missing compiled Vue component styles.');
+  }
+  if (!trimmedConfigBundle.startsWith('"use strict";') || !trimmedConfigBundle.endsWith('})();')) {
+    throw new Error('The production configuration bundle failed embedded content boundary validation.');
   }
 
   await Promise.all([
