@@ -53,7 +53,6 @@ function move(index: number, offset: number): void {
       drag-class="jmp-preferenceDragging"
       fallback-class="jmp-preferenceDragPreview"
       :force-fallback="true"
-      :fallback-on-body="true"
       :fallback-tolerance="3"
       :animation="160"
     >
