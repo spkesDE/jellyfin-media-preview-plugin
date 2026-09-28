@@ -33,9 +33,11 @@ function move(index: number, offset: number): void {
     <p class="jmp-preferenceTitle">{{ title }}</p>
     <ol class="jmp-preferenceList">
       <li class="jmp-preferenceItem is-fixed">
-        <svg class="jmp-preferenceLock" aria-hidden="true" viewBox="0 0 24 24" focusable="false">
-          <path d="M12 2a5 5 0 0 0-5 5v3H5v12h14V10h-2V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z" />
-        </svg>
+        <span class="jmp-preferenceFixedHandle" aria-hidden="true">
+          <svg class="jmp-preferenceLock" viewBox="0 0 24 24" focusable="false">
+            <path d="M12 2a5 5 0 0 0-5 5v3H5v12h14V10h-2V7a5 5 0 0 0-5-5zm-3 8V7a3 3 0 0 1 6 0v3H9z" />
+          </svg>
+        </span>
         <span class="jmp-preferenceLabel">{{ sourceLabels[props.primary] }}</span>
         <span class="jmp-preferenceState">Fixed · always on</span>
       </li>
@@ -108,7 +110,7 @@ function move(index: number, offset: number): void {
 <style scoped>
 .jmp-preferenceEditor {
   min-width: 0;
-  padding: 0 0.8rem;
+  padding: 0 1rem;
 }
 
 .jmp-preferenceEditor:first-child {
@@ -140,7 +142,7 @@ function move(index: number, offset: number): void {
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   min-height: 3rem;
-  padding: 0.2rem 0;
+  padding: 0.2rem 0.45rem;
   border-bottom: 1px solid var(--jf-palette-divider, rgb(255 255 255 / 9%));
   transition:
     background-color 0.16s ease,
@@ -157,14 +159,12 @@ function move(index: number, offset: number): void {
   opacity: 0.42;
 }
 
-.jmp-preferenceDragGhost,
-.jmp-preferenceDragChosen:not(.jmp-preferenceDragPreview) {
+:global(.jmp-preferenceDragGhost),
+:global(.jmp-preferenceDragChosen:not(.jmp-preferenceDragPreview)) {
   opacity: 0 !important;
 }
 
-.jmp-preferenceDragPreview {
-  width: min(28rem, calc(100vw - 2rem));
-  padding-inline: 0.7rem;
+:global(.jmp-preferenceDragPreview) {
   border: 1px solid var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
   border-radius: 0.35rem;
   background: var(--jf-palette-background-paper, #202020);
@@ -173,14 +173,23 @@ function move(index: number, offset: number): void {
   pointer-events: none;
 }
 
-.jmp-preferenceDragging {
+:global(.jmp-preferenceDragging) {
   cursor: grabbing;
 }
 
-.jmp-preferenceLock,
+.jmp-preferenceFixedHandle,
 .jmp-dragHandle {
   margin-right: 0.4rem;
   color: var(--jf-palette-text-secondary, rgb(255 255 255 / 70%));
+}
+
+.jmp-preferenceFixedHandle,
+.jmp-dragHandle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
 }
 
 .jmp-preferenceLock,
@@ -192,11 +201,6 @@ function move(index: number, offset: number): void {
 }
 
 .jmp-dragHandle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
   padding: 0.35rem;
   border: 0;
   background: transparent;
