@@ -3,6 +3,7 @@ import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
 import ConfigCheckbox from '../components/ConfigCheckbox.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
+import ConfigMultiPicker from '../components/ConfigMultiPicker.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
 import PreviewCard from '../components/PreviewCard.vue';
 
@@ -40,6 +41,11 @@ const positionOptions: SelectOption[] = [
   { value: 'top-right', label: 'Top Right' },
   { value: 'bottom-left', label: 'Bottom Left' },
   { value: 'bottom-right', label: 'Bottom Right' }
+];
+const mediaControlSourceOptions: SelectOption[] = [
+  { value: 'local-trailer', label: 'Local Trailer' },
+  { value: 'remote-trailer', label: 'Remote / YouTube Trailer' },
+  { value: 'direct-play', label: 'Direct Play' }
 ];
 </script>
 
@@ -127,6 +133,18 @@ const positionOptions: SelectOption[] = [
       </ConfigCard>
 
       <ConfigCard title="Overlay Elements" help="Control the small UI elements shown on top of the preview.">
+        <ConfigMultiPicker
+          v-model="store.config.VideoControlSources"
+          label="Show Video Controls For"
+          help-text="Show the Play / Pause button for the selected preview types."
+          :options="mediaControlSourceOptions"
+        />
+        <ConfigMultiPicker
+          v-model="store.config.AudioControlSources"
+          label="Show Audio Controls For"
+          help-text="Show the Mute button and volume slider for the selected preview types."
+          :options="mediaControlSourceOptions"
+        />
         <ConfigCheckbox v-model="store.config.ShowProgressIndicator" label="Show Progress Indicator" />
         <ConfigCheckbox v-model="store.config.MetadataOverlayEnabled" label="Show Mini Metadata Overlay" />
         <template v-if="store.config.MetadataOverlayEnabled">

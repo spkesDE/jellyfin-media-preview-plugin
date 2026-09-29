@@ -9,12 +9,22 @@ interface YouTubePlayerStateEvent {
   data: number;
 }
 
+interface YouTubePlayerReadyEvent {
+  target: YouTubePlayer;
+}
+
 const YOUTUBE_PLAYER_STATE_ENDED = 0;
+const YOUTUBE_PLAYER_STATE_PLAYING = 1;
+const YOUTUBE_PLAYER_STATE_PAUSED = 2;
 
 interface YouTubePlayer {
   destroy: () => void;
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   playVideo: () => void;
+  pauseVideo: () => void;
+  mute: () => void;
+  unMute: () => void;
+  setVolume: (volume: number) => void;
 }
 
 interface YouTubePlayerApi {
@@ -23,10 +33,22 @@ interface YouTubePlayerApi {
     options: {
       events: {
         onError: (event: YouTubePlayerErrorEvent) => void;
+        onReady?: (event: YouTubePlayerReadyEvent) => void;
         onStateChange?: (event: YouTubePlayerStateEvent) => void;
       };
     }
   ) => YouTubePlayer;
+}
+
+export interface YouTubeEmbedMonitor {
+  cleanup(): void;
+  play(): void;
+  pause(): void;
+  setMuted(muted: boolean): void;
+  setVolume(volume: number): void;
+  isPaused(): boolean;
+  isMuted(): boolean;
+  getVolume(): number;
 }
 
 declare global {
@@ -89,15 +111,22 @@ export function monitorYouTubeEmbed(
   callbacks: {
     onError: (errorCode: number) => void;
     onMonitorUnavailable?: () => void;
+    onPlaybackStateChange?: () => void;
     loop?: boolean;
+    initialMuted?: boolean;
+    initialVolume?: number;
   }
-): () => void {
+): YouTubeEmbedMonitor {
   let disposed = false;
   let iframeLoaded = false;
   let api: YouTubePlayerApi | null = null;
   let player: YouTubePlayer | null = null;
   let playerStarted = false;
   let errorNotified = false;
+  let ready = false;
+  let paused = false;
+  let muted = callbacks.initialMuted !== false;
+  let volume = Math.max(0, Math.min(1, Number(callbacks.initialVolume) || 0));
 
   const startPlayer = () => {
     if (disposed || playerStarted || !iframeLoaded || !api || !iframe.isConnected) {
@@ -115,13 +144,38 @@ export function monitorYouTubeEmbed(
               callbacks.onError(Number(event.data));
             }
           },
+          onReady: (event) => {
+            if (disposed) {
+              return;
+            }
+            player = event.target;
+            ready = true;
+            try {
+              player.setVolume(Math.round(volume * 100));
+              if (muted || volume === 0) {
+                player.mute();
+              } else {
+                player.unMute();
+              }
+            } catch {
+              /* the player may already be torn down */
+            }
+            callbacks.onPlaybackStateChange?.();
+          },
           onStateChange: (event) => {
+            const playerState = Number(event.data);
+            if (playerState === YOUTUBE_PLAYER_STATE_PLAYING) {
+              paused = false;
+            } else if (playerState === YOUTUBE_PLAYER_STATE_PAUSED || playerState === YOUTUBE_PLAYER_STATE_ENDED) {
+              paused = true;
+            }
+            callbacks.onPlaybackStateChange?.();
             /*
              * Looping through loop=1 requires a playlist parameter, which makes
              * the embed render playlist navigation over the preview. Restarting
              * on ENDED keeps the loop without that chrome.
              */
-            if (disposed || !callbacks.loop || Number(event.data) !== YOUTUBE_PLAYER_STATE_ENDED) {
+            if (disposed || !callbacks.loop || playerState !== YOUTUBE_PLAYER_STATE_ENDED) {
               return;
             }
 
@@ -157,11 +211,40 @@ export function monitorYouTubeEmbed(
       }
     });
 
-  return () => {
-    disposed = true;
-    iframe.removeEventListener('load', handleIframeLoad);
-    player?.destroy();
-    player = null;
+  return {
+    cleanup() {
+      disposed = true;
+      iframe.removeEventListener('load', handleIframeLoad);
+      player?.destroy();
+      player = null;
+      ready = false;
+    },
+    play() {
+      paused = false;
+      if (ready) player?.playVideo();
+      callbacks.onPlaybackStateChange?.();
+    },
+    pause() {
+      paused = true;
+      if (ready) player?.pauseVideo();
+      callbacks.onPlaybackStateChange?.();
+    },
+    setMuted(nextMuted) {
+      muted = nextMuted;
+      if (ready) {
+        if (muted) player?.mute();
+        else player?.unMute();
+      }
+      callbacks.onPlaybackStateChange?.();
+    },
+    setVolume(nextVolume) {
+      volume = Math.max(0, Math.min(1, Number(nextVolume) || 0));
+      if (ready) player?.setVolume(Math.round(volume * 100));
+      callbacks.onPlaybackStateChange?.();
+    },
+    isPaused: () => paused,
+    isMuted: () => muted || volume === 0,
+    getVolume: () => volume
   };
 }
 

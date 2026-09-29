@@ -91,6 +91,20 @@ test('advanced source chains expose local and remote trailers separately', async
   assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);
 });
 
+test('overlay media controls are configurable per playable source', async () => {
+  const [appearance, renderer, youtube] = await Promise.all([
+    read('src/config/tabs/AppearanceTab.vue'),
+    read('src/preview/renderTrailer.ts'),
+    read('src/trailerOverlay/youtube.ts')
+  ]);
+
+  assert.match(appearance, /VideoControlSources[\s\S]*AudioControlSources/);
+  assert.match(appearance, /Local Trailer[\s\S]*Remote \/ YouTube Trailer[\s\S]*Direct Play/);
+  assert.match(renderer, /config\.videoControlSources\.includes\(mediaControlSource\)/);
+  assert.match(renderer, /config\.audioControlSources\.includes\(mediaControlSource\)/);
+  assert.match(youtube, /pauseVideo[\s\S]*setVolume[\s\S]*unMute/);
+});
+
 test('production config build compiles and injects scoped component styles', async () => {
   const [buildScript, tooltip, preferenceEditor] = await Promise.all([
     read('scripts/build.mjs'),
@@ -126,6 +140,8 @@ test('backend and frontend defaults remain aligned', async () => {
   assert.match(backend, /DirectPlayPreviewEnabled[^=]*= true/);
   assert.match(backend, /DirectPlayPlaybackRate[^=]*= 1\.5/);
   assert.match(backend, /DirectPlayTranscodeFallbackEnabled[^=]*= true/);
+  assert.match(backend, /VideoControlSources[^=]*= \["local-trailer", "remote-trailer", "direct-play"\]/);
+  assert.match(backend, /AudioControlSources[^=]*= \["local-trailer", "remote-trailer", "direct-play"\]/);
   assert.match(runtimeDefaults, /previewSource: PREVIEW_SOURCE_TRICKPLAY/);
   assert.match(runtimeDefaults, /hoverMode: 'scrub'/);
   assert.match(runtimeDefaults, /youTubeCropStrength: 'medium'/);
@@ -133,6 +149,8 @@ test('backend and frontend defaults remain aligned', async () => {
   assert.match(runtimeDefaults, /directPlayPreviewEnabled: true/);
   assert.match(runtimeDefaults, /directPlayPlaybackRate: 1\.5/);
   assert.match(runtimeDefaults, /directPlayTranscodeFallbackEnabled: true/);
+  assert.match(runtimeDefaults, /videoControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
+  assert.match(runtimeDefaults, /audioControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
   assert.match(settingsDefaults, /PreviewSource: 'trickplay'/);
   assert.match(settingsDefaults, /HoverMode: 'scrub'/);
   assert.match(settingsDefaults, /YouTubeCropStrength: 'medium'/);
@@ -140,4 +158,6 @@ test('backend and frontend defaults remain aligned', async () => {
   assert.match(settingsDefaults, /DirectPlayPreviewEnabled: true/);
   assert.match(settingsDefaults, /DirectPlayPlaybackRate: 1\.5/);
   assert.match(settingsDefaults, /DirectPlayTranscodeFallbackEnabled: true/);
+  assert.match(settingsDefaults, /VideoControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
+  assert.match(settingsDefaults, /AudioControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
 });

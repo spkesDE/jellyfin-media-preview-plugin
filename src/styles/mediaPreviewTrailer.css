@@ -84,6 +84,75 @@
   fill: currentColor;
 }
 
+.jmp-trailer-volume-control {
+  align-items: center;
+  border-radius: 999px;
+  display: flex;
+  flex: 0 0 34px;
+  height: 34px;
+  pointer-events: auto;
+  position: relative;
+  width: 34px;
+}
+
+.jmp-trailer-volume-control .jmp-trailer-mute {
+  inset: 0;
+  position: absolute;
+  z-index: 3;
+}
+
+.jmp-trailer-volume-popover {
+  align-items: center;
+  background: rgba(10, 14, 20, 0.88);
+  border-radius: 999px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  left: 50%;
+  min-width: 34px;
+  opacity: 0;
+  padding: calc(34px + 6px) 5px 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -5px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.2s ease;
+  z-index: 2;
+}
+
+.jmp-trailer-actions.pos-bottom-left .jmp-trailer-volume-popover,
+.jmp-trailer-actions.pos-bottom-right .jmp-trailer-volume-popover {
+  bottom: 0;
+  padding: 10px 5px calc(34px + 6px);
+  top: auto;
+  transform: translate(-50%, 5px);
+}
+
+.jmp-trailer-volume-control:hover .jmp-trailer-volume-popover,
+.jmp-trailer-volume-control:focus-within .jmp-trailer-volume-popover {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+
+.jmp-trailer-volume {
+  accent-color: #fff;
+  cursor: pointer;
+  direction: rtl;
+  height: 92px;
+  margin: 0;
+  padding: 0;
+  width: 22px;
+  writing-mode: vertical-lr;
+}
+
+.jmp-trailer-volume:focus,
+.jmp-trailer-volume:focus-visible {
+  outline: 0;
+}
+
 .jmp-trailer-layer.jmp-debug-visible {
   outline: 2px solid rgba(0, 255, 255, 0.9);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6) inset;

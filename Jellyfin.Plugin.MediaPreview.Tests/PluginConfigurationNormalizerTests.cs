@@ -20,6 +20,8 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.True(defaults.DirectPlayTranscodeFallbackEnabled);
         Assert.Equal(480, defaults.DirectPlayTranscodeMaxHeight);
         Assert.Equal(1500, defaults.DirectPlayTranscodeVideoBitrateKbps);
+        Assert.Equal(["local-trailer", "remote-trailer", "direct-play"], defaults.VideoControlSources);
+        Assert.Equal(["local-trailer", "remote-trailer", "direct-play"], defaults.AudioControlSources);
         Assert.Collection(
             defaults.PreferTrailerFallbacks,
             entry => AssertDefaultSource(entry, "local-trailer"),
@@ -39,6 +41,19 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.Equal(defaults.PreviewSource, normalized.PreviewSource);
         Assert.Equal(defaults.HoverMode, normalized.HoverMode);
         Assert.Equal(defaults.YouTubeCropStrength, normalized.YouTubeCropStrength);
+    }
+
+    [Fact]
+    public void MediaControlSourcesPreserveValidSelectionsAndRemoveDuplicates()
+    {
+        PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
+        {
+            VideoControlSources = ["direct-play", "invalid", "local-trailer", "direct-play"],
+            AudioControlSources = ["remote-trailer"]
+        });
+
+        Assert.Equal(["direct-play", "local-trailer"], normalized.VideoControlSources);
+        Assert.Equal(["remote-trailer"], normalized.AudioControlSources);
     }
 
     [Fact]

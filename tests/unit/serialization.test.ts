@@ -45,3 +45,22 @@ describe('preferred source serialization', () => {
     ]);
   });
 });
+
+describe('source-specific media control serialization', () => {
+  it('defaults both control groups to every playable preview source', () => {
+    const config = loadConfig({});
+
+    expect(config.VideoControlSources).toEqual(['local-trailer', 'remote-trailer', 'direct-play']);
+    expect(config.AudioControlSources).toEqual(['local-trailer', 'remote-trailer', 'direct-play']);
+  });
+
+  it('keeps the selected order while removing invalid and duplicate sources', () => {
+    const config = loadConfig({
+      VideoControlSources: ['direct-play', 'invalid', 'local-trailer', 'direct-play'],
+      AudioControlSources: ['remote-trailer']
+    });
+
+    expect(config.VideoControlSources).toEqual(['direct-play', 'local-trailer']);
+    expect(config.AudioControlSources).toEqual(['remote-trailer']);
+  });
+});

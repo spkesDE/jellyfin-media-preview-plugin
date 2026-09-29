@@ -1,5 +1,15 @@
 import type { PreviewResult, TrailerCandidate, TrickplayInfo } from './preview';
 
+export interface TrailerMediaController {
+  play(): void;
+  pause(): void;
+  setMuted(muted: boolean): void;
+  setVolume(volume: number): void;
+  isPaused(): boolean;
+  isMuted(): boolean;
+  getVolume(): number;
+}
+
 export interface CardState {
   hoverTimer: number | null;
   hoverCountdownFrame: number | null;
@@ -25,7 +35,10 @@ export interface CardState {
   trailerExpandButton: HTMLButtonElement | null;
   trailerPlayPauseButton: HTMLButtonElement | null;
   trailerMuteButton: HTMLButtonElement | null;
+  trailerVolumeControl: HTMLDivElement | null;
+  trailerVolumeInput: HTMLInputElement | null;
   trailerMedia: HTMLVideoElement | HTMLIFrameElement | null;
+  trailerMediaController: TrailerMediaController | null;
   trailerMediaKind: 'video' | 'iframe' | null;
   trailerMediaCleanup: (() => void) | null;
   trailerTransitionTimer: number | null;

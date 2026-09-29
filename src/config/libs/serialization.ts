@@ -3,6 +3,16 @@ import type { PreviewChainSource } from '../../types/config';
 import type { ConfigLibraryOverride, ConfigPreviewFallbackSource } from './types';
 
 const FALLBACK_SOURCES: PreviewChainSource[] = ['trickplay', 'local-trailer', 'remote-trailer', 'direct-play'];
+const MEDIA_CONTROL_SOURCES = ['local-trailer', 'remote-trailer', 'direct-play'] as const;
+
+export function normalizeMediaControlSources(value: unknown, defaults: string[]): string[] {
+  if (!Array.isArray(value)) {
+    return [...defaults];
+  }
+
+  const allowed = new Set<string>(MEDIA_CONTROL_SOURCES);
+  return Array.from(new Set(value.filter((entry): entry is string => typeof entry === 'string' && allowed.has(entry))));
+}
 
 export function normalizeFallbacks(
   value: unknown,
@@ -76,6 +86,8 @@ export function loadConfig(value: unknown): StoreConfig {
   return {
     ...defaults,
     ...source,
+    VideoControlSources: normalizeMediaControlSources(source.VideoControlSources, defaults.VideoControlSources),
+    AudioControlSources: normalizeMediaControlSources(source.AudioControlSources, defaults.AudioControlSources),
     LibraryPreviewSourceOverrides: normalizeOverrides(source.LibraryPreviewSourceOverrides),
     PreferTrailerFallbacks: normalizeFallbacks(
       source.PreferTrailerFallbacks,
@@ -100,6 +112,14 @@ export function createConfigSnapshot(config: StoreConfig): string {
   const snapshot = cloneConfig(config);
   snapshot.LibraryPreviewSourceOverrides = normalizeOverrides(snapshot.LibraryPreviewSourceOverrides);
   const defaults = createDefaultConfig();
+  snapshot.VideoControlSources = normalizeMediaControlSources(
+    snapshot.VideoControlSources,
+    defaults.VideoControlSources
+  );
+  snapshot.AudioControlSources = normalizeMediaControlSources(
+    snapshot.AudioControlSources,
+    defaults.AudioControlSources
+  );
   snapshot.PreferTrailerFallbacks = normalizeFallbacks(
     snapshot.PreferTrailerFallbacks,
     'local-trailer',
@@ -125,6 +145,8 @@ export function saveConfig(config: StoreConfig): StoreConfig {
     (entry) => entry.PreviewSource !== 'inherit'
   );
   const defaults = createDefaultConfig();
+  payload.VideoControlSources = normalizeMediaControlSources(payload.VideoControlSources, defaults.VideoControlSources);
+  payload.AudioControlSources = normalizeMediaControlSources(payload.AudioControlSources, defaults.AudioControlSources);
   payload.PreferTrailerFallbacks = normalizeFallbacks(
     payload.PreferTrailerFallbacks,
     'local-trailer',

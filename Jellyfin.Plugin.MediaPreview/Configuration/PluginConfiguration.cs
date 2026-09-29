@@ -96,6 +96,10 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrailerVolumePercent { get; set; } = 35;
 
+    public string[] VideoControlSources { get; set; } = ["local-trailer", "remote-trailer", "direct-play"];
+
+    public string[] AudioControlSources { get; set; } = ["local-trailer", "remote-trailer", "direct-play"];
+
     public bool DirectPlayPreviewEnabled { get; set; } = true;
 
     public int DirectPlayStartPercent { get; set; } = 20;

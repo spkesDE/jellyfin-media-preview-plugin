@@ -29,6 +29,7 @@ import { collapseExpandedTrailer } from '../trailerOverlay/expandedTrailer';
 import { markYouTubeTrailerUnavailable, markVideoTrailerUnavailable } from './trailer';
 import { markDirectPlayUnavailable } from './directPlay';
 import type { VideoPreview } from '../types/preview';
+import type { MediaControlSource } from '../types/config';
 import type { CardState } from '../types/state';
 
 export function updateTrailerAudioState(
@@ -74,6 +75,7 @@ export function ensureTrailerMediaElement(
     const previousMedia = state.trailerMedia;
     state.trailerMediaCleanup?.();
     state.trailerMediaCleanup = null;
+    state.trailerMediaController = null;
     if (previousMedia.parentNode) {
       previousMedia.parentNode.removeChild(previousMedia);
     }
@@ -119,6 +121,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   resetPreviewBackdrop(state);
   state.currentTrailer = null;
   state.trailerPlaybackStartedAt = 0;
+  state.trailerMediaController = null;
 
   if (!state.trailerMedia) {
     return;
@@ -150,6 +153,19 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   delete videoElement.dataset.jmpFallbackApplied;
   delete videoElement.dataset.jmpPreviewStartSeconds;
   videoElement.load();
+}
+
+function getMediaControlSource(preview: VideoPreview): MediaControlSource | null {
+  if (preview.source === PREVIEW_SOURCE_DIRECT_PLAY || preview.trailer?.provider === 'direct-play') {
+    return 'direct-play';
+  }
+  if (preview.trailer?.provider === 'local-trailer') {
+    return 'local-trailer';
+  }
+  if (preview.trailer?.provider === 'remote-video' || preview.trailer?.provider === 'youtube') {
+    return 'remote-trailer';
+  }
+  return null;
 }
 
 export function applyTrailerPreview(
@@ -221,13 +237,14 @@ export function applyTrailerPreview(
   );
   setTrailerLayerVisible(state, true);
   const isExpandableTrailer = preview.source === PREVIEW_SOURCE_TRAILER;
-  const hasInlineMediaControls =
-    trailer.kind === 'video' && (trailer.provider === 'local-trailer' || trailer.provider === 'direct-play');
-  if ((isExpandableTrailer && config.trailerExpandButtonEnabled) || hasInlineMediaControls) {
+  const mediaControlSource = getMediaControlSource(preview);
+  const showVideoControls = !!mediaControlSource && config.videoControlSources.includes(mediaControlSource);
+  const showAudioControls = !!mediaControlSource && config.audioControlSources.includes(mediaControlSource);
+  if ((isExpandableTrailer && config.trailerExpandButtonEnabled) || showVideoControls || showAudioControls) {
     ensureTrailerActions(card, state);
   }
   setTrailerExpandVisible(state, isExpandableTrailer);
-  setTrailerMediaControlsVisible(state, hasInlineMediaControls);
+  setTrailerMediaControlsVisible(state, { video: showVideoControls, audio: showAudioControls });
   state.trailerLayer.style.background = 'transparent';
   mediaElement.style.background = 'transparent';
   state.trailerLayer.classList.toggle('jmp-debug-visible', !!config.debug);
@@ -253,8 +270,11 @@ export function applyTrailerPreview(
 
     if (iframeUrl && mediaElement instanceof HTMLIFrameElement && mediaElement.src !== iframeUrl) {
       state.trailerMediaCleanup?.();
-      state.trailerMediaCleanup = monitorYouTubeEmbed(mediaElement, {
+      const youTubeMonitor = monitorYouTubeEmbed(mediaElement, {
         loop: true,
+        initialMuted: !canPlayTrailerAudio(),
+        initialVolume: Math.max(0, Math.min(1, config.trailerVolumePercent / 100)),
+        onPlaybackStateChange: () => syncTrailerMediaControls(state),
         onError: (errorCode) => {
           if (!YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES.has(errorCode)) {
             return;
@@ -291,10 +311,14 @@ export function applyTrailerPreview(
           );
         }
       });
+      state.trailerMediaController = youTubeMonitor;
+      state.trailerMediaCleanup = () => youTubeMonitor.cleanup();
       mediaElement.src = iframeUrl;
       state.trailerPlaybackStartedAt = Date.now();
+      syncTrailerMediaControls(state);
     }
   } else if (mediaElement instanceof HTMLVideoElement) {
+    state.trailerMediaController = null;
     const isDirectPlay = preview.source === PREVIEW_SOURCE_DIRECT_PLAY;
     const playbackRate = isDirectPlay ? Math.max(0.5, Math.min(2, Number(trailer.playbackRate) || 1.5)) : 1;
     const previewDurationSeconds = isDirectPlay ? Math.max(0, Number(trailer.previewDurationSeconds) || 0) : 0;

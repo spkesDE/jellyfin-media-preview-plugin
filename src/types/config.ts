@@ -25,6 +25,7 @@ export type PreviewBackdropMode = 'off' | 'dim' | 'vignette' | 'dim-vignette' | 
 export type PreviewTransitionMode = 'off' | 'fade' | 'crossfade';
 export type YouTubeCropStrength = 'off' | 'light' | 'medium' | 'strong';
 export type TrailerExpandButtonPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type MediaControlSource = 'local-trailer' | 'remote-trailer' | 'direct-play';
 
 export interface PluginConfig {
   enabled: boolean;
@@ -41,6 +42,8 @@ export interface PluginConfig {
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
+  videoControlSources: MediaControlSource[];
+  audioControlSources: MediaControlSource[];
   directPlayPreviewEnabled: boolean;
   directPlayStartPercent: number;
   directPlayPlaybackRate: number;

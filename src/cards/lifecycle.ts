@@ -305,6 +305,45 @@ export function ensureTrailerLayer(state: CardState | null | undefined): HTMLDiv
   return state.trailerLayer;
 }
 
+function isTrailerMediaPaused(state: CardState): boolean {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    return state.trailerMedia.paused;
+  }
+  return state.trailerMediaController?.isPaused() ?? true;
+}
+
+function isTrailerMediaMuted(state: CardState): boolean {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    return state.trailerMedia.muted || state.trailerMedia.volume === 0;
+  }
+  return state.trailerMediaController?.isMuted() ?? true;
+}
+
+function getTrailerMediaVolume(state: CardState): number {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    return state.trailerMedia.volume;
+  }
+  return state.trailerMediaController?.getVolume() ?? Math.max(0, Math.min(1, config.trailerVolumePercent / 100));
+}
+
+function setTrailerMediaMuted(state: CardState, muted: boolean): void {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    state.trailerMedia.muted = muted;
+    state.trailerMedia.defaultMuted = muted;
+  } else {
+    state.trailerMediaController?.setMuted(muted);
+  }
+}
+
+function setTrailerMediaVolume(state: CardState, volume: number): void {
+  const normalizedVolume = Math.max(0, Math.min(1, volume));
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    state.trailerMedia.volume = normalizedVolume;
+  } else {
+    state.trailerMediaController?.setVolume(normalizedVolume);
+  }
+}
+
 export function ensureTrailerActions(card: HTMLElement, state: CardState | null | undefined): HTMLDivElement | null {
   if (!state?.rootHost) {
     return null;
@@ -352,22 +391,28 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       event.preventDefault();
       event.stopPropagation();
       const media = state.trailerMedia;
-      if (!(media instanceof HTMLVideoElement)) {
-        return;
-      }
-      if (media.paused) {
-        const previewStartSeconds = Number(media.dataset.jmpPreviewStartSeconds);
+      if (isTrailerMediaPaused(state)) {
+        const previewStartSeconds = Number(media?.dataset.jmpPreviewStartSeconds);
         const previewDurationSeconds = Number(state.currentTrailer?.previewDurationSeconds) || 0;
         if (
+          media instanceof HTMLVideoElement &&
           previewDurationSeconds > 0 &&
           Number.isFinite(previewStartSeconds) &&
           media.currentTime - previewStartSeconds >= previewDurationSeconds - 0.1
         ) {
           media.currentTime = previewStartSeconds;
         }
-        void media.play().catch(() => undefined);
+        if (media instanceof HTMLVideoElement) {
+          void media.play().catch(() => undefined);
+        } else {
+          state.trailerMediaController?.play();
+        }
       } else {
-        media.pause();
+        if (media instanceof HTMLVideoElement) {
+          media.pause();
+        } else {
+          state.trailerMediaController?.pause();
+        }
       }
       syncTrailerMediaControls(state);
     });
@@ -380,18 +425,45 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     trailerMuteButton.addEventListener('click', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const media = state.trailerMedia;
-      if (!(media instanceof HTMLVideoElement)) {
-        return;
-      }
-      const shouldUnmute = media.muted || media.volume === 0;
+      const shouldUnmute = isTrailerMediaMuted(state);
       if (shouldUnmute) {
-        media.volume = Math.max(0.01, Math.min(1, (Number(config.trailerVolumePercent) || 35) / 100));
+        const restoredVolume = Math.max(0.01, Math.min(1, (Number(config.trailerVolumePercent) || 35) / 100));
+        setTrailerMediaVolume(state, restoredVolume);
       }
-      media.muted = !shouldUnmute;
-      media.defaultMuted = !shouldUnmute;
+      config.trailerAudioEnabled = shouldUnmute;
+      setTrailerMediaMuted(state, !shouldUnmute);
       syncTrailerMediaControls(state);
     });
+
+    const trailerVolumeControl = document.createElement('div');
+    trailerVolumeControl.className = 'jmp-trailer-volume-control';
+    trailerVolumeControl.addEventListener('pointerdown', (event) => event.stopPropagation());
+    trailerVolumeControl.addEventListener('click', (event) => event.stopPropagation());
+
+    const trailerVolumePopover = document.createElement('div');
+    trailerVolumePopover.className = 'jmp-trailer-volume-popover';
+
+    const trailerVolumeInput = document.createElement('input');
+    trailerVolumeInput.className = 'jmp-trailer-volume';
+    trailerVolumeInput.type = 'range';
+    trailerVolumeInput.min = '0';
+    trailerVolumeInput.max = '100';
+    trailerVolumeInput.step = '1';
+    trailerVolumeInput.value = String(Math.round(config.trailerVolumePercent));
+    trailerVolumeInput.setAttribute('aria-label', 'Preview volume');
+    trailerVolumeInput.setAttribute('aria-orientation', 'vertical');
+    trailerVolumeInput.addEventListener('input', () => {
+      const volumePercent = Math.max(0, Math.min(100, Number(trailerVolumeInput.value) || 0));
+      config.trailerVolumePercent = volumePercent;
+      config.trailerAudioEnabled = volumePercent > 0;
+      setTrailerMediaVolume(state, volumePercent / 100);
+      setTrailerMediaMuted(state, volumePercent === 0);
+      syncTrailerMediaControls(state);
+    });
+    trailerVolumeInput.addEventListener('pointerup', () => trailerVolumeInput.blur());
+    trailerVolumeInput.addEventListener('pointercancel', () => trailerVolumeInput.blur());
+    trailerVolumePopover.appendChild(trailerVolumeInput);
+    trailerVolumeControl.append(trailerMuteButton, trailerVolumePopover);
 
     const trailerExpandButton = document.createElement('button');
     trailerExpandButton.className = 'jmp-trailer-expand';
@@ -413,13 +485,15 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       event.stopPropagation();
     });
 
-    trailerActions.append(trailerPlayPauseButton, trailerMuteButton, trailerExpandButton);
+    trailerActions.append(trailerPlayPauseButton, trailerVolumeControl, trailerExpandButton);
     trailerActionsHost.appendChild(trailerActions);
 
     state.trailerActions = trailerActions;
     state.trailerExpandButton = trailerExpandButton;
     state.trailerPlayPauseButton = trailerPlayPauseButton;
     state.trailerMuteButton = trailerMuteButton;
+    state.trailerVolumeControl = trailerVolumeControl;
+    state.trailerVolumeInput = trailerVolumeInput;
   } else if (state.trailerActions.parentElement !== trailerActionsHost) {
     trailerActionsHost.appendChild(state.trailerActions);
   }
@@ -439,27 +513,28 @@ function updateTrailerActionsVisibility(state: CardState): void {
   if (!state.trailerActions) {
     return;
   }
-  const shouldShow = [state.trailerExpandButton, state.trailerPlayPauseButton, state.trailerMuteButton].some(
-    (button) => button?.style.display !== 'none'
+  const shouldShow = [state.trailerExpandButton, state.trailerPlayPauseButton, state.trailerVolumeControl].some(
+    (control) => control?.style.display !== 'none'
   );
   state.trailerActions.style.display = shouldShow ? 'flex' : 'none';
   state.trailerActions.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
 }
 
 export function syncTrailerMediaControls(state: CardState | null | undefined): void {
-  if (!(state?.trailerMedia instanceof HTMLVideoElement)) {
+  if (!state?.trailerMedia) {
     return;
   }
-  const media = state.trailerMedia;
+  const paused = isTrailerMediaPaused(state);
+  const muted = isTrailerMediaMuted(state);
+  const volume = getTrailerMediaVolume(state);
   if (state.trailerPlayPauseButton) {
     setTrailerActionIcon(
       state.trailerPlayPauseButton,
-      media.paused ? 'M8 5v14l11-7z' : 'M6 5h4v14H6zm8 0h4v14h-4z',
-      media.paused ? 'Play preview' : 'Pause preview'
+      paused ? 'M8 5v14l11-7z' : 'M6 5h4v14H6zm8 0h4v14h-4z',
+      paused ? 'Play preview' : 'Pause preview'
     );
   }
   if (state.trailerMuteButton) {
-    const muted = media.muted || media.volume === 0;
     setTrailerActionIcon(
       state.trailerMuteButton,
       muted
@@ -468,19 +543,36 @@ export function syncTrailerMediaControls(state: CardState | null | undefined): v
       muted ? 'Unmute preview' : 'Mute preview'
     );
   }
+  if (state.trailerVolumeInput) {
+    const volumePercent = Math.round(volume * 100);
+    state.trailerVolumeInput.value = String(volumePercent);
+    state.trailerVolumeInput.setAttribute('aria-valuetext', `${volumePercent}%`);
+    state.trailerVolumeInput.title = `Preview volume: ${volumePercent}%`;
+  }
 }
 
-export function setTrailerMediaControlsVisible(state: CardState | null | undefined, isVisible: boolean): void {
+export function setTrailerMediaControlsVisible(
+  state: CardState | null | undefined,
+  visibility: boolean | { video: boolean; audio: boolean }
+): void {
   if (!state?.trailerActions) {
     return;
   }
-  [state.trailerPlayPauseButton, state.trailerMuteButton].forEach((button) => {
-    if (!button) {
-      return;
-    }
-    button.style.display = isVisible ? 'inline-flex' : 'none';
-    button.tabIndex = isVisible ? 0 : -1;
-  });
+  const videoVisible = typeof visibility === 'boolean' ? visibility : visibility.video;
+  const audioVisible = typeof visibility === 'boolean' ? visibility : visibility.audio;
+  if (state.trailerPlayPauseButton) {
+    state.trailerPlayPauseButton.style.display = videoVisible ? 'inline-flex' : 'none';
+    state.trailerPlayPauseButton.tabIndex = videoVisible ? 0 : -1;
+  }
+  if (state.trailerVolumeControl) {
+    state.trailerVolumeControl.style.display = audioVisible ? 'flex' : 'none';
+  }
+  if (state.trailerMuteButton) {
+    state.trailerMuteButton.tabIndex = audioVisible ? 0 : -1;
+  }
+  if (state.trailerVolumeInput) {
+    state.trailerVolumeInput.tabIndex = audioVisible ? 0 : -1;
+  }
   syncTrailerMediaControls(state);
   updateTrailerActionsVisibility(state);
 }
@@ -1034,11 +1126,14 @@ export function destroyCardBindings(): void {
       state.trailerLayer = null;
       state.trailerMedia = null;
       state.trailerMediaKind = null;
+      state.trailerMediaController = null;
       removeManagedNode<HTMLDivElement>(state, 'trailerActions');
       state.trailerActions = null;
       state.trailerExpandButton = null;
       state.trailerPlayPauseButton = null;
       state.trailerMuteButton = null;
+      state.trailerVolumeControl = null;
+      state.trailerVolumeInput = null;
       removeManagedNode<HTMLDivElement>(state, 'metadataOverlay');
       state.metadataOverlay = null;
       state.metadataOverlayTitle = null;

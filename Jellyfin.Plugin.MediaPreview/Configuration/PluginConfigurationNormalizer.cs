@@ -112,6 +112,13 @@ internal static class PluginConfigurationNormalizer
         "bottom-right"
     };
 
+    private static readonly HashSet<string> ValidMediaControlSources = new(StringComparer.Ordinal)
+    {
+        "local-trailer",
+        "remote-trailer",
+        "direct-play"
+    };
+
     public static PluginConfiguration Normalize(PluginConfiguration? configuration)
     {
         PluginConfiguration source = configuration ?? new PluginConfiguration();
@@ -159,6 +166,8 @@ internal static class PluginConfigurationNormalizer
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),
+            VideoControlSources = NormalizeMediaControlSources(source.VideoControlSources),
+            AudioControlSources = NormalizeMediaControlSources(source.AudioControlSources),
             DirectPlayPreviewEnabled = source.DirectPlayPreviewEnabled,
             DirectPlayStartPercent = Clamp(source.DirectPlayStartPercent, 0, 90, 20),
             DirectPlayPlaybackRate = Clamp(source.DirectPlayPlaybackRate, 0.5, 2, 1.5),
@@ -248,6 +257,13 @@ internal static class PluginConfigurationNormalizer
             "smooth-pingpong" => "ping-pong",
             _ => NormalizeChoice(value, ValidAutoScrubModes, "step")
         };
+    }
+
+    private static string[] NormalizeMediaControlSources(IEnumerable<string>? sources)
+    {
+        return [.. (sources ?? [])
+            .Where(source => !string.IsNullOrWhiteSpace(source) && ValidMediaControlSources.Contains(source))
+            .Distinct(StringComparer.Ordinal)];
     }
 
     private static List<LibraryPreviewSourceOverride> NormalizeLibraryPreviewSourceOverrides(

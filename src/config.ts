@@ -26,6 +26,7 @@ import {
 import { clamp } from './core/dom';
 import type {
   LibraryPreviewSourceOverride,
+  MediaControlSource,
   PluginConfig,
   PreviewChainSource,
   PreviewFallbackSource,
@@ -63,6 +64,8 @@ const standaloneFallbackConfig: PluginConfig = {
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  videoControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
+  audioControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
   directPlayPreviewEnabled: true,
   directPlayStartPercent: 20,
   directPlayPlaybackRate: 1.5,
@@ -268,6 +271,14 @@ export function normalizeConfig(): void {
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.videoControlSources = normalizeMediaControlSources(
+    config.videoControlSources,
+    standaloneFallbackConfig.videoControlSources
+  );
+  config.audioControlSources = normalizeMediaControlSources(
+    config.audioControlSources,
+    standaloneFallbackConfig.audioControlSources
+  );
   config.directPlayPreviewEnabled = config.directPlayPreviewEnabled !== false;
   config.directPlayStartPercent = clamp(numberOrFallback(config.directPlayStartPercent, 20), 0, 90);
   config.directPlayPlaybackRate = clamp(numberOrFallback(config.directPlayPlaybackRate, 1.5), 0.5, 2);
@@ -366,4 +377,19 @@ function normalizeFallbackSources(
     }
   });
   return normalized;
+}
+
+function normalizeMediaControlSources(value: unknown, defaults: MediaControlSource[]): MediaControlSource[] {
+  const allowed = new Set<MediaControlSource>(['local-trailer', 'remote-trailer', 'direct-play']);
+  if (!Array.isArray(value)) {
+    return [...defaults];
+  }
+
+  return Array.from(
+    new Set(
+      value.filter(
+        (entry): entry is MediaControlSource => typeof entry === 'string' && allowed.has(entry as MediaControlSource)
+      )
+    )
+  );
 }
