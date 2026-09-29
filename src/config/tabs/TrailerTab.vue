@@ -12,12 +12,6 @@ const cropOptions: SelectOption[] = [
   { value: 'medium', label: 'Medium' },
   { value: 'strong', label: 'Strong' }
 ];
-const positionOptions: SelectOption[] = [
-  { value: 'top-left', label: 'Top Left' },
-  { value: 'top-right', label: 'Top Right' },
-  { value: 'bottom-left', label: 'Bottom Left' },
-  { value: 'bottom-right', label: 'Bottom Right' }
-];
 </script>
 
 <template>
@@ -138,18 +132,6 @@ const positionOptions: SelectOption[] = [
         <p v-else class="jmp-note">
           Failed embeds still fall back during the current browser session, but they are not remembered across reloads.
         </p>
-      </ConfigCard>
-
-      <ConfigCard
-        title="Controls"
-        help="Decide whether the in-card expand affordance should be shown and where it sits."
-      >
-        <ConfigCheckbox v-model="store.config.TrailerExpandButtonEnabled" label="Show Expand Button" />
-        <ConfigSelect
-          v-model="store.config.TrailerExpandButtonPosition"
-          label="Expand Button Position"
-          :options="positionOptions"
-        />
       </ConfigCard>
     </div>
   </section>

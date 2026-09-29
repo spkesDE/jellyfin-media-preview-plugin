@@ -145,6 +145,14 @@ const mediaControlSourceOptions: SelectOption[] = [
           help-text="Show the Mute button and volume slider for the selected preview types."
           :options="mediaControlSourceOptions"
         />
+        <ConfigCheckbox v-model="store.config.TrailerExpandButtonEnabled" label="Show Expand Button" />
+        <ConfigSelect
+          v-if="store.config.TrailerExpandButtonEnabled"
+          v-model="store.config.TrailerExpandButtonPosition"
+          label="Expand Button Position"
+          help-text="Choose where the in-card trailer expand button sits."
+          :options="positionOptions"
+        />
         <ConfigCheckbox v-model="store.config.ShowProgressIndicator" label="Show Progress Indicator" />
         <ConfigCheckbox v-model="store.config.MetadataOverlayEnabled" label="Show Mini Metadata Overlay" />
         <template v-if="store.config.MetadataOverlayEnabled">

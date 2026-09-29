@@ -91,15 +91,18 @@ test('advanced source chains expose local and remote trailers separately', async
   assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);
 });
 
-test('overlay media controls are configurable per playable source', async () => {
-  const [appearance, renderer, youtube] = await Promise.all([
+test('overlay controls are configured together in Appearance', async () => {
+  const [appearance, trailerSettings, renderer, youtube] = await Promise.all([
     read('src/config/tabs/AppearanceTab.vue'),
+    read('src/config/tabs/TrailerTab.vue'),
     read('src/preview/renderTrailer.ts'),
     read('src/trailerOverlay/youtube.ts')
   ]);
 
   assert.match(appearance, /VideoControlSources[\s\S]*AudioControlSources/);
+  assert.match(appearance, /TrailerExpandButtonEnabled[\s\S]*TrailerExpandButtonPosition/);
   assert.match(appearance, /Local Trailer[\s\S]*Remote \/ YouTube Trailer[\s\S]*Direct Play/);
+  assert.doesNotMatch(trailerSettings, /TrailerExpandButtonEnabled|TrailerExpandButtonPosition/);
   assert.match(renderer, /config\.videoControlSources\.includes\(mediaControlSource\)/);
   assert.match(renderer, /config\.audioControlSources\.includes\(mediaControlSource\)/);
   assert.match(youtube, /pauseVideo[\s\S]*setVolume[\s\S]*unMute/);
