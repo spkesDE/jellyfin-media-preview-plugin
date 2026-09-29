@@ -53,6 +53,10 @@
   gap: 1.5rem;
 }
 
+#MediaPreviewConfigPage .jmp-subgrid + .jmp-subgrid {
+  margin-top: 1.5rem;
+}
+
 #MediaPreviewConfigPage .jmp-generalGrid {
   display: grid;
   grid-template-columns: minmax(340px, 0.95fr) minmax(520px, 1.35fr);
