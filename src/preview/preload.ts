@@ -47,7 +47,10 @@ function getPreloadPreviewSource(itemId: string, itemType?: string | null): Prom
     return Promise.resolve(getContentTypePreviewSource(itemType));
   }
 
-  return getLibraryIdForItem(itemId).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
+  return getLibraryIdForItem(
+    itemId,
+    config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
+  ).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
 }
 
 function scheduleTrickplayPreloadQueue(): void {

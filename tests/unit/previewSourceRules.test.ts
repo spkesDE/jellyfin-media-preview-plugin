@@ -33,11 +33,12 @@ describe('Direct Play preview source rules', () => {
 
   it('wins at type and library rule priority', () => {
     config.previewSource = 'trickplay';
-    config.moviePreviewSource = 'direct-play';
+    config.moviePreviewSource = 'trailer';
     config.libraryPreviewSourceOverrides = [{ libraryId: 'movies', previewSource: 'direct-play' }];
 
-    expect(getContentTypePreviewSource('Movie')).toBe('direct-play');
+    expect(getContentTypePreviewSource('Movie')).toBe('trailer');
     expect(getResolvedPreviewSource('Movie', 'movies')).toBe('direct-play');
+    expect(getResolvedPreviewSource('Movie', 'MOVIES')).toBe('direct-play');
   });
 
   it('uses configured order and skips disabled preferred fallbacks', () => {

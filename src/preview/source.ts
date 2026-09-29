@@ -44,7 +44,12 @@ export function getContentTypePreviewSource(itemType?: string | null): string {
 }
 
 export function getLibraryPreviewSource(libraryId?: string | null): string {
-  const override = config.libraryPreviewSourceOverrides.find((entry) => entry.libraryId === libraryId);
+  const normalizedLibraryId = String(libraryId || '')
+    .trim()
+    .toLowerCase();
+  const override = config.libraryPreviewSourceOverrides.find(
+    (entry) => entry.libraryId.trim().toLowerCase() === normalizedLibraryId
+  );
   if (
     !override ||
     !VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(override.previewSource) ||
@@ -70,7 +75,10 @@ export function getPreviewSourceForItem(itemId: string, itemType?: string | null
     return Promise.resolve(getContentTypePreviewSource(itemType));
   }
 
-  return getLibraryIdForItem(itemId).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
+  return getLibraryIdForItem(
+    itemId,
+    config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
+  ).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
 }
 
 function getPreviewForSingleSource(
