@@ -1,6 +1,6 @@
 name: Setup / support question
 description: Ask for help with installation, configuration, or expected behavior
-title: "[Support]: "
+title: '[Support]: '
 labels:
   - question
 body:
@@ -27,6 +27,7 @@ body:
         - Installation
         - Frontend loading
         - Trickplay
+        - Direct Play
         - Local trailers
         - YouTube trailers
         - Hover behavior

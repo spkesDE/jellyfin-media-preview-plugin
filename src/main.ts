@@ -15,6 +15,7 @@ import { destroyExpandedTrailerDom } from './trailerOverlay/expandedTrailer';
 import { clearPreviewCaches } from './core/storage';
 import { clearTrickplayPreloads } from './preview/preload';
 import { clearUnavailableTrailerCacheState } from './preview/trailer';
+import { clearDirectPlayFallbackState } from './preview/directPlay';
 
 export function destroy(): void {
   destroyExpandedTrailerDom();
@@ -33,6 +34,7 @@ export function destroy(): void {
   destroyCardBindings();
   clearPreviewCaches();
   clearUnavailableTrailerCacheState();
+  clearDirectPlayFallbackState();
 }
 
 export function start(): void {
@@ -40,11 +42,6 @@ export function start(): void {
 
   if (!config.enabled) {
     log('Media Preview is disabled by config.');
-    return;
-  }
-
-  if (window.matchMedia && !window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    log('Skipping media preview because the current device does not advertise precise hover.');
     return;
   }
 

@@ -1,5 +1,5 @@
 import { config } from '../config';
-import { PREVIEW_SOURCE_TRAILER } from '../constants';
+import { PREVIEW_SOURCE_DIRECT_PLAY, PREVIEW_SOURCE_TRAILER } from '../constants';
 import { getPreviewModeForCard } from '../cards/layout';
 import {
   applyPreviewBackdrop,
@@ -11,7 +11,9 @@ import {
   hideProgress,
   resetPreviewBackdrop,
   setTrailerExpandVisible,
-  setTrailerLayerVisible
+  setTrailerMediaControlsVisible,
+  setTrailerLayerVisible,
+  syncTrailerMediaControls
 } from '../cards/lifecycle';
 import { getOrCreateCardState } from '../cards/state';
 import { expandPortraitCardForPreview } from '../cards/widePreview';
@@ -24,12 +26,24 @@ import {
   YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES
 } from '../trailerOverlay/youtube';
 import { collapseExpandedTrailer } from '../trailerOverlay/expandedTrailer';
-import { markYouTubeTrailerUnavailable } from './trailer';
-import type { TrailerPreview } from '../types/preview';
+import { markYouTubeTrailerUnavailable, markVideoTrailerUnavailable } from './trailer';
+import { markDirectPlayUnavailable } from './directPlay';
+import type { VideoPreview } from '../types/preview';
+import type { MediaControlSource } from '../types/config';
 import type { CardState } from '../types/state';
 
-export function updateTrailerAudioState(mediaElement: HTMLVideoElement | HTMLIFrameElement | null): void {
+export function updateTrailerAudioState(
+  mediaElement: HTMLVideoElement | HTMLIFrameElement | null,
+  forceMuted = false
+): void {
   if (!(mediaElement instanceof HTMLVideoElement)) {
+    return;
+  }
+
+  if (forceMuted) {
+    mediaElement.volume = 0;
+    mediaElement.muted = true;
+    mediaElement.defaultMuted = true;
     return;
   }
 
@@ -61,12 +75,14 @@ export function ensureTrailerMediaElement(
     const previousMedia = state.trailerMedia;
     state.trailerMediaCleanup?.();
     state.trailerMediaCleanup = null;
+    state.trailerMediaController = null;
     if (previousMedia.parentNode) {
       previousMedia.parentNode.removeChild(previousMedia);
     }
   }
 
-  const mediaElement = document.createElement(kind === 'iframe' ? 'iframe' : 'video') as HTMLVideoElement | HTMLIFrameElement;
+  const mediaElement = document.createElement(kind === 'iframe' ? 'iframe' : 'video') as
+    HTMLVideoElement | HTMLIFrameElement;
   mediaElement.className = 'jmp-trailer-media';
   mediaElement.setAttribute('aria-hidden', 'true');
 
@@ -101,8 +117,11 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
 
   setTrailerLayerVisible(state, false);
   setTrailerExpandVisible(state, false);
+  setTrailerMediaControlsVisible(state, false);
   resetPreviewBackdrop(state);
   state.currentTrailer = null;
+  state.trailerPlaybackStartedAt = 0;
+  state.trailerMediaController = null;
 
   if (!state.trailerMedia) {
     return;
@@ -120,14 +139,38 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   }
 
   const videoElement = state.trailerMedia as HTMLVideoElement;
+  videoElement.onerror = null;
+  videoElement.onloadedmetadata = null;
+  videoElement.ontimeupdate = null;
+  videoElement.onplay = null;
+  videoElement.onpause = null;
+  videoElement.onvolumechange = null;
   videoElement.pause();
+  videoElement.playbackRate = 1;
+  videoElement.defaultPlaybackRate = 1;
+  videoElement.loop = true;
   videoElement.removeAttribute('src');
+  delete videoElement.dataset.jmpFallbackApplied;
+  delete videoElement.dataset.jmpPreviewStartSeconds;
   videoElement.load();
+}
+
+function getMediaControlSource(preview: VideoPreview): MediaControlSource | null {
+  if (preview.source === PREVIEW_SOURCE_DIRECT_PLAY || preview.trailer?.provider === 'direct-play') {
+    return 'direct-play';
+  }
+  if (preview.trailer?.provider === 'local-trailer') {
+    return 'local-trailer';
+  }
+  if (preview.trailer?.provider === 'remote-video' || preview.trailer?.provider === 'youtube') {
+    return 'remote-trailer';
+  }
+  return null;
 }
 
 export function applyTrailerPreview(
   card: HTMLElement,
-  preview: TrailerPreview | null | undefined,
+  preview: VideoPreview | null | undefined,
   options?: { onUnavailable?: () => void }
 ): void {
   const state = getOrCreateCardState(card);
@@ -141,8 +184,7 @@ export function applyTrailerPreview(
   }
 
   const trailer = preview.trailer;
-  const hostRect = expandPortraitCardForPreview(card, state, trailer.aspectRatio)
-    || rootHost.getBoundingClientRect();
+  const hostRect = expandPortraitCardForPreview(card, state, trailer.aspectRatio) || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }
@@ -165,15 +207,15 @@ export function applyTrailerPreview(
 
   state.lastPreviewKey = previewKey;
   state.previewActive = true;
-  state.activePreviewSource = PREVIEW_SOURCE_TRAILER;
+  state.activePreviewSource = preview.source;
   hidePreviewFrame(state);
   resetPreviewBackdrop(state);
   applyPreviewBackdrop(state);
 
   if (
-    trailer.kind === 'iframe'
-    && state.currentTrailer?.youtubeId
-    && state.currentTrailer.youtubeId !== trailer.youtubeId
+    trailer.kind === 'iframe' &&
+    state.currentTrailer?.youtubeId &&
+    state.currentTrailer.youtubeId !== trailer.youtubeId
   ) {
     clearTrailerMedia(state);
   }
@@ -184,12 +226,25 @@ export function applyTrailerPreview(
   }
 
   state.currentTrailer = trailer;
-  applyMediaLayout(state.trailerLayer, mediaElement, hostRect, previewMode, sourceWidth, sourceHeight, rootBorderRadius);
+  applyMediaLayout(
+    state.trailerLayer,
+    mediaElement,
+    hostRect,
+    previewMode,
+    sourceWidth,
+    sourceHeight,
+    rootBorderRadius
+  );
   setTrailerLayerVisible(state, true);
-  if (config.trailerExpandButtonEnabled) {
+  const isExpandableTrailer = preview.source === PREVIEW_SOURCE_TRAILER;
+  const mediaControlSource = getMediaControlSource(preview);
+  const showVideoControls = !!mediaControlSource && config.videoControlSources.includes(mediaControlSource);
+  const showAudioControls = !!mediaControlSource && config.audioControlSources.includes(mediaControlSource);
+  if ((isExpandableTrailer && config.trailerExpandButtonEnabled) || showVideoControls || showAudioControls) {
     ensureTrailerActions(card, state);
   }
-  setTrailerExpandVisible(state, true);
+  setTrailerExpandVisible(state, isExpandableTrailer);
+  setTrailerMediaControlsVisible(state, { video: showVideoControls, audio: showAudioControls });
   state.trailerLayer.style.background = 'transparent';
   mediaElement.style.background = 'transparent';
   state.trailerLayer.classList.toggle('jmp-debug-visible', !!config.debug);
@@ -215,8 +270,11 @@ export function applyTrailerPreview(
 
     if (iframeUrl && mediaElement instanceof HTMLIFrameElement && mediaElement.src !== iframeUrl) {
       state.trailerMediaCleanup?.();
-      state.trailerMediaCleanup = monitorYouTubeEmbed(mediaElement, {
+      const youTubeMonitor = monitorYouTubeEmbed(mediaElement, {
         loop: true,
+        initialMuted: !canPlayTrailerAudio(),
+        initialVolume: Math.max(0, Math.min(1, config.trailerVolumePercent / 100)),
+        onPlaybackStateChange: () => syncTrailerMediaControls(state),
         onError: (errorCode) => {
           if (!YOUTUBE_EMBED_UNAVAILABLE_ERROR_CODES.has(errorCode)) {
             return;
@@ -247,28 +305,133 @@ export function applyTrailerPreview(
            * playlist based loop would restart playback mid preview, which is
            * worse than not looping for a short hover.
            */
-          debugLog('YouTube iframe API monitoring is unavailable, preview will not loop.', trailer.youtubeId || trailer.title);
+          debugLog(
+            'YouTube iframe API monitoring is unavailable, preview will not loop.',
+            trailer.youtubeId || trailer.title
+          );
         }
       });
+      state.trailerMediaController = youTubeMonitor;
+      state.trailerMediaCleanup = () => youTubeMonitor.cleanup();
       mediaElement.src = iframeUrl;
       state.trailerPlaybackStartedAt = Date.now();
+      syncTrailerMediaControls(state);
     }
   } else if (mediaElement instanceof HTMLVideoElement) {
-    updateTrailerAudioState(mediaElement);
+    state.trailerMediaController = null;
+    const isDirectPlay = preview.source === PREVIEW_SOURCE_DIRECT_PLAY;
+    const playbackRate = isDirectPlay ? Math.max(0.5, Math.min(2, Number(trailer.playbackRate) || 1.5)) : 1;
+    const previewDurationSeconds = isDirectPlay ? Math.max(0, Number(trailer.previewDurationSeconds) || 0) : 0;
+
+    mediaElement.loop = !isDirectPlay;
+    mediaElement.defaultPlaybackRate = playbackRate;
+    mediaElement.playbackRate = playbackRate;
+    updateTrailerAudioState(mediaElement, isDirectPlay);
+    mediaElement.onplay = () => syncTrailerMediaControls(state);
+    mediaElement.onpause = () => syncTrailerMediaControls(state);
+    mediaElement.onvolumechange = () => syncTrailerMediaControls(state);
+
+    if (previewDurationSeconds > 0) {
+      mediaElement.dataset.jmpPreviewStartSeconds = String(Math.max(0, Number(trailer.startSeconds) || 0));
+      mediaElement.ontimeupdate = () => {
+        const previewStartSeconds = Number(mediaElement.dataset.jmpPreviewStartSeconds);
+        if (
+          Number.isFinite(previewStartSeconds) &&
+          mediaElement.currentTime - previewStartSeconds >= previewDurationSeconds
+        ) {
+          mediaElement.pause();
+        }
+      };
+    } else {
+      mediaElement.ontimeupdate = null;
+      delete mediaElement.dataset.jmpPreviewStartSeconds;
+    }
+
+    const recoverFromVideoFailure = () => {
+      debugLog('Recovering from failed video preview through the remaining source chain.', {
+        itemId: preview.itemId,
+        source: preview.source,
+        provider: trailer.provider,
+        mediaErrorCode: mediaElement.error?.code || null,
+        mediaErrorMessage: mediaElement.error?.message || null,
+        networkState: mediaElement.networkState,
+        readyState: mediaElement.readyState,
+        fallbackApplied: mediaElement.dataset.jmpFallbackApplied === 'true'
+      });
+      if (preview.source === PREVIEW_SOURCE_DIRECT_PLAY) {
+        markDirectPlayUnavailable(preview.itemId);
+      } else {
+        markVideoTrailerUnavailable(preview.itemId, trailer);
+      }
+      state.lastPreviewKey = null;
+      state.activePreviewSource = null;
+      clearTrailerMedia(state);
+      hideMetadataOverlay(state);
+      options?.onUnavailable?.();
+    };
 
     mediaElement.onerror = () => {
       if (trailer.fallbackSrc && mediaElement.dataset.jmpFallbackApplied !== 'true') {
-        debugLog('Local trailer direct playback failed. Falling back to transcoded MP4.', trailer.title || trailer.src);
+        debugLog('Direct video playback failed. Trying the transcoded MP4 fallback.', {
+          itemId: preview.itemId,
+          source: preview.source,
+          provider: trailer.provider,
+          mediaErrorCode: mediaElement.error?.code || null,
+          mediaErrorMessage: mediaElement.error?.message || null,
+          networkState: mediaElement.networkState,
+          readyState: mediaElement.readyState
+        });
         mediaElement.dataset.jmpFallbackApplied = 'true';
+        mediaElement.dataset.jmpPreviewStartSeconds = '0';
         mediaElement.src = trailer.fallbackSrc;
         mediaElement.load();
-        updateTrailerAudioState(mediaElement);
+        mediaElement.defaultPlaybackRate = playbackRate;
+        mediaElement.playbackRate = playbackRate;
+        updateTrailerAudioState(mediaElement, isDirectPlay);
         const fallbackPromise = mediaElement.play();
         if (fallbackPromise && typeof fallbackPromise.catch === 'function') {
           fallbackPromise.catch((error) => {
-            debugLog('Transcoded trailer autoplay failed.', trailer.title || trailer.fallbackSrc, error);
+            debugLog('Transcoded video autoplay failed.', {
+              itemId: preview.itemId,
+              source: preview.source,
+              provider: trailer.provider,
+              error
+            });
           });
         }
+        return;
+      }
+
+      debugLog('Video preview source failed.', {
+        itemId: preview.itemId,
+        source: preview.source,
+        provider: trailer.provider
+      });
+      recoverFromVideoFailure();
+    };
+
+    mediaElement.onloadedmetadata = () => {
+      mediaElement.defaultPlaybackRate = playbackRate;
+      mediaElement.playbackRate = playbackRate;
+      if (
+        Number.isFinite(trailer.startSeconds) &&
+        Number(trailer.startSeconds) > 0 &&
+        mediaElement.dataset.jmpFallbackApplied !== 'true' &&
+        Math.abs(mediaElement.currentTime - Number(trailer.startSeconds)) > 1
+      ) {
+        try {
+          mediaElement.currentTime = Number(trailer.startSeconds);
+        } catch {
+          // Some direct streams are not seekable until more metadata is available.
+        }
+      }
+
+      if (previewDurationSeconds > 0) {
+        mediaElement.dataset.jmpPreviewStartSeconds = String(
+          mediaElement.dataset.jmpFallbackApplied === 'true'
+            ? Math.max(0, mediaElement.currentTime)
+            : Math.max(0, Number(trailer.startSeconds) || mediaElement.currentTime)
+        );
       }
     };
 
@@ -282,7 +445,12 @@ export function applyTrailerPreview(
     const playPromise = mediaElement.play();
     if (playPromise && typeof playPromise.catch === 'function') {
       playPromise.catch((error) => {
-        debugLog('Trailer autoplay failed.', trailer.title || trailer.src, error);
+        debugLog('Video preview autoplay failed.', {
+          itemId: preview.itemId,
+          source: preview.source,
+          provider: trailer.provider,
+          error
+        });
       });
     }
   }

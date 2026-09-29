@@ -17,9 +17,7 @@ export function requestJson(path: string): Promise<unknown> {
     return Promise.resolve(apiClient.ajax({ type: 'GET', url, dataType: 'json' }));
   }
 
-  return fetch(url, { credentials: 'same-origin' }).then((response) =>
-    response.ok ? response.json() : null
-  );
+  return fetch(url, { credentials: 'same-origin' }).then((response) => (response.ok ? response.json() : null));
 }
 
 export function normalizeItems(payload: unknown): JellyfinItem[] {
@@ -27,7 +25,7 @@ export function normalizeItems(payload: unknown): JellyfinItem[] {
     return (payload as { Items: JellyfinItem[] }).Items;
   }
 
-  return Array.isArray(payload) ? payload as JellyfinItem[] : [];
+  return Array.isArray(payload) ? (payload as JellyfinItem[]) : [];
 }
 
 export async function loadLibraries(): Promise<ConfigLibrary[]> {

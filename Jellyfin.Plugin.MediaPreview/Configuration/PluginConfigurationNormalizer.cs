@@ -12,18 +12,22 @@ internal static class PluginConfigurationNormalizer
     private static readonly HashSet<string> ValidPreviewSources = new(StringComparer.Ordinal)
     {
         "trickplay",
+        "direct-play",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer"
+        "prefer-trailer",
+        "prefer-direct-play"
     };
 
     private static readonly HashSet<string> ValidContentTypePreviewSources = new(StringComparer.Ordinal)
     {
         "inherit",
         "trickplay",
+        "direct-play",
         "trailer",
         "prefer-trickplay",
-        "prefer-trailer"
+        "prefer-trailer",
+        "prefer-direct-play"
     };
 
     private static readonly HashSet<string> ValidHoverModes = new(StringComparer.Ordinal)
@@ -108,6 +112,13 @@ internal static class PluginConfigurationNormalizer
         "bottom-right"
     };
 
+    private static readonly HashSet<string> ValidMediaControlSources = new(StringComparer.Ordinal)
+    {
+        "local-trailer",
+        "remote-trailer",
+        "direct-play"
+    };
+
     public static PluginConfiguration Normalize(PluginConfiguration? configuration)
     {
         PluginConfiguration source = configuration ?? new PluginConfiguration();
@@ -124,6 +135,27 @@ internal static class PluginConfigurationNormalizer
             EpisodePreviewSource = NormalizeChoice(source.EpisodePreviewSource, ValidContentTypePreviewSources, "inherit"),
             VideoPreviewSource = NormalizeChoice(source.VideoPreviewSource, ValidContentTypePreviewSources, "inherit"),
             LibraryPreviewSourceOverrides = NormalizeLibraryPreviewSourceOverrides(source.LibraryPreviewSourceOverrides),
+            PreferTrailerFallbacks = NormalizeFallbackSources(
+                source.PreferTrailerFallbacks,
+                "local-trailer",
+                true,
+                ("remote-trailer", true),
+                ("direct-play", true),
+                ("trickplay", true)),
+            PreferTrickplayFallbacks = NormalizeFallbackSources(
+                source.PreferTrickplayFallbacks,
+                "trickplay",
+                false,
+                ("local-trailer", true),
+                ("remote-trailer", true),
+                ("direct-play", true)),
+            PreferDirectPlayFallbacks = NormalizeFallbackSources(
+                source.PreferDirectPlayFallbacks,
+                "direct-play",
+                false,
+                ("trickplay", true),
+                ("local-trailer", true),
+                ("remote-trailer", true)),
             MetadataOverlayEnabled = source.MetadataOverlayEnabled,
             MetadataOverlayPosition = NormalizeChoice(source.MetadataOverlayPosition, ValidTrailerExpandButtonPositions, "bottom-left"),
             MetadataOverlayShowTitle = source.MetadataOverlayShowTitle,
@@ -134,6 +166,15 @@ internal static class PluginConfigurationNormalizer
             ShowNoPreviewMessage = source.ShowNoPreviewMessage,
             TrailerAudioEnabled = source.TrailerAudioEnabled,
             TrailerVolumePercent = Clamp(source.TrailerVolumePercent, 0, 100, 35),
+            VideoControlSources = NormalizeMediaControlSources(source.VideoControlSources),
+            AudioControlSources = NormalizeMediaControlSources(source.AudioControlSources),
+            DirectPlayPreviewEnabled = source.DirectPlayPreviewEnabled,
+            DirectPlayStartPercent = Clamp(source.DirectPlayStartPercent, 0, 90, 20),
+            DirectPlayPlaybackRate = Clamp(source.DirectPlayPlaybackRate, 0.5, 2, 1.5),
+            DirectPlayPreviewDurationSeconds = Clamp(source.DirectPlayPreviewDurationSeconds, 0, 300, 15),
+            DirectPlayTranscodeFallbackEnabled = source.DirectPlayTranscodeFallbackEnabled,
+            DirectPlayTranscodeMaxHeight = Clamp(source.DirectPlayTranscodeMaxHeight, 240, 2160, 480),
+            DirectPlayTranscodeVideoBitrateKbps = Clamp(source.DirectPlayTranscodeVideoBitrateKbps, 250, 20000, 1500),
             UnavailableTrailerCacheEnabled = source.UnavailableTrailerCacheEnabled,
             UnavailableTrailerRetryDays = Clamp(source.UnavailableTrailerRetryDays, 1, 365, 30),
             HoverDelayMs = Math.Max(0, source.HoverDelayMs),
@@ -191,6 +232,11 @@ internal static class PluginConfigurationNormalizer
         return value < min || value > max ? fallback : value;
     }
 
+    private static double Clamp(double value, double min, double max, double fallback)
+    {
+        return double.IsFinite(value) && value >= min && value <= max ? value : fallback;
+    }
+
     private static string NormalizeChoice(string? value, HashSet<string> allowedValues, string fallback)
     {
         return !string.IsNullOrWhiteSpace(value) && allowedValues.Contains(value)
@@ -211,6 +257,13 @@ internal static class PluginConfigurationNormalizer
             "smooth-pingpong" => "ping-pong",
             _ => NormalizeChoice(value, ValidAutoScrubModes, "step")
         };
+    }
+
+    private static string[] NormalizeMediaControlSources(IEnumerable<string>? sources)
+    {
+        return [.. (sources ?? [])
+            .Where(source => !string.IsNullOrWhiteSpace(source) && ValidMediaControlSources.Contains(source))
+            .Distinct(StringComparer.Ordinal)];
     }
 
     private static List<LibraryPreviewSourceOverride> NormalizeLibraryPreviewSourceOverrides(
@@ -236,5 +289,64 @@ internal static class PluginConfigurationNormalizer
         }
 
         return [.. normalized.Values];
+    }
+
+    private static List<PreviewFallbackSource> NormalizeFallbackSources(
+        IEnumerable<PreviewFallbackSource>? sources,
+        string primarySource,
+        bool includePrimary,
+        params (string Source, bool Enabled)[] defaults)
+    {
+        HashSet<string> allowedSources = new(StringComparer.Ordinal)
+        {
+            "trickplay",
+            "local-trailer",
+            "remote-trailer",
+            "direct-play"
+        };
+        if (!includePrimary)
+        {
+            allowedSources.Remove(primarySource);
+        }
+        HashSet<string> seen = new(StringComparer.Ordinal);
+        List<PreviewFallbackSource> normalized = [];
+
+        foreach (PreviewFallbackSource? entry in sources ?? [])
+        {
+            string source = entry?.Source?.Trim() ?? string.Empty;
+            if (source == "trailer")
+            {
+                foreach (string trailerSource in new[] { "local-trailer", "remote-trailer" })
+                {
+                    if (allowedSources.Contains(trailerSource) && seen.Add(trailerSource))
+                    {
+                        normalized.Add(new PreviewFallbackSource { Source = trailerSource, Enabled = entry!.Enabled });
+                    }
+                }
+
+                continue;
+            }
+            if (!allowedSources.Contains(source) || !seen.Add(source))
+            {
+                continue;
+            }
+
+            normalized.Add(new PreviewFallbackSource { Source = source, Enabled = entry!.Enabled });
+        }
+
+        if (includePrimary && seen.Add(primarySource))
+        {
+            normalized.Insert(0, new PreviewFallbackSource { Source = primarySource, Enabled = true });
+        }
+
+        foreach ((string source, bool enabled) in defaults)
+        {
+            if (seen.Add(source))
+            {
+                normalized.Add(new PreviewFallbackSource { Source = source, Enabled = enabled });
+            }
+        }
+
+        return normalized;
     }
 }

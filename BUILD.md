@@ -75,16 +75,35 @@ dist\config.bundle.js
 
 ## Manual Build
 
-Build the frontend:
+Lint, typecheck, test, and build the frontend:
 
 ```powershell
 npm run build
+```
+
+Run the frontend and contract tests without rebuilding bundles:
+
+```powershell
+npm test
+```
+
+Format the repository or verify formatting without changing files:
+
+```powershell
+npm run format
+npm run format:check
 ```
 
 Build the plugin:
 
 ```powershell
 dotnet build .\Jellyfin.Plugin.MediaPreview\Jellyfin.Plugin.MediaPreview.csproj
+```
+
+Run the backend tests:
+
+```powershell
+dotnet test .\Jellyfin.Plugin.MediaPreview.Tests\Jellyfin.Plugin.MediaPreview.Tests.csproj
 ```
 
 ## Adding Configuration Fields

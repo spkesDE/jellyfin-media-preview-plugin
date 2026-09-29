@@ -2,6 +2,7 @@ import type { MetadataOverlayInfo, TrailerInfo, TrickplayInfo } from '../types/p
 
 const ITEM_CACHE_LIMIT = 500;
 const TILE_PRELOAD_CACHE_LIMIT = 1500;
+let activePreviewCacheContext: string | null = null;
 
 class BoundedMap<Key, Value> extends Map<Key, Value> {
   constructor(private readonly limit: number) {
@@ -53,12 +54,28 @@ export const metadataOverlayCache = new BoundedMap<string, Promise<MetadataOverl
 export const libraryIdCache = new BoundedMap<string, Promise<string | null>>(ITEM_CACHE_LIMIT);
 export const tilePreloadCache = new BoundedSet<string>(TILE_PRELOAD_CACHE_LIMIT);
 export const missingTrickplayCache = new BoundedMap<string, number>(ITEM_CACHE_LIMIT);
+export const missingTrailerCache = new BoundedMap<string, number>(ITEM_CACHE_LIMIT);
 
-export function clearPreviewCaches(): void {
+export function getScopedPreviewCacheKey(contextKey: string, itemId: string): string {
+  if (activePreviewCacheContext !== contextKey) {
+    clearPreviewCacheEntries();
+    activePreviewCacheContext = contextKey;
+  }
+
+  return `${contextKey}\u001f${itemId}`;
+}
+
+function clearPreviewCacheEntries(): void {
   itemInfoCache.clear();
   trailerInfoCache.clear();
   metadataOverlayCache.clear();
   libraryIdCache.clear();
   tilePreloadCache.clear();
   missingTrickplayCache.clear();
+  missingTrailerCache.clear();
+}
+
+export function clearPreviewCaches(): void {
+  clearPreviewCacheEntries();
+  activePreviewCacheContext = null;
 }

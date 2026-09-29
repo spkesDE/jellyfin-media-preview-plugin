@@ -17,6 +17,7 @@ export const runtimeState = {
     onFocusIn: (event: FocusEvent) => void;
     onFocusOut: (event: FocusEvent) => void;
     onKeyDown: (event: KeyboardEvent) => void;
+    onPointerDown: () => void;
   } | null,
   userActivationEventsBound: false,
   userActivationHandler: null as (() => void) | null,
@@ -28,6 +29,7 @@ export const runtimeState = {
   adminNavRefreshFrame: null as number | null,
   historyPatched: false,
   pageHasUserActivation: false,
+  keyboardNavigationIntentUntil: 0,
   expandedTrailerSession: null as ExpandedTrailerSession | null,
   expandedTrailerDom: null as ExpandedTrailerDom | null,
   expandedTrailerCollapseTimer: null as number | null

@@ -8,9 +8,7 @@ const activeLayer = ref(0);
 const hovered = ref(false);
 
 const mode = computed(() =>
-  props.kind === 'portrait'
-    ? store.config.PortraitCardPreviewMode
-    : store.config.BackdropCardPreviewMode
+  props.kind === 'portrait' ? store.config.PortraitCardPreviewMode : store.config.BackdropCardPreviewMode
 );
 const modeLabel = computed(() =>
   mode.value === 'stretch' ? 'Stretch / Fill' : mode.value === 'cover' ? 'Cover' : 'Contain'
@@ -21,9 +19,8 @@ const portraitExpansionClass = computed(() => {
     return '';
   }
 
-  const previewExpansionMode = store.config.PortraitCardExpansionMode === 'source'
-    ? '16:9'
-    : store.config.PortraitCardExpansionMode;
+  const previewExpansionMode =
+    store.config.PortraitCardExpansionMode === 'source' ? '16:9' : store.config.PortraitCardExpansionMode;
   return `jmp-appearanceCard-portrait-wide-${previewExpansionMode.replace(':', '-')}`;
 });
 const previewLabel = computed(() => {
@@ -64,16 +61,18 @@ const backdropStyle = computed(() => {
   }
   return { background, backdropFilter, WebkitBackdropFilter: backdropFilter };
 });
-const title = computed(() => store.config.MetadataOverlayShowTitle ? store.appearance.value.title : '');
-const metadata = computed(() => [
-  store.config.MetadataOverlayShowYear ? store.appearance.value.year : '',
-  store.config.MetadataOverlayShowRuntime ? store.appearance.value.runtime : '',
-  store.config.MetadataOverlayShowOfficialRating ? store.appearance.value.officialRating : '',
-  store.config.MetadataOverlayShowCommunityRating ? store.appearance.value.communityRating : ''
-].filter(Boolean).join(' \u2022 '));
-const showMetadata = computed(() =>
-  store.config.MetadataOverlayEnabled && !!(title.value || metadata.value)
+const title = computed(() => (store.config.MetadataOverlayShowTitle ? store.appearance.value.title : ''));
+const metadata = computed(() =>
+  [
+    store.config.MetadataOverlayShowYear ? store.appearance.value.year : '',
+    store.config.MetadataOverlayShowRuntime ? store.appearance.value.runtime : '',
+    store.config.MetadataOverlayShowOfficialRating ? store.appearance.value.officialRating : '',
+    store.config.MetadataOverlayShowCommunityRating ? store.appearance.value.communityRating : ''
+  ]
+    .filter(Boolean)
+    .join(' \u2022 ')
 );
+const showMetadata = computed(() => store.config.MetadataOverlayEnabled && !!(title.value || metadata.value));
 
 watch(
   () => [

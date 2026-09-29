@@ -56,6 +56,7 @@ export interface JellyfinAjaxRequest {
 }
 
 export interface JellyfinServerInfo {
+  Id?: string;
   UserId?: string;
   AccessToken?: string;
   ManualAddress?: string;

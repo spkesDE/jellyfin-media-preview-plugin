@@ -27,19 +27,23 @@ function getImageUrl(item: JellyfinItem, imageType: 'Primary' | 'Backdrop', maxW
   }
 
   if (apiClient.getImageUrl) {
-    return apiClient.getImageUrl(item.Id, {
-      type: imageType,
-      tag,
-      maxWidth,
-      quality: 90,
-      ...(isBackdrop ? { index: 0 } : {})
-    }) ?? '';
+    return (
+      apiClient.getImageUrl(item.Id, {
+        type: imageType,
+        tag,
+        maxWidth,
+        quality: 90,
+        ...(isBackdrop ? { index: 0 } : {})
+      }) ?? ''
+    );
   }
 
-  return apiClient.getUrl?.(
-    `Items/${encodeURIComponent(item.Id)}/Images/${imageType}${isBackdrop ? '/0' : ''}`
-      + `?tag=${encodeURIComponent(tag)}&maxWidth=${maxWidth}&quality=90`
-  ) ?? '';
+  return (
+    apiClient.getUrl?.(
+      `Items/${encodeURIComponent(item.Id)}/Images/${imageType}${isBackdrop ? '/0' : ''}` +
+        `?tag=${encodeURIComponent(tag)}&maxWidth=${maxWidth}&quality=90`
+    ) ?? ''
+  );
 }
 
 function preloadImage(url: string): Promise<string> {
@@ -80,8 +84,8 @@ export async function loadAppearancePreview(): Promise<AppearancePreview | null>
 
   try {
     const payload = await requestJson(`Users/${encodeURIComponent(userId)}/Items?${query}`);
-    const movies = normalizeItems(payload).filter((item) =>
-      !!item.Id && (!!item.ImageTags?.Primary || !!item.BackdropImageTags?.length)
+    const movies = normalizeItems(payload).filter(
+      (item) => !!item.Id && (!!item.ImageTags?.Primary || !!item.BackdropImageTags?.length)
     );
     if (!movies.length) {
       return null;

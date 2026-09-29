@@ -1,0 +1,166 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import test from 'node:test';
+
+const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8');
+
+test('keyboard and focus previews initialize without hover hardware', async () => {
+  const [main, delegatedEvents] = await Promise.all([read('src/main.ts'), read('src/interaction/delegatedEvents.ts')]);
+
+  assert.doesNotMatch(main, /matchMedia[\s\S]*Skipping media preview/);
+  assert.match(delegatedEvents, /addEventListener\('focusin'/);
+  assert.match(delegatedEvents, /handleKeyboardPreviewKey/);
+});
+
+test('preview caches are scoped to the active server and user', async () => {
+  const [apiClient, storage, trailer] = await Promise.all([
+    read('src/core/apiClient.ts'),
+    read('src/core/storage.ts'),
+    read('src/preview/trailer.ts')
+  ]);
+
+  assert.match(apiClient, /serverIdentity[\s\S]*userId/);
+  assert.match(storage, /activePreviewCacheContext[\s\S]*clearPreviewCacheEntries/);
+  assert.match(trailer, /getScopedPreviewCacheKey\(contextKey, itemId\)/);
+});
+
+test('trailer cleanup is independent from static frame restoration', async () => {
+  const lifecycle = await read('src/cards/lifecycle.ts');
+
+  assert.match(
+    lifecycle,
+    /config\.restoreOnLeave \|\| activePreviewSource === PREVIEW_SOURCE_TRAILER \|\| state\.trailerMedia/
+  );
+  assert.match(lifecycle, /clearTrailerMedia\(state\)/);
+});
+
+test('preferred sources use configurable ordered fallback chains', async () => {
+  const [source, directPlay, renderer] = await Promise.all([
+    read('src/preview/source.ts'),
+    read('src/preview/directPlay.ts'),
+    read('src/preview/renderTrailer.ts')
+  ]);
+
+  assert.match(source, /PREVIEW_SOURCE_PREFER_TRAILER[\s\S]*config\.preferTrailerFallbacks/);
+  assert.match(source, /PREVIEW_SOURCE_PREFER_DIRECT_PLAY[\s\S]*config\.preferDirectPlayFallbacks/);
+  assert.match(source, /fallbacks\.filter\(\(entry\) => entry\.enabled\)/);
+  assert.match(directPlay, /provider: 'direct-play'/);
+  assert.match(renderer, /markVideoTrailerUnavailable/);
+  assert.match(renderer, /markDirectPlayUnavailable/);
+  assert.match(renderer, /mediaElement\.playbackRate = playbackRate/);
+  assert.match(renderer, /previewDurationSeconds/);
+  assert.match(directPlay, /!config\.directPlayPreviewEnabled/);
+  assert.match(directPlay, /directPlayTranscodeFallbackEnabled/);
+});
+
+test('prefer-trickplay reads its configured fallback chain', async () => {
+  const source = await read('src/preview/source.ts');
+
+  assert.match(source, /PREVIEW_SOURCE_PREFER_TRICKPLAY[\s\S]*config\.preferTrickplayFallbacks/);
+});
+
+test('Direct Play is selectable at every preview rule level', async () => {
+  const [constants, source, settings, backend] = await Promise.all([
+    read('src/constants.ts'),
+    read('src/preview/source.ts'),
+    read('src/config/tabs/GeneralTab.vue'),
+    read('Jellyfin.Plugin.MediaPreview/Configuration/PluginConfigurationNormalizer.cs')
+  ]);
+
+  assert.match(constants, /VALID_PREVIEW_SOURCES[\s\S]*PREVIEW_SOURCE_DIRECT_PLAY/);
+  assert.match(source, /source === PREVIEW_SOURCE_DIRECT_PLAY[\s\S]*getDirectPlayPreview/);
+  assert.match(settings, /value: 'direct-play', label: 'Only Direct Play'/);
+  assert.match(settings, /value: 'prefer-direct-play', label: 'Prefer Direct Play'/);
+  assert.match(settings, /ConfigHelpTooltip|help-text/);
+  assert.match(backend, /ValidContentTypePreviewSources[\s\S]*"direct-play"/);
+});
+
+test('advanced source chains expose local and remote trailers separately', async () => {
+  const [advanced, source, trailer] = await Promise.all([
+    read('src/config/tabs/AdvancedTab.vue'),
+    read('src/preview/source.ts'),
+    read('src/preview/trailer.ts')
+  ]);
+
+  assert.match(advanced, /primary="local-trailer"[\s\S]*:fixed-primary="false"/);
+  assert.match(advanced, /Preferred Source Chains/);
+  assert.match(advanced, /title="Performance"/);
+  assert.doesNotMatch(advanced, /v-if="store\.canUseTrickplay\.value"/);
+  assert.match(source, /'local-trailer'[\s\S]*getTrailerPreview\(itemId, 'local'\)/);
+  assert.match(source, /'remote-trailer'[\s\S]*getTrailerPreview\(itemId, 'remote'\)/);
+  assert.match(trailer, /source === 'local'[\s\S]*source === 'remote'/);
+});
+
+test('overlay controls are configured together in Appearance', async () => {
+  const [appearance, trailerSettings, renderer, youtube] = await Promise.all([
+    read('src/config/tabs/AppearanceTab.vue'),
+    read('src/config/tabs/TrailerTab.vue'),
+    read('src/preview/renderTrailer.ts'),
+    read('src/trailerOverlay/youtube.ts')
+  ]);
+
+  assert.match(appearance, /VideoControlSources[\s\S]*AudioControlSources/);
+  assert.match(appearance, /TrailerExpandButtonEnabled[\s\S]*TrailerExpandButtonPosition/);
+  assert.match(appearance, /Local Trailer[\s\S]*Remote \/ YouTube Trailer[\s\S]*Direct Play/);
+  assert.doesNotMatch(trailerSettings, /TrailerExpandButtonEnabled|TrailerExpandButtonPosition/);
+  assert.match(renderer, /config\.videoControlSources\.includes\(mediaControlSource\)/);
+  assert.match(renderer, /config\.audioControlSources\.includes\(mediaControlSource\)/);
+  assert.match(youtube, /pauseVideo[\s\S]*setVolume[\s\S]*unMute/);
+});
+
+test('production config build compiles and injects scoped component styles', async () => {
+  const [buildScript, tooltip, preferenceEditor] = await Promise.all([
+    read('scripts/build.mjs'),
+    read('src/config/components/ConfigHelpTooltip.vue'),
+    read('src/config/components/PreferenceChainEditor.vue')
+  ]);
+
+  assert.match(buildScript, /plugins: \[vue\(\), injectEmittedCss\('media-preview-component-styles'\)\]/);
+  assert.match(buildScript, /configBundle\.includes\('\[data-v-'\)/);
+  assert.match(buildScript, /const strictDirective = '"use strict";'/);
+  assert.match(buildScript, /'\(\(\)=>\{'[\s\S]*`const __styleId=/);
+  assert.match(buildScript, /trimmedConfigBundle\.startsWith\('"use strict";'\)/);
+  assert.match(tooltip, /<style scoped>[\s\S]*\.ec-helpTrigger/);
+  assert.match(preferenceEditor, /<style scoped>[\s\S]*\.jmp-preferenceItem\.is-fixed/);
+  assert.match(preferenceEditor, /fallback-class="jmp-preferenceDragPreview"/);
+  assert.match(preferenceEditor, /:force-fallback="true"/);
+  assert.doesNotMatch(preferenceEditor, /fallback-on-body/);
+  assert.doesNotMatch(preferenceEditor, /opacity 0\.16s ease,[\s\S]*transform 0\.16s ease/);
+  assert.doesNotMatch(preferenceEditor, /checkboxOutline|checkboxIcon-checked/);
+});
+
+test('backend and frontend defaults remain aligned', async () => {
+  const [backend, runtimeDefaults, settingsDefaults] = await Promise.all([
+    read('Jellyfin.Plugin.MediaPreview/Configuration/PluginConfiguration.cs'),
+    read('src/config.ts'),
+    read('src/config/libs/defaults.ts')
+  ]);
+
+  assert.match(backend, /PreviewSource[^=]*= "trickplay"/);
+  assert.match(backend, /HoverMode[^=]*= "scrub"/);
+  assert.match(backend, /YouTubeCropStrength[^=]*= "medium"/);
+  assert.match(backend, /DirectPlayStartPercent[^=]*= 20/);
+  assert.match(backend, /DirectPlayPreviewEnabled[^=]*= true/);
+  assert.match(backend, /DirectPlayPlaybackRate[^=]*= 1\.5/);
+  assert.match(backend, /DirectPlayTranscodeFallbackEnabled[^=]*= true/);
+  assert.match(backend, /VideoControlSources[^=]*= \["local-trailer", "remote-trailer", "direct-play"\]/);
+  assert.match(backend, /AudioControlSources[^=]*= \["local-trailer", "remote-trailer", "direct-play"\]/);
+  assert.match(runtimeDefaults, /previewSource: PREVIEW_SOURCE_TRICKPLAY/);
+  assert.match(runtimeDefaults, /hoverMode: 'scrub'/);
+  assert.match(runtimeDefaults, /youTubeCropStrength: 'medium'/);
+  assert.match(runtimeDefaults, /directPlayStartPercent: 20/);
+  assert.match(runtimeDefaults, /directPlayPreviewEnabled: true/);
+  assert.match(runtimeDefaults, /directPlayPlaybackRate: 1\.5/);
+  assert.match(runtimeDefaults, /directPlayTranscodeFallbackEnabled: true/);
+  assert.match(runtimeDefaults, /videoControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
+  assert.match(runtimeDefaults, /audioControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
+  assert.match(settingsDefaults, /PreviewSource: 'trickplay'/);
+  assert.match(settingsDefaults, /HoverMode: 'scrub'/);
+  assert.match(settingsDefaults, /YouTubeCropStrength: 'medium'/);
+  assert.match(settingsDefaults, /DirectPlayStartPercent: 20/);
+  assert.match(settingsDefaults, /DirectPlayPreviewEnabled: true/);
+  assert.match(settingsDefaults, /DirectPlayPlaybackRate: 1\.5/);
+  assert.match(settingsDefaults, /DirectPlayTranscodeFallbackEnabled: true/);
+  assert.match(settingsDefaults, /VideoControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
+  assert.match(settingsDefaults, /AudioControlSources: \['local-trailer', 'remote-trailer', 'direct-play'\]/);
+});

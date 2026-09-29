@@ -50,16 +50,18 @@ export function installJellyfinDevMocks(): void {
 
       if (url.includes('/Items?')) {
         return {
-          Items: [{
-            Id: 'preview-movie',
-            Name: 'Development Movie',
-            ProductionYear: 2026,
-            RunTimeTicks: 61200000000,
-            OfficialRating: 'PG-13',
-            CommunityRating: 8.2,
-            ImageTags: { Primary: 'primary' },
-            BackdropImageTags: ['backdrop']
-          }]
+          Items: [
+            {
+              Id: 'preview-movie',
+              Name: 'Development Movie',
+              ProductionYear: 2026,
+              RunTimeTicks: 61200000000,
+              OfficialRating: 'PG-13',
+              CommunityRating: 8.2,
+              ImageTags: { Primary: 'primary' },
+              BackdropImageTags: ['backdrop']
+            }
+          ]
         };
       }
 

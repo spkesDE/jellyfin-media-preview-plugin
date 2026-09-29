@@ -1,15 +1,10 @@
-import { buildApiUrl } from '../core/apiClient';
+import { buildApiUrl, getApiContextKey, getGlobalApiClient } from '../core/apiClient';
 import { tilePreloadCache } from '../core/storage';
 import { config } from '../config';
-import {
-  PREVIEW_SOURCE_PREFER_TRAILER,
-  PREVIEW_SOURCE_PREFER_TRICKPLAY,
-  PREVIEW_SOURCE_TRICKPLAY
-} from '../constants';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
 import { getLibraryIdForItem } from './library';
-import { getContentTypePreviewSource, getResolvedPreviewSource } from './source';
+import { getContentTypePreviewSource, getResolvedPreviewSource, previewSourceUsesTrickplay } from './source';
 import { getTrickplayPreview } from './trickplay';
 import { runtimeState } from '../runtime';
 import type { TrickplayPreview } from '../types/preview';
@@ -47,18 +42,15 @@ function getMaxConcurrentTrickplayPreloads(): number {
   return Math.max(1, Math.floor(Number(config.trickplayPreloadLimit) || 2));
 }
 
-function previewSourceUsesTrickplay(source: string): boolean {
-  return source === PREVIEW_SOURCE_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRAILER;
-}
-
 function getPreloadPreviewSource(itemId: string, itemType?: string | null): Promise<string> {
   if (!config.libraryPreviewSourceOverrides.length) {
     return Promise.resolve(getContentTypePreviewSource(itemType));
   }
 
-  return getLibraryIdForItem(itemId).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
+  return getLibraryIdForItem(
+    itemId,
+    config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
+  ).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
 }
 
 function scheduleTrickplayPreloadQueue(): void {
@@ -122,7 +114,7 @@ export function queueTrickplayPreload(
 
   const normalizedPercent = clamp(Number(percent) || 0, 0, 1);
   const percentBucket = Math.round(normalizedPercent * 20);
-  const preloadKey = `${itemId}|${itemType || ''}|${percentBucket}`;
+  const preloadKey = `${getApiContextKey(getGlobalApiClient()) || 'anonymous'}|${itemId}|${itemType || ''}|${percentBucket}`;
   if (trickplayPreloadCache.has(preloadKey)) {
     return;
   }
@@ -173,25 +165,28 @@ function getTrickplayPreloadObserver(): IntersectionObserver | null {
   }
 
   if (!runtimeState.trickplayPreloadObserver) {
-    runtimeState.trickplayPreloadObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) {
-          return;
-        }
+    runtimeState.trickplayPreloadObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) {
+            return;
+          }
 
-        runtimeState.trickplayPreloadObserver?.unobserve(entry.target);
-        const request = trickplayPreloadCards.get(entry.target);
-        if (!request) {
-          return;
-        }
+          runtimeState.trickplayPreloadObserver?.unobserve(entry.target);
+          const request = trickplayPreloadCards.get(entry.target);
+          if (!request) {
+            return;
+          }
 
-        queueTrickplayPreload(request.itemId, request.percent, request.itemType);
-      });
-    }, {
-      root: null,
-      rootMargin: '600px 0px',
-      threshold: 0.01
-    });
+          queueTrickplayPreload(request.itemId, request.percent, request.itemType);
+        });
+      },
+      {
+        root: null,
+        rootMargin: '600px 0px',
+        threshold: 0.01
+      }
+    );
   }
 
   return runtimeState.trickplayPreloadObserver;

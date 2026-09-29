@@ -28,13 +28,7 @@ export function isExcludedCard(card: Element | null): boolean {
 
   if (
     card.matches(
-      [
-        '.imageEditorCard',
-        '.imagePickerCard',
-        '.imageEditorImage',
-        '.visualCardBox',
-        '[data-imagetype]'
-      ].join(', ')
+      ['.imageEditorCard', '.imagePickerCard', '.imageEditorImage', '.visualCardBox', '[data-imagetype]'].join(', ')
     )
   ) {
     return true;
@@ -57,22 +51,13 @@ export function isExcludedCard(card: Element | null): boolean {
   return false;
 }
 
-export function findCandidateCards(
-  rootNode?: ParentNode | Node | null
-): HTMLElement[] {
+export function findCandidateCards(rootNode?: ParentNode | Node | null): HTMLElement[] {
   const rootElement =
-    rootNode &&
-    'nodeType' in rootNode &&
-    rootNode.nodeType === Node.ELEMENT_NODE
-      ? (rootNode as Element)
-      : document;
+    rootNode && 'nodeType' in rootNode && rootNode.nodeType === Node.ELEMENT_NODE ? (rootNode as Element) : document;
 
   const candidates = new Set<HTMLElement>();
 
-  if (
-    'matches' in rootElement &&
-    typeof rootElement.matches === 'function'
-  ) {
+  if ('matches' in rootElement && typeof rootElement.matches === 'function') {
     CANDIDATE_SELECTORS.forEach((selector) => {
       if (!rootElement.matches(selector)) {
         return;
@@ -114,9 +99,7 @@ export function findCandidateCards(
   });
 }
 
-export function normalizeCardElement(
-  element: Element | null
-): HTMLElement | null {
+export function normalizeCardElement(element: Element | null): HTMLElement | null {
   if (!element) {
     return null;
   }
@@ -130,55 +113,35 @@ export function normalizeCardElement(
   );
 }
 
-export function getItemTypeFromCard(
-  card: Element | null
-): string | null {
+export function getItemTypeFromCard(card: Element | null): string | null {
   if (!card) {
     return null;
   }
 
   const ownType =
     card.getAttribute('data-type') ||
-    (card instanceof HTMLElement
-      ? card.dataset.type || card.dataset.itemtype || null
-      : null);
+    (card instanceof HTMLElement ? card.dataset.type || card.dataset.itemtype || null : null);
 
   if (ownType) {
     return ownType;
   }
 
-  const ancestor = card.closest(
-    '[data-type], [data-itemtype]'
-  ) as HTMLElement | null;
+  const ancestor = card.closest('[data-type], [data-itemtype]') as HTMLElement | null;
 
   if (ancestor) {
-    return (
-      ancestor.getAttribute('data-type') ||
-      ancestor.dataset.type ||
-      ancestor.dataset.itemtype ||
-      null
-    );
+    return ancestor.getAttribute('data-type') || ancestor.dataset.type || ancestor.dataset.itemtype || null;
   }
 
-  const descendant = card.querySelector(
-    '[data-type], [data-itemtype]'
-  ) as HTMLElement | null;
+  const descendant = card.querySelector('[data-type], [data-itemtype]') as HTMLElement | null;
 
   if (descendant) {
-    return (
-      descendant.getAttribute('data-type') ||
-      descendant.dataset.type ||
-      descendant.dataset.itemtype ||
-      null
-    );
+    return descendant.getAttribute('data-type') || descendant.dataset.type || descendant.dataset.itemtype || null;
   }
 
   return null;
 }
 
-function parseItemIdFromHref(
-  href: string | null
-): string | null {
+function parseItemIdFromHref(href: string | null): string | null {
   if (!href) {
     return null;
   }
@@ -192,76 +155,51 @@ function parseItemIdFromHref(
     }
 
     const match =
-      url.pathname.match(
-        /\/details(?:\.html)?\/([^/?#]+)/i
-      ) ||
-      url.pathname.match(
-        /\/itemdetails(?:\.html)?\/([^/?#]+)/i
-      ) ||
+      url.pathname.match(/\/details(?:\.html)?\/([^/?#]+)/i) ||
+      url.pathname.match(/\/itemdetails(?:\.html)?\/([^/?#]+)/i) ||
       url.hash.match(/[?&]id=([^&]+)/i);
 
     return match ? decodeURIComponent(match[1]) : null;
   } catch {
     const directMatch = href.match(/[?&]id=([^&]+)/i);
 
-    return directMatch
-      ? decodeURIComponent(directMatch[1])
-      : null;
+    return directMatch ? decodeURIComponent(directMatch[1]) : null;
   }
 }
 
-function parseItemIdFromBackgroundImage(
-  styleValue: string | null
-): string | null {
+function parseItemIdFromBackgroundImage(styleValue: string | null): string | null {
   if (!styleValue) {
     return null;
   }
 
-  const match = styleValue.match(
-    /\/Items\/([a-f0-9]+)\/Images\//i
-  );
+  const match = styleValue.match(/\/Items\/([a-f0-9]+)\/Images\//i);
 
   return match ? match[1] : null;
 }
 
-export function getItemIdFromCard(
-  card: Element | null
-): string | null {
+export function getItemIdFromCard(card: Element | null): string | null {
   if (!card) {
     return null;
   }
 
-  const directKeys = [
-    'id',
-    'itemId',
-    'itemid'
-  ] as const;
+  const directKeys = ['id', 'itemId', 'itemid'] as const;
 
-  const fallbackKeys = [
-    'parentid',
-    'itemPrimaryImageId'
-  ] as const;
+  const fallbackKeys = ['parentid', 'itemPrimaryImageId'] as const;
 
-  const htmlCard =
-    card instanceof HTMLElement ? card : null;
+  const htmlCard = card instanceof HTMLElement ? card : null;
 
   for (let i = 0; i < directKeys.length; i += 1) {
     const key = directKeys[i];
 
-    const datasetValue =
-      htmlCard?.dataset?.[key as keyof DOMStringMap];
+    const datasetValue = htmlCard?.dataset?.[key as keyof DOMStringMap];
 
     if (datasetValue) {
       return datasetValue;
     }
 
-    const attributeName = `data-${key.replace(
-      /[A-Z]/g,
-      (match) => `-${match.toLowerCase()}`
-    )}`;
+    const attributeName = `data-${key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
 
-    const attributeValue =
-      card.getAttribute(attributeName);
+    const attributeValue = card.getAttribute(attributeName);
 
     if (attributeValue) {
       return attributeValue;
@@ -269,39 +207,26 @@ export function getItemIdFromCard(
   }
 
   const descendants = card.querySelectorAll(
-    [
-      '[data-id]',
-      '[data-item-id]',
-      '[data-itemid]',
-      'a[href]',
-      'button[data-id]'
-    ].join(', ')
+    ['[data-id]', '[data-item-id]', '[data-itemid]', 'a[href]', 'button[data-id]'].join(', ')
   );
 
   for (let i = 0; i < descendants.length; i += 1) {
     const element = descendants[i] as HTMLElement;
 
-    const datasetId =
-      element.dataset?.id ||
-      element.dataset?.itemId ||
-      element.dataset?.itemid;
+    const datasetId = element.dataset?.id || element.dataset?.itemId || element.dataset?.itemid;
 
     if (datasetId) {
       return datasetId;
     }
 
-    const parsedHrefId = parseItemIdFromHref(
-      element.getAttribute('href')
-    );
+    const parsedHrefId = parseItemIdFromHref(element.getAttribute('href'));
 
     if (parsedHrefId) {
       return parsedHrefId;
     }
   }
 
-  const ownHrefId = parseItemIdFromHref(
-    card.getAttribute('href')
-  );
+  const ownHrefId = parseItemIdFromHref(card.getAttribute('href'));
 
   if (ownHrefId) {
     return ownHrefId;
@@ -310,20 +235,15 @@ export function getItemIdFromCard(
   for (let i = 0; i < fallbackKeys.length; i += 1) {
     const key = fallbackKeys[i];
 
-    const datasetValue =
-      htmlCard?.dataset?.[key as keyof DOMStringMap];
+    const datasetValue = htmlCard?.dataset?.[key as keyof DOMStringMap];
 
     if (datasetValue) {
       return datasetValue;
     }
 
-    const attributeName = `data-${key.replace(
-      /[A-Z]/g,
-      (match) => `-${match.toLowerCase()}`
-    )}`;
+    const attributeName = `data-${key.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`)}`;
 
-    const attributeValue =
-      card.getAttribute(attributeName);
+    const attributeValue = card.getAttribute(attributeName);
 
     if (attributeValue) {
       return attributeValue;
@@ -331,27 +251,21 @@ export function getItemIdFromCard(
   }
 
   if (htmlCard) {
-    const ownBackgroundImageId =
-      parseItemIdFromBackgroundImage(
-        htmlCard.style.backgroundImage ||
-          htmlCard.getAttribute('style')
-      );
+    const ownBackgroundImageId = parseItemIdFromBackgroundImage(
+      htmlCard.style.backgroundImage || htmlCard.getAttribute('style')
+    );
 
     if (ownBackgroundImageId) {
       return ownBackgroundImageId;
     }
   }
 
-  const backgroundImageHost = card.querySelector(
-    '[style*="/Items/"]'
-  ) as HTMLElement | null;
+  const backgroundImageHost = card.querySelector('[style*="/Items/"]') as HTMLElement | null;
 
   if (backgroundImageHost) {
-    const backgroundImageId =
-      parseItemIdFromBackgroundImage(
-        backgroundImageHost.style.backgroundImage ||
-          backgroundImageHost.getAttribute('style')
-      );
+    const backgroundImageId = parseItemIdFromBackgroundImage(
+      backgroundImageHost.style.backgroundImage || backgroundImageHost.getAttribute('style')
+    );
 
     if (backgroundImageId) {
       return backgroundImageId;
@@ -370,9 +284,7 @@ export function getItemIdFromCard(
  *
  * The real image container must therefore be selected first.
  */
-export function getCardImageElement(
-  card: Element | null
-): HTMLElement | null {
+export function getCardImageElement(card: Element | null): HTMLElement | null {
   if (!card || isExcludedCard(card)) {
     return null;
   }
@@ -401,9 +313,7 @@ export function getCardImageElement(
   ];
 
   for (let i = 0; i < selectors.length; i += 1) {
-    const match = card.querySelector(
-      selectors[i]
-    ) as HTMLElement | null;
+    const match = card.querySelector(selectors[i]) as HTMLElement | null;
 
     if (!match) {
       continue;
@@ -412,33 +322,19 @@ export function getCardImageElement(
     if (
       match instanceof HTMLImageElement &&
       match.closest(
-        [
-          '.cardIndicators',
-          '.cardOverlayContainer',
-          '.je-tag-host',
-          '[class*="-overlay-container"]'
-        ].join(', ')
+        ['.cardIndicators', '.cardOverlayContainer', '.je-tag-host', '[class*="-overlay-container"]'].join(', ')
       )
     ) {
       continue;
     }
 
-    if (
-      match.classList.contains('cardImageContainer')
-    ) {
+    if (match.classList.contains('cardImageContainer')) {
       return match;
     }
 
-    const nearestContainer = match.closest(
-      '.cardImageContainer'
-    ) as HTMLElement | null;
+    const nearestContainer = match.closest('.cardImageContainer') as HTMLElement | null;
 
-    if (
-      nearestContainer &&
-      !nearestContainer.matches(
-        'a[href*="#/details?id="]'
-      )
-    ) {
+    if (nearestContainer && !nearestContainer.matches('a[href*="#/details?id="]')) {
       return nearestContainer;
     }
 
@@ -451,9 +347,7 @@ export function getCardImageElement(
 /**
  * Returns the element that should receive the preview layers.
  */
-export function getImageRenderHost(
-  card: Element | null
-): HTMLElement | null {
+export function getImageRenderHost(card: Element | null): HTMLElement | null {
   if (!card || isExcludedCard(card)) {
     return null;
   }
@@ -464,31 +358,17 @@ export function getImageRenderHost(
     return null;
   }
 
-  if (
-    imageElement.classList.contains(
-      'cardImageContainer'
-    ) ||
-    imageElement.classList.contains('cardPadder')
-  ) {
+  if (imageElement.classList.contains('cardImageContainer') || imageElement.classList.contains('cardPadder')) {
     return imageElement;
   }
 
-  const nearestImageContainer = imageElement.closest(
-    '.cardImageContainer'
-  ) as HTMLElement | null;
+  const nearestImageContainer = imageElement.closest('.cardImageContainer') as HTMLElement | null;
 
-  if (
-    nearestImageContainer &&
-    !nearestImageContainer.matches(
-      'a[href*="#/details?id="]'
-    )
-  ) {
+  if (nearestImageContainer && !nearestImageContainer.matches('a[href*="#/details?id="]')) {
     return nearestImageContainer;
   }
 
-  const nearestPadder = imageElement.closest(
-    '.cardPadder'
-  ) as HTMLElement | null;
+  const nearestPadder = imageElement.closest('.cardPadder') as HTMLElement | null;
 
   if (nearestPadder) {
     return nearestPadder;
@@ -499,9 +379,7 @@ export function getImageRenderHost(
    * they fall through to the parent below, which is the full-width .listItem
    * row. The preview then spans the whole row instead of the thumbnail.
    */
-  const nearestListItemImage = imageElement.closest(
-    '.listItemImage'
-  ) as HTMLElement | null;
+  const nearestListItemImage = imageElement.closest('.listItemImage') as HTMLElement | null;
 
   if (nearestListItemImage) {
     return nearestListItemImage;
@@ -517,16 +395,12 @@ export function getImageRenderHost(
  * other inside .cardScalable. Therefore checking only the image container
  * would reject events originating from the overlay.
  */
-export function getCardHoverHost(
-  card: Element | null
-): HTMLElement | null {
+export function getCardHoverHost(card: Element | null): HTMLElement | null {
   if (!card || isExcludedCard(card)) {
     return null;
   }
 
-  const scalable = card.querySelector(
-    '.cardScalable'
-  ) as HTMLElement | null;
+  const scalable = card.querySelector('.cardScalable') as HTMLElement | null;
 
   if (scalable) {
     return scalable;
@@ -545,43 +419,27 @@ export function getCardHoverHost(
  * itself. Judged by hover host that reads as a leave, and the preview is torn
  * down while the pointer is still on the same card.
  */
-export function getCardFromEventTarget(
-  target: EventTarget | null
-): HTMLElement | null {
-  if (
-    !(target instanceof Element) ||
-    typeof target.closest !== 'function'
-  ) {
+export function getCardFromEventTarget(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Element) || typeof target.closest !== 'function') {
     return null;
   }
 
-  const card = normalizeCardElement(
-    target.closest(CARD_LOOKUP_SELECTOR)
-  );
+  const card = normalizeCardElement(target.closest(CARD_LOOKUP_SELECTOR));
 
-  if (
-    !card ||
-    isExcludedCard(card) ||
-    !getItemIdFromCard(card)
-  ) {
+  if (!card || isExcludedCard(card) || !getItemIdFromCard(card)) {
     return null;
   }
 
   const itemType = getItemTypeFromCard(card);
 
-  if (
-    itemType &&
-    !SUPPORTED_TYPES.has(itemType)
-  ) {
+  if (itemType && !SUPPORTED_TYPES.has(itemType)) {
     return null;
   }
 
   return card;
 }
 
-export function getHoverCardFromEventTarget(
-  target: EventTarget | null
-): HTMLElement | null {
+export function getHoverCardFromEventTarget(target: EventTarget | null): HTMLElement | null {
   const card = getCardFromEventTarget(target);
 
   if (!card || !(target instanceof Element)) {
@@ -590,47 +448,27 @@ export function getHoverCardFromEventTarget(
 
   const hoverHost = getCardHoverHost(card);
 
-  if (
-    !hoverHost ||
-    !(
-      target === hoverHost ||
-      hoverHost.contains(target)
-    )
-  ) {
+  if (!hoverHost || !(target === hoverHost || hoverHost.contains(target))) {
     return null;
   }
 
   return card;
 }
 
-export function getSupportedCardFromEventTarget(
-  target: EventTarget | null
-): HTMLElement | null {
-  if (
-    !(target instanceof Element) ||
-    typeof target.closest !== 'function'
-  ) {
+export function getSupportedCardFromEventTarget(target: EventTarget | null): HTMLElement | null {
+  if (!(target instanceof Element) || typeof target.closest !== 'function') {
     return null;
   }
 
-  const card = normalizeCardElement(
-    target.closest(CARD_LOOKUP_SELECTOR)
-  );
+  const card = normalizeCardElement(target.closest(CARD_LOOKUP_SELECTOR));
 
-  if (
-    !card ||
-    isExcludedCard(card) ||
-    !getItemIdFromCard(card)
-  ) {
+  if (!card || isExcludedCard(card) || !getItemIdFromCard(card)) {
     return null;
   }
 
   const itemType = getItemTypeFromCard(card);
 
-  if (
-    itemType &&
-    !SUPPORTED_TYPES.has(itemType)
-  ) {
+  if (itemType && !SUPPORTED_TYPES.has(itemType)) {
     return null;
   }
 

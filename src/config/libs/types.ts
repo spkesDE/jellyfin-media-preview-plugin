@@ -1,11 +1,13 @@
-import type {
-  ContentTypePreviewSource,
-  PreviewSource
-} from '../../types/config';
+import type { ContentTypePreviewSource, PreviewChainSource } from '../../types/config';
 
 export interface ConfigLibraryOverride {
   LibraryId: string;
   PreviewSource: ContentTypePreviewSource;
+}
+
+export interface ConfigPreviewFallbackSource {
+  Source: PreviewChainSource;
+  Enabled: boolean;
 }
 
 export interface ConfigLibrary {

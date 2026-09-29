@@ -27,7 +27,13 @@ internal static class YouTubeVideoId
         {
             candidate = parsedUrl.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         }
-        else if (host is "youtube.com" or "www.youtube.com" or "m.youtube.com" or "youtube-nocookie.com" or "www.youtube-nocookie.com")
+        else if (host is "youtube.com"
+            or "www.youtube.com"
+            or "m.youtube.com"
+            or "music.youtube.com"
+            or "www.music.youtube.com"
+            or "youtube-nocookie.com"
+            or "www.youtube-nocookie.com")
         {
             string[] pathSegments = parsedUrl.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (pathSegments.Length >= 2 && pathSegments[0] is "embed" or "shorts" or "live")

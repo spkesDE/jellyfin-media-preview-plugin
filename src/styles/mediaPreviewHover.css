@@ -8,10 +8,7 @@
   pointer-events: none;
   border: 0;
   border-radius: 999px;
-  background: conic-gradient(
-    rgba(255, 255, 255, 0.42) calc(var(--progress, 1) * 1turn),
-    rgba(255, 255, 255, 0.08) 0
-  );
+  background: conic-gradient(rgba(255, 255, 255, 0.42) calc(var(--progress, 1) * 1turn), rgba(255, 255, 255, 0.08) 0);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
 }
 

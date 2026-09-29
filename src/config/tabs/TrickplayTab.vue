@@ -27,7 +27,13 @@ const isContinuous = computed(() => !isStep.value);
 </script>
 
 <template>
-  <section id="mediaPreviewPanel-trickplay" class="jmp-section" data-tab-section="trickplay" role="tabpanel" aria-labelledby="mediaPreviewTab-trickplay">
+  <section
+    id="mediaPreviewPanel-trickplay"
+    class="jmp-section"
+    data-tab-section="trickplay"
+    role="tabpanel"
+    aria-labelledby="mediaPreviewTab-trickplay"
+  >
     <h3>Trickplay Motion</h3>
     <p class="jmp-help">Control how Trickplay previews move when you hover a card.</p>
 
@@ -46,7 +52,8 @@ const isContinuous = computed(() => !isStep.value);
     <ConfigCheckbox v-model="store.config.TrickplayLoadingIndicatorEnabled" label="Show Trickplay loading indicator" />
 
     <p v-if="store.config.HoverMode === 'scrub'" class="jmp-note">
-      Scrub pacing is adaptive automatically. Dense Trickplay sets react quickly, while sparse sets hold each frame a bit longer so the preview feels calmer instead of jumpy.
+      Scrub pacing is adaptive automatically. Dense Trickplay sets react quickly, while sparse sets hold each frame a
+      bit longer so the preview feels calmer instead of jumpy.
     </p>
 
     <template v-if="store.config.HoverMode === 'auto'">
@@ -59,7 +66,13 @@ const isContinuous = computed(() => !isStep.value);
         </div>
       </div>
 
-      <ConfigNumber v-model="store.config.AutoScrubStartPercent" label="Auto Scrub Start (%)" :min="0" :max="100" :step="1" />
+      <ConfigNumber
+        v-model="store.config.AutoScrubStartPercent"
+        label="Auto Scrub Start (%)"
+        :min="0"
+        :max="100"
+        :step="1"
+      />
 
       <ConfigNumber
         v-if="isStep"
@@ -72,9 +85,18 @@ const isContinuous = computed(() => !isStep.value);
       <template v-if="isContinuous">
         <ConfigSelect v-model="store.config.AutoScrubPreset" label="Auto Scrub Preset" :options="presetOptions" />
         <div class="jmp-pillRow" aria-hidden="true">
-          <span class="jmp-pill"><span class="jmp-pillKey">Min</span><span class="jmp-pillValue">{{ store.presetValues.value.min }} ms</span></span>
-          <span class="jmp-pill"><span class="jmp-pillKey">Max</span><span class="jmp-pillValue">{{ store.presetValues.value.max }} ms</span></span>
-          <span class="jmp-pill"><span class="jmp-pillKey">Duration</span><span class="jmp-pillValue">{{ store.presetValues.value.duration }} ms</span></span>
+          <span class="jmp-pill"
+            ><span class="jmp-pillKey">Min</span
+            ><span class="jmp-pillValue">{{ store.presetValues.value.min }} ms</span></span
+          >
+          <span class="jmp-pill"
+            ><span class="jmp-pillKey">Max</span
+            ><span class="jmp-pillValue">{{ store.presetValues.value.max }} ms</span></span
+          >
+          <span class="jmp-pill"
+            ><span class="jmp-pillKey">Duration</span
+            ><span class="jmp-pillValue">{{ store.presetValues.value.duration }} ms</span></span
+          >
         </div>
 
         <template v-if="store.config.AutoScrubPreset === 'custom'">
@@ -101,7 +123,10 @@ const isContinuous = computed(() => !isStep.value);
             :step="1"
             @update:model-value="store.markAutoPresetCustom"
           />
-          <p class="jmp-note">Target overall sweep duration. The plugin derives a frame delay from it and then clamps that delay between your min and max values.</p>
+          <p class="jmp-note">
+            Target overall sweep duration. The plugin derives a frame delay from it and then clamps that delay between
+            your min and max values.
+          </p>
         </template>
       </template>
     </template>

@@ -1,0 +1,8 @@
+dist/
+release/
+node_modules/
+**/bin/
+**/obj/
+CHANGELOG.md
+manifest.json
+*.png

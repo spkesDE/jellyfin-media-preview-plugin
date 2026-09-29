@@ -32,6 +32,13 @@ Build the plugin:
 dotnet build .\Jellyfin.Plugin.MediaPreview\Jellyfin.Plugin.MediaPreview.csproj
 ```
 
+Run all automated checks:
+
+```powershell
+npm run build
+dotnet test .\Jellyfin.Plugin.MediaPreview.Tests\Jellyfin.Plugin.MediaPreview.Tests.csproj
+```
+
 Build a local release ZIP:
 
 ```powershell
@@ -93,7 +100,7 @@ If possible, test at least:
 4. restore original poster on mouse leave
 5. normal click navigation
 6. context menu and selection behavior
-7. trailer fallback when Trickplay is unavailable
+7. Direct Play fallback when configured trailer candidates are unavailable
 
 ## Coding Notes
 

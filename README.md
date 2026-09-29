@@ -19,8 +19,9 @@ Hover a movie, series, or episode card and the plugin can show a quick preview u
 - Hover previews on supported Jellyfin Web cards
 - Trickplay thumbnail previews
 - Local trailer and YouTube trailer previews
-- Source priority settings, including Trickplay-first or trailer-first fallback
+- Source rules for Trickplay, trailers, Direct Play, and fallback priority
 - Optional trailer audio after browser interaction
+- Keyboard and focus previews for web-based TV, touch, and hybrid clients
 - Lightweight visual options for poster backdrops
 
 ## Requirements
@@ -88,17 +89,29 @@ When both are installed, `Automatic` prefers File Transformation. You can choose
 4. Save.
 5. Refresh Jellyfin Web.
 
-For most libraries, `Prefer Trickplay` is a good starting point. If your library has better trailer metadata than Trickplay coverage, try `Prefer Trailers`.
+For most libraries, `Prefer Trickplay` is a good starting point. If your library has better trailer metadata than Trickplay coverage, try `Prefer Trailer`.
 
 ## Preview Sources
 
-| Source | Best for |
-|---|---|
-| Trickplay | Lightweight previews from Jellyfin thumbnail sheets |
-| Local trailers | Video previews served by your Jellyfin server |
-| YouTube trailers | Trailer previews when Jellyfin already has YouTube trailer metadata |
+| Source           | Best for                                                              |
+| ---------------- | --------------------------------------------------------------------- |
+| Trickplay        | Lightweight previews from Jellyfin thumbnail sheets                   |
+| Local trailers   | Video previews served by your Jellyfin server                         |
+| YouTube trailers | Trailer previews when Jellyfin already has YouTube trailer metadata   |
+| Direct Play      | The media item itself, selected directly or used after Prefer Trailer |
 
 If no supported preview source is available for an item, the card stays unchanged.
+
+The preferred modes use these fallback chains:
+
+- `Prefer Trickplay`, `Prefer Trailer`, and `Prefer Direct Play` use configurable source chains.
+- The preferred source stays fixed on top. Local trailers, remote/YouTube trailers, Trickplay, and Direct Play can be reordered or disabled under `Media Preview -> Advanced`.
+
+Direct Play previews start 20% into the item by default, play at 1.5x speed, stay muted, and pause after 15 seconds.
+These values are configurable under `Media Preview -> Trailer`. Local trailer and Direct Play overlays also include
+pause/resume and mute/unmute controls. The optional Jellyfin transcode fallback can be
+disabled completely or limited by height and bitrate. Direct Play previews themselves can also be disabled globally;
+this disables `Only Direct Play` and every Direct Play step in a preferred source chain.
 
 ## Troubleshooting
 

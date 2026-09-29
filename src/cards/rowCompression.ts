@@ -13,12 +13,7 @@ export function getMinimumCompressedCardWidth(width: number): number {
   return Math.min(width, Math.max(MIN_CARD_WIDTH_PX, width * MIN_CARD_WIDTH_RATIO));
 }
 
-function allocateEvenly(
-  indices: number[],
-  capacities: number[],
-  reductions: number[],
-  requestedWidth: number
-): number {
+function allocateEvenly(indices: number[], capacities: number[], reductions: number[], requestedWidth: number): number {
   let remaining = requestedWidth;
 
   while (remaining > EPSILON) {
@@ -51,24 +46,25 @@ export function planRowCompression(
   mode: PortraitCardCompressionMode
 ): RowCompressionPlan {
   const reductions = widths.map(() => 0);
-  const capacities = widths.map((width, index) => index === activeIndex
-    ? 0
-    : Math.max(0, width - getMinimumCompressedCardWidth(width)));
+  const capacities = widths.map((width, index) =>
+    index === activeIndex ? 0 : Math.max(0, width - getMinimumCompressedCardWidth(width))
+  );
   let remaining = Math.max(0, requestedWidth);
 
   if (mode === 'neighbors') {
-    const distances = Array.from(new Set(widths
-      .map((_, index) => Math.abs(index - activeIndex))
-      .filter((distance, index) => index !== activeIndex && distance > 0)))
-      .sort((left, right) => left - right);
+    const distances = Array.from(
+      new Set(
+        widths
+          .map((_, index) => Math.abs(index - activeIndex))
+          .filter((distance, index) => index !== activeIndex && distance > 0)
+      )
+    ).sort((left, right) => left - right);
 
     distances.forEach((distance) => {
       if (remaining <= EPSILON) {
         return;
       }
-      const group = widths
-        .map((_, index) => index)
-        .filter((index) => Math.abs(index - activeIndex) === distance);
+      const group = widths.map((_, index) => index).filter((index) => Math.abs(index - activeIndex) === distance);
       remaining -= allocateEvenly(group, capacities, reductions, remaining);
     });
   } else {
@@ -80,10 +76,7 @@ export function planRowCompression(
         break;
       }
 
-      const totalWeight = available.reduce(
-        (sum, index) => sum + Math.abs(index - activeIndex),
-        0
-      );
+      const totalWeight = available.reduce((sum, index) => sum + Math.abs(index - activeIndex), 0);
       const passWidth = remaining;
       let distributed = 0;
       available.forEach((index) => {

@@ -21,13 +21,16 @@ export interface TrickplayInfo {
 }
 
 export interface TrailerCandidate {
-  provider: 'youtube' | 'remote-video' | 'local-trailer';
+  provider: 'youtube' | 'remote-video' | 'local-trailer' | 'direct-play';
   kind: 'iframe' | 'video';
   title: string;
   src?: string;
   fallbackSrc?: string | null;
   embedUrl?: string | null;
   youtubeId?: string | null;
+  startSeconds?: number;
+  playbackRate?: number;
+  previewDurationSeconds?: number;
   aspectRatio: AspectRatio;
 }
 
@@ -66,7 +69,18 @@ export interface TrailerPreview {
   };
 }
 
-export type PreviewResult = TrickplayPreview | TrailerPreview;
+export interface DirectPlayPreview {
+  source: 'direct-play';
+  itemId: string;
+  trailer: TrailerCandidate;
+  info: {
+    frameWidth: number;
+    frameHeight: number;
+  };
+}
+
+export type VideoPreview = TrailerPreview | DirectPlayPreview;
+export type PreviewResult = TrickplayPreview | VideoPreview;
 
 export interface ExpandedTrailerDom {
   overlay: HTMLDivElement;

@@ -1,6 +1,6 @@
 name: Bug report
 description: Report a reproducible problem with Jellyfin Media Preview
-title: "[Bug]: "
+title: '[Bug]: '
 labels:
   - bug
 body:
@@ -26,6 +26,7 @@ body:
       options:
         - Hover behavior
         - Trickplay previews
+        - Direct Play previews
         - Local trailers
         - YouTube trailers
         - Audio / autoplay
