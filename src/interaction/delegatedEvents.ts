@@ -16,6 +16,23 @@ import {
   handlePointerMove
 } from './hover';
 
+const KEYBOARD_NAVIGATION_INTENT_MS = 1500;
+const KEYBOARD_NAVIGATION_KEYS = new Set([
+  'ArrowUp',
+  'ArrowDown',
+  'ArrowLeft',
+  'ArrowRight',
+  'Tab',
+  'Home',
+  'End',
+  'PageUp',
+  'PageDown'
+]);
+
+export function hasRecentKeyboardNavigationIntent(now = Date.now()): boolean {
+  return runtimeState.keyboardNavigationIntentUntil >= now;
+}
+
 export function bindDelegatedHoverEvents(): void {
   if (runtimeState.delegatedHoverEventsBound) {
     return;
@@ -124,6 +141,12 @@ export function bindDelegatedHoverEvents(): void {
       return;
     }
 
+    if (!hasRecentKeyboardNavigationIntent()) {
+      return;
+    }
+
+    runtimeState.keyboardNavigationIntentUntil = 0;
+
     handleFocusEnter(card);
   };
 
@@ -142,12 +165,20 @@ export function bindDelegatedHoverEvents(): void {
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
+    if (KEYBOARD_NAVIGATION_KEYS.has(event.key)) {
+      runtimeState.keyboardNavigationIntentUntil = Date.now() + KEYBOARD_NAVIGATION_INTENT_MS;
+    }
+
     const card = getSupportedCardFromEventTarget(event.target);
     if (!card) {
       return;
     }
 
     handleKeyboardPreviewKey(card, event);
+  };
+
+  const onPointerDown = () => {
+    runtimeState.keyboardNavigationIntentUntil = 0;
   };
 
   document.addEventListener('pointerover', onPointerOver, true);
@@ -159,6 +190,7 @@ export function bindDelegatedHoverEvents(): void {
   document.addEventListener('focusin', onFocusIn, true);
   document.addEventListener('focusout', onFocusOut, true);
   document.addEventListener('keydown', onKeyDown, true);
+  document.addEventListener('pointerdown', onPointerDown, true);
   runtimeState.delegatedHoverHandlers = {
     onPointerOver,
     onPointerMove,
@@ -168,7 +200,8 @@ export function bindDelegatedHoverEvents(): void {
     onMouseOut,
     onFocusIn,
     onFocusOut,
-    onKeyDown
+    onKeyDown,
+    onPointerDown
   };
   runtimeState.delegatedHoverEventsBound = true;
 }
@@ -189,6 +222,8 @@ export function unbindDelegatedHoverEvents(): void {
   document.removeEventListener('focusin', handlers.onFocusIn, true);
   document.removeEventListener('focusout', handlers.onFocusOut, true);
   document.removeEventListener('keydown', handlers.onKeyDown, true);
+  document.removeEventListener('pointerdown', handlers.onPointerDown, true);
   runtimeState.delegatedHoverHandlers = null;
   runtimeState.delegatedHoverEventsBound = false;
+  runtimeState.keyboardNavigationIntentUntil = 0;
 }

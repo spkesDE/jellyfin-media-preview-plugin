@@ -48,6 +48,8 @@ export interface CardState {
   managedHostPosition: string | null;
   managedHostOverflow: string | null;
   widePreviewCard: HTMLElement | null;
+  widePreviewTargetWidth: number | null;
+  widePreviewTargetHeight: number | null;
   widePreviewCleanupTimer: number | null;
   widePreviewScroller: HTMLElement | null;
   widePreviewScrollerTranslate: string | null;

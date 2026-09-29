@@ -22,9 +22,17 @@ export function getCardLayoutKind(card: HTMLElement | null): 'portrait' | 'backd
   }
 
   if (
+    card.classList.contains('backdropCard') ||
+    card.classList.contains('squareCard') ||
+    !!card.querySelector('.cardPadder-backdrop, .cardPadder-square')
+  ) {
+    return 'backdrop';
+  }
+
+  if (
+    card.classList.contains('portraitCard') ||
     card.classList.contains('overflowPortraitCard') ||
-    !!card.querySelector('.cardPadder-overflowPortrait') ||
-    !!card.querySelector('.coveredImage')
+    !!card.querySelector('.cardPadder-portrait, .cardPadder-overflowPortrait')
   ) {
     return 'portrait';
   }

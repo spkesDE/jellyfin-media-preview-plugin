@@ -88,6 +88,8 @@ function cleanupManagedCard(state: CardState): void {
   cleanupManagedRowCards(state);
   restoreScrollerShift(state, true);
   state.widePreviewCard = null;
+  state.widePreviewTargetWidth = null;
+  state.widePreviewTargetHeight = null;
   activeWidePreviewStates.delete(state);
   if (!activeWidePreviewStates.size && viewportResizeBound) {
     window.removeEventListener('resize', handleViewportResize);
@@ -252,10 +254,9 @@ export function expandPortraitCardForPreview(
   clearCleanupTimer(state);
 
   if (state.widePreviewCard === card && card.classList.contains(EXPANDED_CLASS)) {
-    const configuredWidth = Number.parseFloat(card.style.getPropertyValue('--jmp-wide-preview-card-width'));
-    const hostHeight = Number.parseFloat(card.style.getPropertyValue('--jmp-wide-preview-media-height'));
-    const width = state.rootHost.offsetWidth + Math.max(0, configuredWidth - card.offsetWidth);
-    return Number.isFinite(width) && Number.isFinite(hostHeight) ? { width, height: hostHeight } : null;
+    return state.widePreviewTargetWidth !== null && state.widePreviewTargetHeight !== null
+      ? { width: state.widePreviewTargetWidth, height: state.widePreviewTargetHeight }
+      : null;
   }
 
   if (state.widePreviewCard) {
@@ -304,6 +305,8 @@ export function expandPortraitCardForPreview(
   }
 
   state.widePreviewCard = card;
+  state.widePreviewTargetWidth = targetHostWidth;
+  state.widePreviewTargetHeight = hostHeight;
   activeWidePreviewStates.add(state);
   bindViewportResize();
 
