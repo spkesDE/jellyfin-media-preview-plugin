@@ -237,6 +237,11 @@ try {
 
     Step "Building frontend bundle"
 
+    Run "dotnet" @(
+        "restore",
+        (Join-RepoPath @($repoRoot, "Jellyfin.Plugin.MediaPreview.Tests", "Jellyfin.Plugin.MediaPreview.Tests.csproj"))
+    ) "Backend test project restore failed."
+
     Run "npm" @("--prefix", $repoRoot, "run", "build") "npm run build failed."
 
     if (-not (Test-Path -LiteralPath $bundlePath)) {

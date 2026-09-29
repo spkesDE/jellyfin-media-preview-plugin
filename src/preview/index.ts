@@ -1,4 +1,4 @@
-import { PREVIEW_SOURCE_TRAILER } from '../constants';
+import { PREVIEW_SOURCE_DIRECT_PLAY, PREVIEW_SOURCE_TRAILER } from '../constants';
 import { renderMetadataOverlay } from './metadata';
 import { applyTrailerPreview } from './renderTrailer';
 import { applyTrickplayPreview } from './renderTrickplay';
@@ -14,7 +14,7 @@ export function applyPreview(
     return;
   }
 
-  if (preview.source === PREVIEW_SOURCE_TRAILER) {
+  if (preview.source === PREVIEW_SOURCE_TRAILER || preview.source === PREVIEW_SOURCE_DIRECT_PLAY) {
     applyTrailerPreview(card, preview, { onUnavailable: options?.onTrailerUnavailable });
     renderMetadataOverlay(card);
     return;

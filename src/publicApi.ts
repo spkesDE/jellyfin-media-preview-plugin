@@ -25,7 +25,11 @@ export interface JellyfinMediaPreviewPublicApi {
   observePageChanges: typeof observePageChanges;
 }
 
-export function createPublicApi(start: () => void, destroy: () => void, rebind: () => void): JellyfinMediaPreviewPublicApi {
+export function createPublicApi(
+  start: () => void,
+  destroy: () => void,
+  rebind: () => void
+): JellyfinMediaPreviewPublicApi {
   return {
     config,
     start,

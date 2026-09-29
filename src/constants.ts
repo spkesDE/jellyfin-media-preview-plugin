@@ -3,12 +3,15 @@ export const STYLE_ID = 'jellyfin-media-preview-style';
 export const NAMESPACE = 'JellyfinMediaPreview';
 export const PREVIEW_SOURCE_TRICKPLAY = 'trickplay';
 export const PREVIEW_SOURCE_TRAILER = 'trailer';
+export const PREVIEW_SOURCE_DIRECT_PLAY = 'direct-play';
 export const PREVIEW_SOURCE_PREFER_TRICKPLAY = 'prefer-trickplay';
 export const PREVIEW_SOURCE_PREFER_TRAILER = 'prefer-trailer';
+export const PREVIEW_SOURCE_PREFER_DIRECT_PLAY = 'prefer-direct-play';
 export const PREVIEW_SOURCE_INHERIT = 'inherit';
 export const NO_PREVIEW_MESSAGE_TRAILER = 'No Trailer Found';
+export const NO_PREVIEW_MESSAGE_DIRECT_PLAY = 'No Direct Play Preview Available';
 export const NO_PREVIEW_MESSAGE_TRICKPLAY = 'No Trickplay Found';
-export const NO_PREVIEW_MESSAGE_ANY = 'No Trailer/Trickplay Found';
+export const NO_PREVIEW_MESSAGE_ANY = 'No Preview Available';
 export const HOVER_MODE_SCRUB = 'scrub';
 export const HOVER_MODE_AUTO = 'auto';
 export const AUTO_SCRUB_MODE_STEP = 'step';
@@ -46,23 +49,24 @@ export const EXPANDED_TRAILER_TRANSITION_MS = 240;
 
 export const VALID_PREVIEW_SOURCES = new Set([
   PREVIEW_SOURCE_TRICKPLAY,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
-  PREVIEW_SOURCE_PREFER_TRAILER
+  PREVIEW_SOURCE_PREFER_TRAILER,
+  PREVIEW_SOURCE_PREFER_DIRECT_PLAY
 ] as const);
 
 export const VALID_CONTENT_TYPE_PREVIEW_SOURCES = new Set([
   PREVIEW_SOURCE_INHERIT,
   PREVIEW_SOURCE_TRICKPLAY,
+  PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
-  PREVIEW_SOURCE_PREFER_TRAILER
+  PREVIEW_SOURCE_PREFER_TRAILER,
+  PREVIEW_SOURCE_PREFER_DIRECT_PLAY
 ] as const);
 
-export const VALID_HOVER_MODES = new Set([
-  HOVER_MODE_SCRUB,
-  HOVER_MODE_AUTO
-] as const);
+export const VALID_HOVER_MODES = new Set([HOVER_MODE_SCRUB, HOVER_MODE_AUTO] as const);
 
 export const VALID_AUTO_SCRUB_MODES = new Set([
   AUTO_SCRUB_MODE_STEP,
@@ -77,11 +81,7 @@ export const VALID_AUTO_SCRUB_PRESETS = new Set([
   AUTO_SCRUB_PRESET_CINEMATIC
 ] as const);
 
-export const VALID_PREVIEW_MODES = new Set([
-  PREVIEW_MODE_COVER,
-  PREVIEW_MODE_CONTAIN,
-  PREVIEW_MODE_STRETCH
-] as const);
+export const VALID_PREVIEW_MODES = new Set([PREVIEW_MODE_COVER, PREVIEW_MODE_CONTAIN, PREVIEW_MODE_STRETCH] as const);
 
 export const VALID_PREVIEW_BACKDROP_MODES = new Set([
   PREVIEW_BACKDROP_OFF,
@@ -113,3 +113,4 @@ export const VALID_TRAILER_EXPAND_BUTTON_POSITIONS = new Set([
 ] as const);
 
 export const SUPPORTED_TYPES = new Set(['Movie', 'Episode', 'Series', 'Season', 'Video']);
+export const DIRECT_PLAY_TYPES = new Set(['Movie', 'Episode', 'Video']);

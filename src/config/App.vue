@@ -46,10 +46,9 @@ onBeforeUnmount(() => {
 
       <div class="verticalSection verticalSection-extrabottompadding jmp-intro">
         <p>
-          Adds hover previews to Jellyfin cards with Trickplay, trailers, library and type rules,
-          keyboard support, and optional metadata overlays. File Transformation or JavaScript
-          Injector must be installed, and preview playback still depends on the data Jellyfin
-          already exposes.
+          Adds hover previews to Jellyfin cards with Trickplay, trailers, library and type rules, keyboard support, and
+          optional metadata overlays. File Transformation or JavaScript Injector must be installed, and preview playback
+          still depends on the data Jellyfin already exposes.
         </p>
       </div>
 

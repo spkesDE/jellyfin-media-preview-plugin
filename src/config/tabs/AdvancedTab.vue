@@ -4,6 +4,7 @@ import ConfigCard from '../components/ConfigCard.vue';
 import ConfigCheckbox from '../components/ConfigCheckbox.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
+import PreferenceChainEditor from '../components/PreferenceChainEditor.vue';
 
 const store = useConfigStore();
 const frontendInjectionOptions: SelectOption[] = [
@@ -14,8 +15,39 @@ const frontendInjectionOptions: SelectOption[] = [
 </script>
 
 <template>
-  <section id="mediaPreviewPanel-advanced" class="jmp-section jmp-section-plain" data-tab-section="advanced" role="tabpanel" aria-labelledby="mediaPreviewTab-advanced">
+  <section
+    id="mediaPreviewPanel-advanced"
+    class="jmp-section jmp-section-plain"
+    data-tab-section="advanced"
+    role="tabpanel"
+    aria-labelledby="mediaPreviewTab-advanced"
+  >
     <div class="jmp-subgrid">
+      <ConfigCard
+        class="jmp-advancedPreferenceCard"
+        title="Preferred Source Chains"
+        help="Drag sources into the preferred order and disable any fallback you do not want. Prefer Trailer is fully sortable; Trickplay and Direct Play stay fixed at the top of their own chains."
+      >
+        <div class="jmp-preferenceGrid">
+          <PreferenceChainEditor
+            v-model="store.config.PreferTrailerFallbacks"
+            title="Prefer Trailer"
+            primary="local-trailer"
+            :fixed-primary="false"
+          />
+          <PreferenceChainEditor
+            v-model="store.config.PreferTrickplayFallbacks"
+            title="Prefer Trickplay"
+            primary="trickplay"
+          />
+          <PreferenceChainEditor
+            v-model="store.config.PreferDirectPlayFallbacks"
+            title="Prefer Direct Play"
+            primary="direct-play"
+          />
+        </div>
+      </ConfigCard>
+
       <ConfigCard
         title="Frontend Injection"
         help="Choose how Media Preview loads into Jellyfin Web. Restart Jellyfin after changing this setting."
@@ -28,14 +60,16 @@ const frontendInjectionOptions: SelectOption[] = [
       </ConfigCard>
 
       <ConfigCard
-        v-if="store.canUseTrickplay.value"
         title="Performance"
         help="Normally you can leave this alone unless you need to steer which Trickplay width Jellyfin should prefer."
       >
         <ConfigNumber v-model="store.config.TrickplayWidth" label="Preferred Trickplay Width" :min="1" :step="1" />
       </ConfigCard>
 
-      <ConfigCard title="Diagnostics" help="Use this when you need to inspect matching, preview resolution, or rendering behavior in the browser console.">
+      <ConfigCard
+        title="Diagnostics"
+        help="Use this when you need to inspect matching, preview resolution, or rendering behavior in the browser console."
+      >
         <ConfigCheckbox v-model="store.config.Debug" label="Enable Debug Logging" />
       </ConfigCard>
     </div>

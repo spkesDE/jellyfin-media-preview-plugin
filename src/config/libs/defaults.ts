@@ -14,7 +14,7 @@ import type {
   TrailerExpandButtonPosition,
   YouTubeCropStrength
 } from '../../types/config';
-import type { AppearancePreview, ConfigLibraryOverride } from './types';
+import type { AppearancePreview, ConfigLibraryOverride, ConfigPreviewFallbackSource } from './types';
 
 export type StoreConfigValue = string | number | boolean | unknown[];
 
@@ -27,9 +27,34 @@ export const CONFIG_DEFAULTS = {
   EpisodePreviewSource: 'inherit' as ContentTypePreviewSource,
   VideoPreviewSource: 'inherit' as ContentTypePreviewSource,
   LibraryPreviewSourceOverrides: [] as ConfigLibraryOverride[],
+  PreferTrailerFallbacks: [
+    { Source: 'local-trailer', Enabled: true },
+    { Source: 'remote-trailer', Enabled: true },
+    { Source: 'direct-play', Enabled: true },
+    { Source: 'trickplay', Enabled: true }
+  ] as ConfigPreviewFallbackSource[],
+  PreferTrickplayFallbacks: [
+    { Source: 'local-trailer', Enabled: true },
+    { Source: 'remote-trailer', Enabled: true },
+    { Source: 'direct-play', Enabled: true }
+  ] as ConfigPreviewFallbackSource[],
+  PreferDirectPlayFallbacks: [
+    { Source: 'trickplay', Enabled: true },
+    { Source: 'local-trailer', Enabled: true },
+    { Source: 'remote-trailer', Enabled: true }
+  ] as ConfigPreviewFallbackSource[],
   ShowNoPreviewMessage: false,
   TrailerAudioEnabled: false,
   TrailerVolumePercent: 35,
+  VideoControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
+  AudioControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
+  DirectPlayPreviewEnabled: true,
+  DirectPlayStartPercent: 20,
+  DirectPlayPlaybackRate: 1.5,
+  DirectPlayPreviewDurationSeconds: 15,
+  DirectPlayTranscodeFallbackEnabled: true,
+  DirectPlayTranscodeMaxHeight: 480,
+  DirectPlayTranscodeVideoBitrateKbps: 1500,
   UnavailableTrailerCacheEnabled: true,
   UnavailableTrailerRetryDays: 30,
   YouTubeCropStrength: 'medium' as YouTubeCropStrength,
@@ -82,7 +107,7 @@ export const CONFIG_DEFAULTS = {
 } satisfies Record<string, StoreConfigValue>;
 
 export type StoreConfig = {
-  [Key in keyof typeof CONFIG_DEFAULTS]: typeof CONFIG_DEFAULTS[Key];
+  [Key in keyof typeof CONFIG_DEFAULTS]: (typeof CONFIG_DEFAULTS)[Key];
 } & Record<string, StoreConfigValue>;
 
 export function createDefaultConfig(): StoreConfig {

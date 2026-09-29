@@ -1,17 +1,17 @@
-export type PreviewSource =
-  | 'trickplay'
-  | 'trailer'
-  | 'prefer-trickplay'
-  | 'prefer-trailer';
+export type PreviewSourceKind = 'trickplay' | 'direct-play' | 'trailer';
+export type PreviewChainSource = 'trickplay' | 'direct-play' | 'local-trailer' | 'remote-trailer';
+export type PreviewSource = PreviewSourceKind | 'prefer-trickplay' | 'prefer-trailer' | 'prefer-direct-play';
 export type ContentTypePreviewSource = PreviewSource | 'inherit';
-export type FrontendInjectionMethod =
-  | 'automatic'
-  | 'file-transformation'
-  | 'javascript-injector';
+export type FrontendInjectionMethod = 'automatic' | 'file-transformation' | 'javascript-injector';
 
 export interface LibraryPreviewSourceOverride {
   libraryId: string;
   previewSource: ContentTypePreviewSource;
+}
+
+export interface PreviewFallbackSource {
+  source: PreviewChainSource;
+  enabled: boolean;
 }
 
 export type HoverMode = 'scrub' | 'auto';
@@ -24,11 +24,8 @@ export type PortraitCardCompressionMode = 'distance' | 'neighbors';
 export type PreviewBackdropMode = 'off' | 'dim' | 'vignette' | 'dim-vignette' | 'blur' | 'dim-blur';
 export type PreviewTransitionMode = 'off' | 'fade' | 'crossfade';
 export type YouTubeCropStrength = 'off' | 'light' | 'medium' | 'strong';
-export type TrailerExpandButtonPosition =
-  | 'top-left'
-  | 'top-right'
-  | 'bottom-left'
-  | 'bottom-right';
+export type TrailerExpandButtonPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type MediaControlSource = 'local-trailer' | 'remote-trailer' | 'direct-play';
 
 export interface PluginConfig {
   enabled: boolean;
@@ -39,9 +36,21 @@ export interface PluginConfig {
   episodePreviewSource: ContentTypePreviewSource;
   videoPreviewSource: ContentTypePreviewSource;
   libraryPreviewSourceOverrides: LibraryPreviewSourceOverride[];
+  preferTrailerFallbacks: PreviewFallbackSource[];
+  preferTrickplayFallbacks: PreviewFallbackSource[];
+  preferDirectPlayFallbacks: PreviewFallbackSource[];
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
+  videoControlSources: MediaControlSource[];
+  audioControlSources: MediaControlSource[];
+  directPlayPreviewEnabled: boolean;
+  directPlayStartPercent: number;
+  directPlayPlaybackRate: number;
+  directPlayPreviewDurationSeconds: number;
+  directPlayTranscodeFallbackEnabled: boolean;
+  directPlayTranscodeMaxHeight: number;
+  directPlayTranscodeVideoBitrateKbps: number;
   unavailableTrailerCacheEnabled: boolean;
   unavailableTrailerRetryDays: number;
   hoverDelayMs: number;

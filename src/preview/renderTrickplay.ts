@@ -1,8 +1,4 @@
-import {
-  PREVIEW_MODE_CONTAIN,
-  PREVIEW_MODE_STRETCH,
-  PREVIEW_SOURCE_TRICKPLAY
-} from '../constants';
+import { PREVIEW_MODE_CONTAIN, PREVIEW_MODE_STRETCH, PREVIEW_SOURCE_TRICKPLAY } from '../constants';
 import { config } from '../config';
 import {
   applyPreviewBackdrop,
@@ -46,10 +42,11 @@ export function applyTrickplayPreview(
   }
   const tileUrl = preview.tileUrl;
 
-  const hostRect = expandPortraitCardForPreview(card, state, {
-    width: preview.info.frameWidth,
-    height: preview.info.frameHeight
-  }) || rootHost.getBoundingClientRect();
+  const hostRect =
+    expandPortraitCardForPreview(card, state, {
+      width: preview.info.frameWidth,
+      height: preview.info.frameHeight
+    }) || rootHost.getBoundingClientRect();
   if (!hostRect.width || !hostRect.height) {
     return;
   }
@@ -84,8 +81,8 @@ export function applyTrickplayPreview(
   } else {
     const cropOffsetX = (renderedFrameWidth - hostRect.width) / 2;
     const cropOffsetY = (renderedFrameHeight - hostRect.height) / 2;
-    offsetX = -((preview.frameColumn * renderedFrameWidth) + cropOffsetX);
-    offsetY = -((preview.frameRow * renderedFrameHeight) + cropOffsetY);
+    offsetX = -(preview.frameColumn * renderedFrameWidth + cropOffsetX);
+    offsetY = -(preview.frameRow * renderedFrameHeight + cropOffsetY);
   }
 
   const previewKey = [
@@ -139,9 +136,10 @@ export function applyTrickplayPreview(
   };
 
   const currentFrame = getActivePreviewFrame(state) || primaryFrame;
-  const targetFrame = isCrossfadePreviewTransition() && previousPreviewKey
-    ? (getInactivePreviewFrame(state) || primaryFrame)
-    : primaryFrame;
+  const targetFrame =
+    isCrossfadePreviewTransition() && previousPreviewKey
+      ? getInactivePreviewFrame(state) || primaryFrame
+      : primaryFrame;
 
   applyFrameStyles(targetFrame);
   resetPreviewBackdrop(state);

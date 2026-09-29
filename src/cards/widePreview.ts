@@ -88,6 +88,8 @@ function cleanupManagedCard(state: CardState): void {
   cleanupManagedRowCards(state);
   restoreScrollerShift(state, true);
   state.widePreviewCard = null;
+  state.widePreviewTargetWidth = null;
+  state.widePreviewTargetHeight = null;
   activeWidePreviewStates.delete(state);
   if (!activeWidePreviewStates.size && viewportResizeBound) {
     window.removeEventListener('resize', handleViewportResize);
@@ -127,21 +129,16 @@ function restoreOtherWidePreviews(currentState: CardState): void {
 
 function getCardContainerLayout(card: HTMLElement): CardContainerLayout | null {
   const itemsContainer = card.closest('.itemsContainer');
-  const container = itemsContainer instanceof HTMLElement
-    ? itemsContainer
-    : card.parentElement;
+  const container = itemsContainer instanceof HTMLElement ? itemsContainer : card.parentElement;
   if (!container) {
     return null;
   }
 
   const styles = window.getComputedStyle(container);
-  const isFlexRow = (styles.display === 'flex' || styles.display === 'inline-flex')
-    && (styles.flexDirection === 'row' || styles.flexDirection === 'row-reverse');
-  const kind: CardContainerKind = !isFlexRow
-    ? 'other'
-    : styles.flexWrap === 'nowrap'
-      ? 'horizontal'
-      : 'wrapped';
+  const isFlexRow =
+    (styles.display === 'flex' || styles.display === 'inline-flex') &&
+    (styles.flexDirection === 'row' || styles.flexDirection === 'row-reverse');
+  const kind: CardContainerKind = !isFlexRow ? 'other' : styles.flexWrap === 'nowrap' ? 'horizontal' : 'wrapped';
 
   return { container, kind, styles };
 }
@@ -152,9 +149,7 @@ function getVisibleRowCards(card: HTMLElement, container: HTMLElement): HTMLElem
     .filter((child): child is HTMLElement => child instanceof HTMLElement)
     .filter((child) => {
       const rect = child.getBoundingClientRect();
-      return rect.width > 0
-        && rect.height > 0
-        && Math.abs(rect.top - activeRect.top) <= ROW_TOP_TOLERANCE_PX;
+      return rect.width > 0 && rect.height > 0 && Math.abs(rect.top - activeRect.top) <= ROW_TOP_TOLERANCE_PX;
     })
     .sort((left, right) => left.getBoundingClientRect().left - right.getBoundingClientRect().left);
 }
@@ -179,22 +174,14 @@ function planWrappedRow(
   const widths = rowCards.map((rowCard) => rowCard.getBoundingClientRect().width);
   const contentWidth = Math.max(
     0,
-    layout.container.clientWidth
-      - parsePixels(layout.styles.paddingLeft)
-      - parsePixels(layout.styles.paddingRight)
+    layout.container.clientWidth - parsePixels(layout.styles.paddingLeft) - parsePixels(layout.styles.paddingRight)
   );
   const columnGap = parsePixels(layout.styles.columnGap);
-  const occupiedWidth = widths.reduce((sum, width) => sum + width, 0)
-    + columnGap * Math.max(0, rowCards.length - 1);
+  const occupiedWidth = widths.reduce((sum, width) => sum + width, 0) + columnGap * Math.max(0, rowCards.length - 1);
   const freeWidth = Math.max(0, contentWidth - occupiedWidth);
   const requestedGrowth = Math.max(0, desiredCardWidth - cardWidth);
   const requestedCompression = Math.max(0, requestedGrowth - freeWidth);
-  const compression = planRowCompression(
-    widths,
-    activeIndex,
-    requestedCompression,
-    config.portraitCardCompressionMode
-  );
+  const compression = planRowCompression(widths, activeIndex, requestedCompression, config.portraitCardCompressionMode);
   const actualGrowth = Math.min(requestedGrowth, freeWidth + compression.providedWidth);
   if (actualGrowth <= 1) {
     return null;
@@ -210,11 +197,13 @@ function planWrappedRow(
       return [];
     }
 
-    return [{
-      card: rowCard,
-      originalWidth: widths[index],
-      targetWidth: Math.max(0, widths[index] - reduction)
-    }];
+    return [
+      {
+        card: rowCard,
+        originalWidth: widths[index],
+        targetWidth: Math.max(0, widths[index] - reduction)
+      }
+    ];
   });
 
   return {
@@ -243,11 +232,7 @@ export function expandPortraitCardForPreview(
   state: CardState,
   sourceAspectRatio?: AspectRatio | null
 ): WidePreviewDimensions | null {
-  if (
-    config.portraitCardExpansionMode === 'off'
-    || getCardLayoutKind(card) !== 'portrait'
-    || !state.rootHost
-  ) {
+  if (config.portraitCardExpansionMode === 'off' || getCardLayoutKind(card) !== 'portrait' || !state.rootHost) {
     return null;
   }
 
@@ -258,8 +243,8 @@ export function expandPortraitCardForPreview(
 
   const layoutMode = config.portraitCardExpansionLayoutMode;
   if (
-    (layoutMode === 'horizontal-only' && layout.kind !== 'horizontal')
-    || (layoutMode === 'compress' && layout.kind === 'other')
+    (layoutMode === 'horizontal-only' && layout.kind !== 'horizontal') ||
+    (layoutMode === 'compress' && layout.kind === 'other')
   ) {
     return null;
   }
@@ -269,11 +254,8 @@ export function expandPortraitCardForPreview(
   clearCleanupTimer(state);
 
   if (state.widePreviewCard === card && card.classList.contains(EXPANDED_CLASS)) {
-    const configuredWidth = Number.parseFloat(card.style.getPropertyValue('--jmp-wide-preview-card-width'));
-    const hostHeight = Number.parseFloat(card.style.getPropertyValue('--jmp-wide-preview-media-height'));
-    const width = state.rootHost.offsetWidth + Math.max(0, configuredWidth - card.offsetWidth);
-    return Number.isFinite(width) && Number.isFinite(hostHeight)
-      ? { width, height: hostHeight }
+    return state.widePreviewTargetWidth !== null && state.widePreviewTargetHeight !== null
+      ? { width: state.widePreviewTargetWidth, height: state.widePreviewTargetHeight }
       : null;
   }
 
@@ -286,20 +268,17 @@ export function expandPortraitCardForPreview(
   const cardRect = card.getBoundingClientRect();
   const cardWidth = cardRect.width;
   const hostWidth = state.rootHost.offsetWidth;
-  const hostHeight = scalable instanceof HTMLElement
-    ? scalable.offsetHeight
-    : state.rootHost.offsetHeight;
+  const hostHeight = scalable instanceof HTMLElement ? scalable.offsetHeight : state.rootHost.offsetHeight;
   if (!cardWidth || !hostWidth || !hostHeight) {
     return null;
   }
 
-  const aspectRatio = config.portraitCardExpansionMode === 'source'
-    && sourceAspectRatio?.width
-    && sourceAspectRatio.height
-    ? sourceAspectRatio.width / sourceAspectRatio.height
-    : config.portraitCardExpansionMode === '3:2'
-      ? 3 / 2
-      : 16 / 9;
+  const aspectRatio =
+    config.portraitCardExpansionMode === 'source' && sourceAspectRatio?.width && sourceAspectRatio.height
+      ? sourceAspectRatio.width / sourceAspectRatio.height
+      : config.portraitCardExpansionMode === '3:2'
+        ? 3 / 2
+        : 16 / 9;
   const desiredHostWidth = hostHeight * aspectRatio;
   const unclampedCardWidth = cardWidth + Math.max(0, desiredHostWidth - hostWidth);
   const layoutWidth = layout.container.clientWidth || window.innerWidth;
@@ -317,10 +296,7 @@ export function expandPortraitCardForPreview(
   }
 
   const targetHostWidth = hostWidth + Math.max(0, targetCardWidth - cardWidth);
-  const overflowRight = Math.max(
-    0,
-    cardRect.left + targetCardWidth - (window.innerWidth - VIEWPORT_GUTTER_PX)
-  );
+  const overflowRight = Math.max(0, cardRect.left + targetCardWidth - (window.innerWidth - VIEWPORT_GUTTER_PX));
   const maximumLeftShift = Math.max(0, cardRect.left - VIEWPORT_GUTTER_PX);
   const leftShift = Math.min(overflowRight, maximumLeftShift);
 
@@ -329,6 +305,8 @@ export function expandPortraitCardForPreview(
   }
 
   state.widePreviewCard = card;
+  state.widePreviewTargetWidth = targetHostWidth;
+  state.widePreviewTargetHeight = hostHeight;
   activeWidePreviewStates.add(state);
   bindViewportResize();
 

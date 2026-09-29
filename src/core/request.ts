@@ -11,11 +11,13 @@ export function requestJson<T>(
   }
 
   if (typeof apiClient.ajax === 'function') {
-    return Promise.resolve(apiClient.ajax({
-      type: 'GET',
-      url,
-      dataType: 'json'
-    }) as Promise<T> | T);
+    return Promise.resolve(
+      apiClient.ajax({
+        type: 'GET',
+        url,
+        dataType: 'json'
+      }) as Promise<T> | T
+    );
   }
 
   return fetch(url, {
@@ -31,10 +33,7 @@ export function requestJson<T>(
   });
 }
 
-export function postJson(
-  path: string,
-  body: unknown
-): Promise<void> {
+export function postJson(path: string, body: unknown): Promise<void> {
   const apiClient = getGlobalApiClient();
   const url = buildApiUrl(path);
   if (!apiClient || !url) {
@@ -43,12 +42,14 @@ export function postJson(
 
   const serializedBody = JSON.stringify(body);
   if (typeof apiClient.ajax === 'function') {
-    return Promise.resolve(apiClient.ajax({
-      type: 'POST',
-      url,
-      contentType: 'application/json',
-      data: serializedBody
-    })).then(() => undefined);
+    return Promise.resolve(
+      apiClient.ajax({
+        type: 'POST',
+        url,
+        contentType: 'application/json',
+        data: serializedBody
+      })
+    ).then(() => undefined);
   }
 
   return fetch(url, {

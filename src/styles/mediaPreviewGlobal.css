@@ -74,7 +74,8 @@
 }
 
 .jmp-wide-preview-scroller-shift {
-  transition: transform 270ms ease-out,
+  transition:
+    transform 270ms ease-out,
     translate var(--jmp-wide-preview-duration, 280ms) cubic-bezier(0.2, 0.75, 0.2, 1) !important;
 }
 

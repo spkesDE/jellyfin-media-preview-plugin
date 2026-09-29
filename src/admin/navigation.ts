@@ -1,16 +1,12 @@
 import { ADMIN_NAV_LINK_ATTR, CONFIGURATION_PAGE_HASH, CONFIGURATION_PAGE_NAME } from '../constants';
 import { runtimeState } from '../runtime';
 
-export function isPluginConfigurationLink(
-  element: Element | null
-): boolean {
+export function isPluginConfigurationLink(element: Element | null): boolean {
   return !!(
     element &&
     element.tagName === 'A' &&
     typeof element.getAttribute === 'function' &&
-    (element.getAttribute('href') || '').includes(
-      '#/configurationpage?name='
-    )
+    (element.getAttribute('href') || '').includes('#/configurationpage?name=')
   );
 }
 
@@ -18,10 +14,7 @@ export function getAdminNavigationContainers(): HTMLElement[] {
   const containers = new Set<HTMLElement>();
 
   // Jellyfin 12 MUI side navigation
-  const muiPluginsContainer =
-    document.querySelector<HTMLElement>(
-      'ul[aria-labelledby="plugins-subheader"]'
-    );
+  const muiPluginsContainer = document.querySelector<HTMLElement>('ul[aria-labelledby="plugins-subheader"]');
 
   if (muiPluginsContainer) {
     containers.add(muiPluginsContainer);
@@ -66,11 +59,7 @@ export function getSelectedNavClasses(container: HTMLElement, currentEntry: Elem
   return Array.from(selectedCandidate.classList).filter((className) => className === 'Mui-selected');
 }
 
-export function setAdminNavigationEntrySelected(
-  entry: Element,
-  isSelected: boolean,
-  selectedClasses: string[]
-): void {
+export function setAdminNavigationEntrySelected(entry: Element, isSelected: boolean, selectedClasses: string[]): void {
   if (!(entry instanceof HTMLElement)) {
     return;
   }
@@ -89,9 +78,11 @@ export function setAdminNavigationEntrySelected(
 }
 
 export function syncPluginsRootSelection(shouldSelectCustomEntry: boolean): void {
-  const pluginsLinks = Array.from(document.querySelectorAll(
-    'a[href="#/plugins"], a[href$="/#/plugins"], a[href="#/dashboard/plugins"], a[href$="/#/dashboard/plugins"]'
-  ));
+  const pluginsLinks = Array.from(
+    document.querySelectorAll(
+      'a[href="#/plugins"], a[href$="/#/plugins"], a[href="#/dashboard/plugins"], a[href$="/#/dashboard/plugins"]'
+    )
+  );
 
   pluginsLinks.forEach((link) => {
     if (!(link instanceof HTMLElement) || link.getAttribute(ADMIN_NAV_LINK_ATTR) === 'true') {
@@ -169,10 +160,7 @@ export function ensureAdminNavigationLink(): void {
     const template =
       Array.from(container.children).find((child) => {
         return isPluginConfigurationLink(child);
-      }) ||
-      container.querySelector(
-        'a[href="#/dashboard/plugins"], a[href="#/plugins"]'
-      );
+      }) || container.querySelector('a[href="#/dashboard/plugins"], a[href="#/plugins"]');
     if (!template) {
       return;
     }

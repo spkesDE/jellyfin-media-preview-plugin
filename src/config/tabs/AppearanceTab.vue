@@ -3,6 +3,7 @@ import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
 import ConfigCheckbox from '../components/ConfigCheckbox.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
+import ConfigMultiPicker from '../components/ConfigMultiPicker.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
 import PreviewCard from '../components/PreviewCard.vue';
 
@@ -41,12 +42,27 @@ const positionOptions: SelectOption[] = [
   { value: 'bottom-left', label: 'Bottom Left' },
   { value: 'bottom-right', label: 'Bottom Right' }
 ];
+const mediaControlSourceOptions: SelectOption[] = [
+  { value: 'local-trailer', label: 'Local Trailer' },
+  { value: 'remote-trailer', label: 'Remote / YouTube Trailer' },
+  { value: 'direct-play', label: 'Direct Play' }
+];
 </script>
 
 <template>
-  <section id="mediaPreviewPanel-appearance" class="jmp-section jmp-section-plain" data-tab-section="appearance" role="tabpanel" aria-labelledby="mediaPreviewTab-appearance">
+  <section
+    id="mediaPreviewPanel-appearance"
+    class="jmp-section jmp-section-plain"
+    data-tab-section="appearance"
+    role="tabpanel"
+    aria-labelledby="mediaPreviewTab-appearance"
+  >
     <div class="jmp-subgrid">
-      <ConfigCard class="jmp-appearancePreviewSection" title="Live Preview" help="Updates immediately from the controls below.">
+      <ConfigCard
+        class="jmp-appearancePreviewSection"
+        title="Live Preview"
+        help="Updates immediately from the controls below."
+      >
         <div class="jmp-appearancePreviewGrid">
           <PreviewCard kind="portrait" />
           <PreviewCard kind="backdrop" />
@@ -54,7 +70,11 @@ const positionOptions: SelectOption[] = [
       </ConfigCard>
 
       <ConfigCard title="Card Framing" help="Choose how previews should sit inside portrait and backdrop cards.">
-        <ConfigSelect v-model="store.config.PortraitCardPreviewMode" label="Portrait Card Preview Mode" :options="previewModeOptions" />
+        <ConfigSelect
+          v-model="store.config.PortraitCardPreviewMode"
+          label="Portrait Card Preview Mode"
+          :options="previewModeOptions"
+        />
         <ConfigSelect
           v-model="store.config.PortraitCardExpansionMode"
           label="Portrait Card Expansion"
@@ -76,13 +96,27 @@ const positionOptions: SelectOption[] = [
               v-model="store.config.PortraitCardRowLockEnabled"
               label="Lock every card in the affected row"
             />
-            <p class="jmp-note">Row lock assigns temporary pixel widths to the complete visible row. Turn it off to modify only cards that actually provide space.</p>
+            <p class="jmp-note">
+              Row lock assigns temporary pixel widths to the complete visible row. Turn it off to modify only cards that
+              actually provide space.
+            </p>
           </template>
-          <p v-if="store.config.PortraitCardExpansionLayoutMode === 'all'" class="jmp-note">Allows the original wide-card effect everywhere, including layouts that may reflow.</p>
-          <p v-else-if="store.config.PortraitCardExpansionLayoutMode === 'horizontal-only'" class="jmp-note">Wrapping library grids keep their original portrait dimensions.</p>
-          <p v-else class="jmp-note">The active card uses free row space first, then takes the remaining width from cards in the same visible row.</p>
+          <p v-if="store.config.PortraitCardExpansionLayoutMode === 'all'" class="jmp-note">
+            Allows the original wide-card effect everywhere, including layouts that may reflow.
+          </p>
+          <p v-else-if="store.config.PortraitCardExpansionLayoutMode === 'horizontal-only'" class="jmp-note">
+            Wrapping library grids keep their original portrait dimensions.
+          </p>
+          <p v-else class="jmp-note">
+            The active card uses free row space first, then takes the remaining width from cards in the same visible
+            row.
+          </p>
         </template>
-        <ConfigSelect v-model="store.config.BackdropCardPreviewMode" label="Backdrop Card Preview Mode" :options="previewModeOptions" />
+        <ConfigSelect
+          v-model="store.config.BackdropCardPreviewMode"
+          label="Backdrop Card Preview Mode"
+          :options="previewModeOptions"
+        />
       </ConfigCard>
 
       <ConfigCard title="Backdrop" help="Style the poster backdrop behind the preview.">
@@ -99,10 +133,34 @@ const positionOptions: SelectOption[] = [
       </ConfigCard>
 
       <ConfigCard title="Overlay Elements" help="Control the small UI elements shown on top of the preview.">
+        <ConfigMultiPicker
+          v-model="store.config.VideoControlSources"
+          label="Show Video Controls For"
+          help-text="Show the Play / Pause button for the selected preview types."
+          :options="mediaControlSourceOptions"
+        />
+        <ConfigMultiPicker
+          v-model="store.config.AudioControlSources"
+          label="Show Audio Controls For"
+          help-text="Show the Mute button and volume slider for the selected preview types."
+          :options="mediaControlSourceOptions"
+        />
+        <ConfigCheckbox v-model="store.config.TrailerExpandButtonEnabled" label="Show Expand Button" />
+        <ConfigSelect
+          v-if="store.config.TrailerExpandButtonEnabled"
+          v-model="store.config.TrailerExpandButtonPosition"
+          label="Expand Button Position"
+          help-text="Choose where the in-card trailer expand button sits."
+          :options="positionOptions"
+        />
         <ConfigCheckbox v-model="store.config.ShowProgressIndicator" label="Show Progress Indicator" />
         <ConfigCheckbox v-model="store.config.MetadataOverlayEnabled" label="Show Mini Metadata Overlay" />
         <template v-if="store.config.MetadataOverlayEnabled">
-          <ConfigSelect v-model="store.config.MetadataOverlayPosition" label="Metadata Overlay Position" :options="positionOptions" />
+          <ConfigSelect
+            v-model="store.config.MetadataOverlayPosition"
+            label="Metadata Overlay Position"
+            :options="positionOptions"
+          />
           <ConfigCheckbox v-model="store.config.MetadataOverlayShowTitle" label="Show Title" />
           <ConfigCheckbox v-model="store.config.MetadataOverlayShowYear" label="Show Year" />
           <ConfigCheckbox v-model="store.config.MetadataOverlayShowRuntime" label="Show Runtime" />

@@ -1,8 +1,8 @@
 import { config } from '../config';
 import { PREVIEW_SOURCE_TRAILER, SUPPORTED_TYPES } from '../constants';
-import { buildApiUrl, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
+import { buildApiUrl, getApiContextKey, getCurrentUserId, getGlobalApiClient } from '../core/apiClient';
 import { debugLog } from '../core/logger';
-import { trailerInfoCache } from '../core/storage';
+import { getScopedPreviewCacheKey, missingTrailerCache, trailerInfoCache } from '../core/storage';
 import { postJson, requestJson } from '../core/request';
 import { extractYouTubeVideoId } from '../trailerOverlay/youtube';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinRemoteTrailer } from '../types/jellyfin';
@@ -12,8 +12,10 @@ const SUPPORTED_VIDEO_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 
 const UNAVAILABLE_TRAILER_CACHE_WAIT_MS = 1500;
 const UNAVAILABLE_TRAILER_CACHE_REFRESH_MS = 5 * 60 * 1000;
 const UNAVAILABLE_TRAILER_CACHE_RETRY_MS = 30 * 1000;
+const MISSING_TRAILER_CACHE_COOLDOWN_MS = 10 * 60 * 1000;
 const serverUnavailableYouTubeVideoIds = new Set<string>();
 const locallyUnavailableYouTubeVideoIds = new Map<string, number>();
+const locallyUnavailableTrailerCandidates = new Map<string, number>();
 let unavailableYouTubeVideoIdsRequest: Promise<void> | null = null;
 let unavailableYouTubeVideoIdsLastAttemptAt = 0;
 let unavailableYouTubeVideoIdsLastLoadedAt = 0;
@@ -22,6 +24,20 @@ let unavailableYouTubeVideoIdsGeneration = 0;
 interface UnavailableTrailerListResponse {
   videoIds?: unknown;
   VideoIds?: unknown;
+}
+
+function isMissingTrailerCached(cacheKey: string): boolean {
+  const cachedAt = missingTrailerCache.get(cacheKey);
+  if (!cachedAt) {
+    return false;
+  }
+
+  if (Date.now() - cachedAt < MISSING_TRAILER_CACHE_COOLDOWN_MS) {
+    return true;
+  }
+
+  missingTrailerCache.delete(cacheKey);
+  return false;
 }
 
 function loadUnavailableYouTubeVideoIds(): Promise<void> {
@@ -35,44 +51,51 @@ function loadUnavailableYouTubeVideoIds(): Promise<void> {
   }
 
   const now = Date.now();
-  if (unavailableYouTubeVideoIdsLastLoadedAt && now - unavailableYouTubeVideoIdsLastLoadedAt < UNAVAILABLE_TRAILER_CACHE_REFRESH_MS) {
+  if (
+    unavailableYouTubeVideoIdsLastLoadedAt &&
+    now - unavailableYouTubeVideoIdsLastLoadedAt < UNAVAILABLE_TRAILER_CACHE_REFRESH_MS
+  ) {
     return Promise.resolve();
   }
 
-  if (unavailableYouTubeVideoIdsLastAttemptAt && now - unavailableYouTubeVideoIdsLastAttemptAt < UNAVAILABLE_TRAILER_CACHE_RETRY_MS) {
+  if (
+    unavailableYouTubeVideoIdsLastAttemptAt &&
+    now - unavailableYouTubeVideoIdsLastAttemptAt < UNAVAILABLE_TRAILER_CACHE_RETRY_MS
+  ) {
     return Promise.resolve();
   }
 
   unavailableYouTubeVideoIdsLastAttemptAt = now;
   const generation = unavailableYouTubeVideoIdsGeneration;
-  const loadRequest = requestJson<UnavailableTrailerListResponse>(
-    'media-preview/unavailable-trailers'
-  ).then((response) => {
-    const videoIds = response?.videoIds ?? response?.VideoIds;
-    if (!Array.isArray(videoIds)) {
-      throw new Error('The persistent unavailable trailer cache response is invalid.');
-    }
+  const loadRequest = requestJson<UnavailableTrailerListResponse>('media-preview/unavailable-trailers')
+    .then((response) => {
+      const videoIds = response?.videoIds ?? response?.VideoIds;
+      if (!Array.isArray(videoIds)) {
+        throw new Error('The persistent unavailable trailer cache response is invalid.');
+      }
 
-    if (generation !== unavailableYouTubeVideoIdsGeneration) {
-      return;
-    }
+      if (generation !== unavailableYouTubeVideoIdsGeneration) {
+        return;
+      }
 
-    serverUnavailableYouTubeVideoIds.clear();
-    videoIds.forEach((videoId) => {
-      if (typeof videoId === 'string') {
-        serverUnavailableYouTubeVideoIds.add(videoId);
+      serverUnavailableYouTubeVideoIds.clear();
+      videoIds.forEach((videoId) => {
+        if (typeof videoId === 'string') {
+          serverUnavailableYouTubeVideoIds.add(videoId);
+        }
+      });
+      unavailableYouTubeVideoIdsLastLoadedAt = Date.now();
+    })
+    .catch((error) => {
+      if (generation === unavailableYouTubeVideoIdsGeneration) {
+        debugLog('Failed to load the persistent unavailable trailer cache.', error);
+      }
+    })
+    .finally(() => {
+      if (unavailableYouTubeVideoIdsRequest === loadRequest) {
+        unavailableYouTubeVideoIdsRequest = null;
       }
     });
-    unavailableYouTubeVideoIdsLastLoadedAt = Date.now();
-  }).catch((error) => {
-    if (generation === unavailableYouTubeVideoIdsGeneration) {
-      debugLog('Failed to load the persistent unavailable trailer cache.', error);
-    }
-  }).finally(() => {
-    if (unavailableYouTubeVideoIdsRequest === loadRequest) {
-      unavailableYouTubeVideoIdsRequest = null;
-    }
-  });
 
   unavailableYouTubeVideoIdsRequest = loadRequest;
   return waitForUnavailableTrailerCache(loadRequest);
@@ -111,6 +134,15 @@ export function clearUnavailableTrailerCacheState(): void {
   unavailableYouTubeVideoIdsLastLoadedAt = 0;
   serverUnavailableYouTubeVideoIds.clear();
   locallyUnavailableYouTubeVideoIds.clear();
+  locallyUnavailableTrailerCandidates.clear();
+}
+
+function getTrailerCandidateKey(itemId: string, candidate: TrailerCandidate): string {
+  return `${itemId}|${candidate.provider}|${candidate.youtubeId || candidate.src || candidate.embedUrl || candidate.title}`;
+}
+
+export function markVideoTrailerUnavailable(itemId: string, candidate: TrailerCandidate): void {
+  locallyUnavailableTrailerCandidates.set(getTrailerCandidateKey(itemId, candidate), Date.now() + 5 * 60 * 1000);
 }
 
 export function markYouTubeTrailerUnavailable(
@@ -125,9 +157,7 @@ export function markYouTubeTrailerUnavailable(
   const isNew = !isYouTubeTrailerUnavailable(videoId);
   locallyUnavailableYouTubeVideoIds.set(
     videoId,
-    config.unavailableTrailerCacheEnabled
-      ? Date.now() + getUnavailableTrailerLifetimeMs()
-      : Number.POSITIVE_INFINITY
+    config.unavailableTrailerCacheEnabled ? Date.now() + getUnavailableTrailerLifetimeMs() : Number.POSITIVE_INFINITY
   );
   if (!isNew || !itemId || !config.unavailableTrailerCacheEnabled) {
     return;
@@ -214,7 +244,10 @@ export function getTrailerPreviewPixelSize(aspectRatio: AspectRatio | null | und
   };
 }
 
-export function buildLocalTrailerStreamUrl(itemId: string, mediaSource: JellyfinMediaSource | null | undefined): string | null {
+export function buildLocalTrailerStreamUrl(
+  itemId: string,
+  mediaSource: JellyfinMediaSource | null | undefined
+): string | null {
   const container = getMediaSourceContainer(mediaSource);
   if (!container || !isSupportedVideoContainer(container)) {
     return null;
@@ -316,15 +349,28 @@ export function isLocalTrailerCandidate(candidate: TrailerCandidate | null | und
   return candidate?.provider === 'local-trailer';
 }
 
-export function isTrailerCandidateAllowed(
-  candidate: TrailerCandidate | null | undefined
-): boolean {
+export function isTrailerCandidateAllowed(candidate: TrailerCandidate | null | undefined, itemId?: string): boolean {
   if (!candidate) {
     return false;
   }
 
   if (isLocalTrailerCandidate(candidate)) {
-    return true;
+    // Local files can fail transiently because of a codec or transcode error.
+    // Skip a failed candidate briefly so recovery can advance to the next one.
+    if (!itemId) {
+      return true;
+    }
+  }
+
+  if (itemId) {
+    const candidateKey = getTrailerCandidateKey(itemId, candidate);
+    const retryAt = locallyUnavailableTrailerCandidates.get(candidateKey);
+    if (retryAt && retryAt > Date.now()) {
+      return false;
+    }
+    if (retryAt) {
+      locallyUnavailableTrailerCandidates.delete(candidateKey);
+    }
   }
 
   if (candidate.provider === 'youtube' && candidate.youtubeId) {
@@ -339,55 +385,66 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
     return Promise.resolve(null);
   }
 
-  if (trailerInfoCache.has(itemId)) {
-    return trailerInfoCache.get(itemId)!;
-  }
-
   const apiClient = getGlobalApiClient();
   const userId = getCurrentUserId(apiClient);
-  if (!apiClient || !userId) {
+  const contextKey = getApiContextKey(apiClient, userId);
+  if (!apiClient || !userId || !contextKey) {
     debugLog('Skipping trailer fetch because ApiClient or user id is missing.', itemId);
     return Promise.resolve(null);
+  }
+  const cacheKey = getScopedPreviewCacheKey(contextKey, itemId);
+
+  if (isMissingTrailerCached(cacheKey)) {
+    debugLog('Skipping trailer fetch because a recent lookup found no usable candidates.', itemId);
+    return Promise.resolve(null);
+  }
+
+  if (trailerInfoCache.has(cacheKey)) {
+    return trailerInfoCache.get(cacheKey)!;
   }
 
   const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
     Fields: 'LocalTrailerCount,RemoteTrailers'
-  }).then(async (item) => {
-    if (!item || !SUPPORTED_TYPES.has(item.Type || '')) {
-      return null;
-    }
+  })
+    .then(async (item) => {
+      if (!item || !SUPPORTED_TYPES.has(item.Type || '')) {
+        return null;
+      }
 
-    const localCandidates = await loadLocalTrailerCandidates(itemId, Number(item.LocalTrailerCount) || 0);
-    const remoteCandidates = Array.isArray(item.RemoteTrailers)
-      ? item.RemoteTrailers.map(normalizeRemoteTrailerCandidate).filter(Boolean) as TrailerCandidate[]
-      : [];
+      const localCandidates = await loadLocalTrailerCandidates(itemId, Number(item.LocalTrailerCount) || 0);
+      const remoteCandidates = Array.isArray(item.RemoteTrailers)
+        ? (item.RemoteTrailers.map(normalizeRemoteTrailerCandidate).filter(Boolean) as TrailerCandidate[])
+        : [];
 
-    const candidates = localCandidates.concat(remoteCandidates);
-    if (!candidates.length) {
-      debugLog('No usable trailer candidates found.', {
+      const candidates = localCandidates.concat(remoteCandidates);
+      if (!candidates.length) {
+        debugLog('No usable trailer candidates found.', {
+          itemId,
+          localTrailerCount: item.LocalTrailerCount || 0,
+          remoteTrailerCount: Array.isArray(item.RemoteTrailers) ? item.RemoteTrailers.length : 0
+        });
+        return null;
+      }
+
+      const trailerInfo: TrailerInfo = {
         itemId,
-        localTrailerCount: item.LocalTrailerCount || 0,
-        remoteTrailerCount: Array.isArray(item.RemoteTrailers) ? item.RemoteTrailers.length : 0
-      });
+        candidates
+      };
+      missingTrailerCache.delete(cacheKey);
+      debugLog('Resolved trailer candidates.', trailerInfo);
+      return trailerInfo;
+    })
+    .catch((error) => {
+      debugLog('Failed to resolve trailer info for item.', itemId, error);
+      trailerInfoCache.delete(cacheKey);
       return null;
-    }
+    });
 
-    const trailerInfo: TrailerInfo = {
-      itemId,
-      candidates
-    };
-    debugLog('Resolved trailer candidates.', trailerInfo);
-    return trailerInfo;
-  }).catch((error) => {
-    debugLog('Failed to resolve trailer info for item.', itemId, error);
-    trailerInfoCache.delete(itemId);
-    return null;
-  });
-
-  trailerInfoCache.set(itemId, request);
+  trailerInfoCache.set(cacheKey, request);
   return request.then((result) => {
     if (!result) {
-      trailerInfoCache.delete(itemId);
+      trailerInfoCache.delete(cacheKey);
+      missingTrailerCache.set(cacheKey, Date.now());
     }
 
     return result;
@@ -395,17 +452,21 @@ export function getTrailerInfo(itemId: string | null | undefined): Promise<Trail
 }
 
 export function getTrailerPreview(
-  itemId: string
+  itemId: string,
+  source: 'any' | 'local' | 'remote' = 'any'
 ): Promise<TrailerPreview | null> {
-  return Promise.all([
-    getTrailerInfo(itemId),
-    loadUnavailableYouTubeVideoIds()
-  ]).then(([info]) => {
+  return Promise.all([getTrailerInfo(itemId), loadUnavailableYouTubeVideoIds()]).then(([info]) => {
     if (!info?.candidates?.length) {
       return null;
     }
 
-    const candidate = info.candidates.find((entry) => isTrailerCandidateAllowed(entry));
+    const candidate = info.candidates.find((entry) => {
+      const matchesSource =
+        source === 'any' ||
+        (source === 'local' && entry.provider === 'local-trailer') ||
+        (source === 'remote' && entry.provider !== 'local-trailer');
+      return matchesSource && isTrailerCandidateAllowed(entry, itemId);
+    });
     if (!candidate) {
       return null;
     }

@@ -1,5 +1,6 @@
 import {
   ADMIN_NAV_LINK_ATTR,
+  PREVIEW_SOURCE_TRAILER,
   PREVIEW_TRANSITION_CROSSFADE,
   PREVIEW_TRANSITION_OFF,
   STATE_ATTR,
@@ -67,8 +68,7 @@ function getJellyfinCardOverlay(card: HTMLElement): HTMLElement | null {
     return null;
   }
 
-  const overlay = Array.from(scalableHost.children)
-    .find((child) => child.classList.contains('cardOverlayContainer'));
+  const overlay = Array.from(scalableHost.children).find((child) => child.classList.contains('cardOverlayContainer'));
   return overlay instanceof HTMLElement ? overlay : null;
 }
 
@@ -109,9 +109,7 @@ export function isCrossfadePreviewTransition(): boolean {
 }
 
 function applyTransitionStyle(element: HTMLElement): void {
-  element.style.transition = hasPreviewTransition()
-    ? `opacity ${getPreviewTransitionDurationMs()}ms ease`
-    : 'none';
+  element.style.transition = hasPreviewTransition() ? `opacity ${getPreviewTransitionDurationMs()}ms ease` : 'none';
 }
 
 function clearPreviewTransitionTimer(state: CardState | null | undefined): void {
@@ -237,9 +235,7 @@ export function getInactivePreviewFrame(state: CardState | null | undefined): HT
     return null;
   }
 
-  return state.activePreviewFrameSlot === 'secondary'
-    ? ensurePreviewFrame(state)
-    : ensurePreviewFrameSecondary(state);
+  return state.activePreviewFrameSlot === 'secondary' ? ensurePreviewFrame(state) : ensurePreviewFrameSecondary(state);
 }
 
 export function setActivePreviewFrameSlot(state: CardState | null | undefined, slot: 'primary' | 'secondary'): void {
@@ -309,6 +305,45 @@ export function ensureTrailerLayer(state: CardState | null | undefined): HTMLDiv
   return state.trailerLayer;
 }
 
+function isTrailerMediaPaused(state: CardState): boolean {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    return state.trailerMedia.paused;
+  }
+  return state.trailerMediaController?.isPaused() ?? true;
+}
+
+function isTrailerMediaMuted(state: CardState): boolean {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    return state.trailerMedia.muted || state.trailerMedia.volume === 0;
+  }
+  return state.trailerMediaController?.isMuted() ?? true;
+}
+
+function getTrailerMediaVolume(state: CardState): number {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    return state.trailerMedia.volume;
+  }
+  return state.trailerMediaController?.getVolume() ?? Math.max(0, Math.min(1, config.trailerVolumePercent / 100));
+}
+
+function setTrailerMediaMuted(state: CardState, muted: boolean): void {
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    state.trailerMedia.muted = muted;
+    state.trailerMedia.defaultMuted = muted;
+  } else {
+    state.trailerMediaController?.setMuted(muted);
+  }
+}
+
+function setTrailerMediaVolume(state: CardState, volume: number): void {
+  const normalizedVolume = Math.max(0, Math.min(1, volume));
+  if (state.trailerMedia instanceof HTMLVideoElement) {
+    state.trailerMedia.volume = normalizedVolume;
+  } else {
+    state.trailerMediaController?.setVolume(normalizedVolume);
+  }
+}
+
 export function ensureTrailerActions(card: HTMLElement, state: CardState | null | undefined): HTMLDivElement | null {
   if (!state?.rootHost) {
     return null;
@@ -321,15 +356,114 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
    * the item instead of receiving the click. The common scalable host keeps
    * the action above both siblings; older card layouts keep using rootHost.
    */
-  const trailerActionsHost =
-    (card.querySelector('.cardScalable') as HTMLElement | null) ||
-    state.rootHost;
+  const trailerActionsHost = (card.querySelector('.cardScalable') as HTMLElement | null) || state.rootHost;
 
   if (!state.trailerActions) {
     const trailerActions = document.createElement('div');
     trailerActions.className = 'jmp-trailer-actions';
     trailerActions.setAttribute('aria-hidden', 'true');
     trailerActions.style.display = 'none';
+
+    const createMediaButton = (className: string, title: string, path: string): HTMLButtonElement => {
+      const button = document.createElement('button');
+      button.className = `jmp-trailer-expand ${className}`;
+      button.type = 'button';
+      button.title = title;
+      button.setAttribute('aria-label', title);
+      button.innerHTML = [
+        '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">',
+        `<path d="${path}"></path>`,
+        '</svg>'
+      ].join('');
+      button.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      return button;
+    };
+
+    const trailerPlayPauseButton = createMediaButton(
+      'jmp-trailer-playPause',
+      'Pause preview',
+      'M6 5h4v14H6zm8 0h4v14h-4z'
+    );
+    trailerPlayPauseButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const media = state.trailerMedia;
+      if (isTrailerMediaPaused(state)) {
+        const previewStartSeconds = Number(media?.dataset.jmpPreviewStartSeconds);
+        const previewDurationSeconds = Number(state.currentTrailer?.previewDurationSeconds) || 0;
+        if (
+          media instanceof HTMLVideoElement &&
+          previewDurationSeconds > 0 &&
+          Number.isFinite(previewStartSeconds) &&
+          media.currentTime - previewStartSeconds >= previewDurationSeconds - 0.1
+        ) {
+          media.currentTime = previewStartSeconds;
+        }
+        if (media instanceof HTMLVideoElement) {
+          void media.play().catch(() => undefined);
+        } else {
+          state.trailerMediaController?.play();
+        }
+      } else {
+        if (media instanceof HTMLVideoElement) {
+          media.pause();
+        } else {
+          state.trailerMediaController?.pause();
+        }
+      }
+      syncTrailerMediaControls(state);
+    });
+
+    const trailerMuteButton = createMediaButton(
+      'jmp-trailer-mute',
+      'Unmute preview',
+      'M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.21.05-.42.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25A6.92 6.92 0 0 1 14 18.7v2.06a8.9 8.9 0 0 0 3.69-1.8L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z'
+    );
+    trailerMuteButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const shouldUnmute = isTrailerMediaMuted(state);
+      if (shouldUnmute) {
+        const restoredVolume = Math.max(0.01, Math.min(1, (Number(config.trailerVolumePercent) || 35) / 100));
+        setTrailerMediaVolume(state, restoredVolume);
+      }
+      config.trailerAudioEnabled = shouldUnmute;
+      setTrailerMediaMuted(state, !shouldUnmute);
+      syncTrailerMediaControls(state);
+    });
+
+    const trailerVolumeControl = document.createElement('div');
+    trailerVolumeControl.className = 'jmp-trailer-volume-control';
+    trailerVolumeControl.addEventListener('pointerdown', (event) => event.stopPropagation());
+    trailerVolumeControl.addEventListener('click', (event) => event.stopPropagation());
+
+    const trailerVolumePopover = document.createElement('div');
+    trailerVolumePopover.className = 'jmp-trailer-volume-popover';
+
+    const trailerVolumeInput = document.createElement('input');
+    trailerVolumeInput.className = 'jmp-trailer-volume';
+    trailerVolumeInput.type = 'range';
+    trailerVolumeInput.min = '0';
+    trailerVolumeInput.max = '100';
+    trailerVolumeInput.step = '1';
+    trailerVolumeInput.value = String(Math.round(config.trailerVolumePercent));
+    trailerVolumeInput.setAttribute('aria-label', 'Preview volume');
+    trailerVolumeInput.setAttribute('aria-orientation', 'vertical');
+    trailerVolumeInput.addEventListener('input', () => {
+      const volumePercent = Math.max(0, Math.min(100, Number(trailerVolumeInput.value) || 0));
+      config.trailerVolumePercent = volumePercent;
+      config.trailerAudioEnabled = volumePercent > 0;
+      setTrailerMediaVolume(state, volumePercent / 100);
+      setTrailerMediaMuted(state, volumePercent === 0);
+      syncTrailerMediaControls(state);
+    });
+    trailerVolumeInput.addEventListener('pointerup', () => trailerVolumeInput.blur());
+    trailerVolumeInput.addEventListener('pointercancel', () => trailerVolumeInput.blur());
+    trailerVolumePopover.appendChild(trailerVolumeInput);
+    trailerVolumeControl.append(trailerMuteButton, trailerVolumePopover);
 
     const trailerExpandButton = document.createElement('button');
     trailerExpandButton.className = 'jmp-trailer-expand';
@@ -347,20 +481,100 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       expandTrailer(card);
     });
     trailerExpandButton.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
       event.stopPropagation();
     });
 
-    trailerActions.appendChild(trailerExpandButton);
+    trailerActions.append(trailerPlayPauseButton, trailerVolumeControl, trailerExpandButton);
     trailerActionsHost.appendChild(trailerActions);
 
     state.trailerActions = trailerActions;
     state.trailerExpandButton = trailerExpandButton;
+    state.trailerPlayPauseButton = trailerPlayPauseButton;
+    state.trailerMuteButton = trailerMuteButton;
+    state.trailerVolumeControl = trailerVolumeControl;
+    state.trailerVolumeInput = trailerVolumeInput;
   } else if (state.trailerActions.parentElement !== trailerActionsHost) {
     trailerActionsHost.appendChild(state.trailerActions);
   }
 
   applyTrailerExpandButtonSettings(state);
   return state.trailerActions;
+}
+
+function setTrailerActionIcon(button: HTMLButtonElement, path: string, label: string): void {
+  button.title = label;
+  button.setAttribute('aria-label', label);
+  const icon = button.querySelector('path');
+  icon?.setAttribute('d', path);
+}
+
+function updateTrailerActionsVisibility(state: CardState): void {
+  if (!state.trailerActions) {
+    return;
+  }
+  const shouldShow = [state.trailerExpandButton, state.trailerPlayPauseButton, state.trailerVolumeControl].some(
+    (control) => control?.style.display !== 'none'
+  );
+  state.trailerActions.style.display = shouldShow ? 'flex' : 'none';
+  state.trailerActions.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+}
+
+export function syncTrailerMediaControls(state: CardState | null | undefined): void {
+  if (!state?.trailerMedia) {
+    return;
+  }
+  const paused = isTrailerMediaPaused(state);
+  const muted = isTrailerMediaMuted(state);
+  const volume = getTrailerMediaVolume(state);
+  if (state.trailerPlayPauseButton) {
+    setTrailerActionIcon(
+      state.trailerPlayPauseButton,
+      paused ? 'M8 5v14l11-7z' : 'M6 5h4v14H6zm8 0h4v14h-4z',
+      paused ? 'Play preview' : 'Pause preview'
+    );
+  }
+  if (state.trailerMuteButton) {
+    setTrailerActionIcon(
+      state.trailerMuteButton,
+      muted
+        ? 'M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.21.05-.42.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25A6.92 6.92 0 0 1 14 18.7v2.06a8.9 8.9 0 0 0 3.69-1.8L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z'
+        : 'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.48 4.48 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z',
+      muted ? 'Unmute preview' : 'Mute preview'
+    );
+  }
+  if (state.trailerVolumeInput) {
+    const volumePercent = Math.round(volume * 100);
+    state.trailerVolumeInput.value = String(volumePercent);
+    state.trailerVolumeInput.setAttribute('aria-valuetext', `${volumePercent}%`);
+    state.trailerVolumeInput.title = `Preview volume: ${volumePercent}%`;
+  }
+}
+
+export function setTrailerMediaControlsVisible(
+  state: CardState | null | undefined,
+  visibility: boolean | { video: boolean; audio: boolean }
+): void {
+  if (!state?.trailerActions) {
+    return;
+  }
+  const videoVisible = typeof visibility === 'boolean' ? visibility : visibility.video;
+  const audioVisible = typeof visibility === 'boolean' ? visibility : visibility.audio;
+  if (state.trailerPlayPauseButton) {
+    state.trailerPlayPauseButton.style.display = videoVisible ? 'inline-flex' : 'none';
+    state.trailerPlayPauseButton.tabIndex = videoVisible ? 0 : -1;
+  }
+  if (state.trailerVolumeControl) {
+    state.trailerVolumeControl.style.display = audioVisible ? 'flex' : 'none';
+  }
+  if (state.trailerMuteButton) {
+    state.trailerMuteButton.tabIndex = audioVisible ? 0 : -1;
+  }
+  if (state.trailerVolumeInput) {
+    state.trailerVolumeInput.tabIndex = audioVisible ? 0 : -1;
+  }
+  syncTrailerMediaControls(state);
+  updateTrailerActionsVisibility(state);
 }
 
 export function ensureMetadataOverlay(state: CardState | null | undefined): HTMLDivElement | null {
@@ -537,11 +751,11 @@ export function setTrailerExpandVisible(state: CardState | null | undefined, isV
 
   applyTrailerExpandButtonSettings(state);
   const shouldShow = isVisible && config.trailerExpandButtonEnabled;
-  state.trailerActions.style.display = shouldShow ? 'block' : 'none';
-  state.trailerActions.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
   if (state.trailerExpandButton) {
+    state.trailerExpandButton.style.display = shouldShow ? 'inline-flex' : 'none';
     state.trailerExpandButton.tabIndex = shouldShow ? 0 : -1;
   }
+  updateTrailerActionsVisibility(state);
 }
 
 export function applyMetadataOverlaySettings(state: CardState | null | undefined): void {
@@ -704,10 +918,7 @@ export function crossfadePreviewFrameLayers(
   }, getPreviewTransitionDurationMs());
 }
 
-export function hidePreviewFrame(
-  state: CardState | null | undefined,
-  options?: { immediate?: boolean }
-): void {
+export function hidePreviewFrame(state: CardState | null | undefined, options?: { immediate?: boolean }): void {
   if (!state?.previewFrame && !state?.previewFrameSecondary) {
     return;
   }
@@ -823,6 +1034,8 @@ export function restoreCard(card: HTMLElement): void {
     return;
   }
 
+  const activePreviewSource = state.activePreviewSource;
+
   if (state.hoverTimer) {
     window.clearTimeout(state.hoverTimer);
     state.hoverTimer = null;
@@ -854,6 +1067,11 @@ export function restoreCard(card: HTMLElement): void {
 
   if (config.restoreOnLeave) {
     hidePreviewFrame(state);
+  }
+
+  // Leaving a static Trickplay frame visible is cheap, but background videos
+  // and embeds must never accumulate across cards when poster restoration is disabled.
+  if (config.restoreOnLeave || activePreviewSource === PREVIEW_SOURCE_TRAILER || state.trailerMedia) {
     clearTrailerMedia(state);
   }
 
@@ -908,9 +1126,14 @@ export function destroyCardBindings(): void {
       state.trailerLayer = null;
       state.trailerMedia = null;
       state.trailerMediaKind = null;
+      state.trailerMediaController = null;
       removeManagedNode<HTMLDivElement>(state, 'trailerActions');
       state.trailerActions = null;
       state.trailerExpandButton = null;
+      state.trailerPlayPauseButton = null;
+      state.trailerMuteButton = null;
+      state.trailerVolumeControl = null;
+      state.trailerVolumeInput = null;
       removeManagedNode<HTMLDivElement>(state, 'metadataOverlay');
       state.metadataOverlay = null;
       state.metadataOverlayTitle = null;

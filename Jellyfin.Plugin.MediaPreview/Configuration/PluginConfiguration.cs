@@ -46,6 +46,28 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public List<LibraryPreviewSourceOverride> LibraryPreviewSourceOverrides { get; set; } = [];
 
+    public List<PreviewFallbackSource> PreferTrailerFallbacks { get; set; } =
+    [
+        new() { Source = "local-trailer", Enabled = true },
+        new() { Source = "remote-trailer", Enabled = true },
+        new() { Source = "direct-play", Enabled = true },
+        new() { Source = "trickplay", Enabled = true }
+    ];
+
+    public List<PreviewFallbackSource> PreferTrickplayFallbacks { get; set; } =
+    [
+        new() { Source = "local-trailer", Enabled = true },
+        new() { Source = "remote-trailer", Enabled = true },
+        new() { Source = "direct-play", Enabled = true }
+    ];
+
+    public List<PreviewFallbackSource> PreferDirectPlayFallbacks { get; set; } =
+    [
+        new() { Source = "trickplay", Enabled = true },
+        new() { Source = "local-trailer", Enabled = true },
+        new() { Source = "remote-trailer", Enabled = true }
+    ];
+
     public bool MetadataOverlayEnabled { get; set; } = false;
 
     public string MetadataOverlayPosition { get; set; } = "bottom-left";
@@ -66,7 +88,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public bool Debug { get; set; } = false;
 
-    public string PreviewSource { get; set; } = "prefer-trailer";
+    public string PreviewSource { get; set; } = "trickplay";
 
     public bool ShowNoPreviewMessage { get; set; } = false;
 
@@ -74,11 +96,29 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrailerVolumePercent { get; set; } = 35;
 
+    public string[] VideoControlSources { get; set; } = ["local-trailer", "remote-trailer", "direct-play"];
+
+    public string[] AudioControlSources { get; set; } = ["local-trailer", "remote-trailer", "direct-play"];
+
+    public bool DirectPlayPreviewEnabled { get; set; } = true;
+
+    public int DirectPlayStartPercent { get; set; } = 20;
+
+    public double DirectPlayPlaybackRate { get; set; } = 1.5;
+
+    public int DirectPlayPreviewDurationSeconds { get; set; } = 15;
+
+    public bool DirectPlayTranscodeFallbackEnabled { get; set; } = true;
+
+    public int DirectPlayTranscodeMaxHeight { get; set; } = 480;
+
+    public int DirectPlayTranscodeVideoBitrateKbps { get; set; } = 1500;
+
     public bool UnavailableTrailerCacheEnabled { get; set; } = true;
 
     public int UnavailableTrailerRetryDays { get; set; } = 30;
 
-    public string HoverMode { get; set; } = "auto";
+    public string HoverMode { get; set; } = "scrub";
 
     public bool HoverCountdownEnabled { get; set; } = false;
 
@@ -118,7 +158,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int PreviewTransitionDurationMs { get; set; } = 180;
 
-    public string YouTubeCropStrength { get; set; } = "off";
+    public string YouTubeCropStrength { get; set; } = "medium";
 
     public bool TrailerExpandButtonEnabled { get; set; } = true;
 

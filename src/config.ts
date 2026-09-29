@@ -10,7 +10,6 @@ import {
   PREVIEW_MODE_COVER,
   PREVIEW_TRANSITION_FADE,
   PREVIEW_SOURCE_TRICKPLAY,
-  PREVIEW_SOURCE_TRAILER,
   TRAILER_EXPAND_BUTTON_TOP_RIGHT,
   VALID_CONTENT_TYPE_PREVIEW_SOURCES,
   VALID_AUTO_SCRUB_MODES,
@@ -25,7 +24,14 @@ import {
   YOUTUBE_CROP_MEDIUM
 } from './constants';
 import { clamp } from './core/dom';
-import type { LibraryPreviewSourceOverride, PluginConfig, RuntimePluginConfig } from './types/config';
+import type {
+  LibraryPreviewSourceOverride,
+  MediaControlSource,
+  PluginConfig,
+  PreviewChainSource,
+  PreviewFallbackSource,
+  RuntimePluginConfig
+} from './types/config';
 
 // Runtime in Jellyfin always prepends `window.JellyfinMediaPreviewPluginConfig`
 // from the server-side plugin configuration. These values are only a fallback
@@ -39,9 +45,34 @@ const standaloneFallbackConfig: PluginConfig = {
   episodePreviewSource: PREVIEW_SOURCE_INHERIT,
   videoPreviewSource: PREVIEW_SOURCE_INHERIT,
   libraryPreviewSourceOverrides: [],
+  preferTrailerFallbacks: [
+    { source: 'local-trailer', enabled: true },
+    { source: 'remote-trailer', enabled: true },
+    { source: 'direct-play', enabled: true },
+    { source: 'trickplay', enabled: true }
+  ],
+  preferTrickplayFallbacks: [
+    { source: 'local-trailer', enabled: true },
+    { source: 'remote-trailer', enabled: true },
+    { source: 'direct-play', enabled: true }
+  ],
+  preferDirectPlayFallbacks: [
+    { source: 'trickplay', enabled: true },
+    { source: 'local-trailer', enabled: true },
+    { source: 'remote-trailer', enabled: true }
+  ],
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  videoControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
+  audioControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
+  directPlayPreviewEnabled: true,
+  directPlayStartPercent: 20,
+  directPlayPlaybackRate: 1.5,
+  directPlayPreviewDurationSeconds: 15,
+  directPlayTranscodeFallbackEnabled: true,
+  directPlayTranscodeMaxHeight: 480,
+  directPlayTranscodeVideoBitrateKbps: 1500,
   unavailableTrailerCacheEnabled: true,
   unavailableTrailerRetryDays: 30,
   hoverDelayMs: 300,
@@ -144,6 +175,22 @@ export function normalizeConfig(): void {
   config.libraryPreviewSourceOverrides = Array.isArray(config.libraryPreviewSourceOverrides)
     ? normalizeLibraryPreviewSourceOverrides(config.libraryPreviewSourceOverrides)
     : [];
+  config.preferTrailerFallbacks = normalizeFallbackSources(
+    config.preferTrailerFallbacks,
+    'local-trailer',
+    standaloneFallbackConfig.preferTrailerFallbacks,
+    true
+  );
+  config.preferTrickplayFallbacks = normalizeFallbackSources(
+    config.preferTrickplayFallbacks,
+    'trickplay',
+    standaloneFallbackConfig.preferTrickplayFallbacks
+  );
+  config.preferDirectPlayFallbacks = normalizeFallbackSources(
+    config.preferDirectPlayFallbacks,
+    'direct-play',
+    standaloneFallbackConfig.preferDirectPlayFallbacks
+  );
 
   if (!VALID_TRAILER_EXPAND_BUTTON_POSITIONS.has(config.metadataOverlayPosition)) {
     config.metadataOverlayPosition = 'bottom-left';
@@ -224,6 +271,29 @@ export function normalizeConfig(): void {
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
+  config.videoControlSources = normalizeMediaControlSources(
+    config.videoControlSources,
+    standaloneFallbackConfig.videoControlSources
+  );
+  config.audioControlSources = normalizeMediaControlSources(
+    config.audioControlSources,
+    standaloneFallbackConfig.audioControlSources
+  );
+  config.directPlayPreviewEnabled = config.directPlayPreviewEnabled !== false;
+  config.directPlayStartPercent = clamp(numberOrFallback(config.directPlayStartPercent, 20), 0, 90);
+  config.directPlayPlaybackRate = clamp(numberOrFallback(config.directPlayPlaybackRate, 1.5), 0.5, 2);
+  config.directPlayPreviewDurationSeconds = clamp(
+    numberOrFallback(config.directPlayPreviewDurationSeconds, 15),
+    0,
+    300
+  );
+  config.directPlayTranscodeFallbackEnabled = config.directPlayTranscodeFallbackEnabled !== false;
+  config.directPlayTranscodeMaxHeight = clamp(numberOrFallback(config.directPlayTranscodeMaxHeight, 480), 240, 2160);
+  config.directPlayTranscodeVideoBitrateKbps = clamp(
+    numberOrFallback(config.directPlayTranscodeVideoBitrateKbps, 1500),
+    250,
+    20000
+  );
   config.unavailableTrailerCacheEnabled = config.unavailableTrailerCacheEnabled !== false;
   config.unavailableTrailerRetryDays = clamp(numberOrFallback(config.unavailableTrailerRetryDays, 30), 1, 365);
   config.previewBackdropIntensityPercent = clamp(numberOrFallback(config.previewBackdropIntensityPercent, 35), 0, 100);
@@ -260,4 +330,66 @@ function normalizeLibraryPreviewSourceOverrides(
   });
 
   return Array.from(normalized.values());
+}
+
+function normalizeFallbackSources(
+  value: unknown,
+  primary: PreviewChainSource,
+  defaults: PreviewFallbackSource[],
+  includePrimary = false
+): PreviewFallbackSource[] {
+  const allowed = new Set<PreviewChainSource>(['trickplay', 'local-trailer', 'remote-trailer', 'direct-play']);
+  if (!includePrimary) {
+    allowed.delete(primary);
+  }
+  const seen = new Set<PreviewChainSource>();
+  const normalized: PreviewFallbackSource[] = [];
+
+  if (Array.isArray(value)) {
+    value.forEach((entry) => {
+      const record = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : null;
+      if (record?.source === 'trailer') {
+        (['local-trailer', 'remote-trailer'] as PreviewChainSource[]).forEach((source) => {
+          if (allowed.has(source) && !seen.has(source)) {
+            seen.add(source);
+            normalized.push({ source, enabled: record?.enabled === true });
+          }
+        });
+        return;
+      }
+      const source = record?.source as PreviewChainSource;
+      if (!allowed.has(source) || seen.has(source)) {
+        return;
+      }
+      seen.add(source);
+      normalized.push({ source, enabled: record?.enabled === true });
+    });
+  }
+
+  if (includePrimary && !seen.has(primary)) {
+    seen.add(primary);
+    normalized.unshift({ source: primary, enabled: true });
+  }
+
+  defaults.forEach((entry) => {
+    if (!seen.has(entry.source)) {
+      normalized.push({ ...entry });
+    }
+  });
+  return normalized;
+}
+
+function normalizeMediaControlSources(value: unknown, defaults: MediaControlSource[]): MediaControlSource[] {
+  const allowed = new Set<MediaControlSource>(['local-trailer', 'remote-trailer', 'direct-play']);
+  if (!Array.isArray(value)) {
+    return [...defaults];
+  }
+
+  return Array.from(
+    new Set(
+      value.filter(
+        (entry): entry is MediaControlSource => typeof entry === 'string' && allowed.has(entry as MediaControlSource)
+      )
+    )
+  );
 }

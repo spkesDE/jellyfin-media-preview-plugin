@@ -3,8 +3,11 @@ import {
   DEBUG_LEAVE_HOLD_MS,
   HOVER_MODE_AUTO,
   NO_PREVIEW_MESSAGE_ANY,
+  NO_PREVIEW_MESSAGE_DIRECT_PLAY,
   NO_PREVIEW_MESSAGE_TRAILER,
   NO_PREVIEW_MESSAGE_TRICKPLAY,
+  PREVIEW_SOURCE_DIRECT_PLAY,
+  PREVIEW_SOURCE_PREFER_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_TRAILER,
   PREVIEW_SOURCE_PREFER_TRICKPLAY,
   PREVIEW_SOURCE_TRAILER,
@@ -22,7 +25,6 @@ import {
 } from '../cards/discovery';
 import {
   clearLeaveHold,
-  clearPendingMove,
   ensureHoverCountdown,
   ensurePreviewHost,
   hideUnavailableMessage,
@@ -38,7 +40,12 @@ import { restorePortraitCardWidth } from '../cards/widePreview';
 import { runtimeState } from '../runtime';
 import { applyPreview } from '../preview';
 import { cancelScheduledTrickplayPreload, observeTrickplayPreload, scheduleTrickplayPreload } from '../preview/preload';
-import { getContentTypePreviewSource, getPreviewSourceForItem, getPreviewUrl } from '../preview/source';
+import {
+  getContentTypePreviewSource,
+  getPreviewSourceForItem,
+  getPreviewUrl,
+  previewSourceUsesTrickplay
+} from '../preview/source';
 import { clamp } from '../core/dom';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
 import { clearAutoScrub, startAutoScrub } from './autoScrub';
@@ -72,11 +79,23 @@ function getNoPreviewMessage(previewSource: string): string {
     return NO_PREVIEW_MESSAGE_TRICKPLAY;
   }
 
-  if (previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY || previewSource === PREVIEW_SOURCE_PREFER_TRAILER) {
+  if (previewSource === PREVIEW_SOURCE_DIRECT_PLAY) {
+    return NO_PREVIEW_MESSAGE_DIRECT_PLAY;
+  }
+
+  if (
+    previewSource === PREVIEW_SOURCE_PREFER_TRICKPLAY ||
+    previewSource === PREVIEW_SOURCE_PREFER_TRAILER ||
+    previewSource === PREVIEW_SOURCE_PREFER_DIRECT_PLAY
+  ) {
     return NO_PREVIEW_MESSAGE_ANY;
   }
 
   return NO_PREVIEW_MESSAGE_ANY;
+}
+
+function isVideoPreviewSource(source: string | null | undefined): boolean {
+  return source === PREVIEW_SOURCE_TRAILER || source === PREVIEW_SOURCE_DIRECT_PLAY;
 }
 
 function recoverFromUnavailableTrailer(
@@ -94,44 +113,47 @@ function recoverFromUnavailableTrailer(
     return;
   }
 
-  getPreviewUrl(itemId, percent, itemType).then((preview) => {
-    if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
-      return;
-    }
-
-    if (!preview) {
-      restorePortraitCardWidth(state);
-      if (config.showNoPreviewMessage) {
-        getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
-          if (state.previewActive && requestToken === state.latestRequestToken && isEngaged()) {
-            showUnavailableMessage(state, getNoPreviewMessage(previewSource));
-          }
-        });
+  getPreviewUrl(itemId, percent, itemType)
+    .then((preview) => {
+      if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
+        return;
       }
-      return;
-    }
 
-    hideUnavailableMessage(state);
-    applyPreview(card, preview, percent, {
-      onTrailerUnavailable: () => recoverFromUnavailableTrailer(
-        card,
-        state,
-        itemId,
-        itemType,
-        percent,
-        requestToken,
-        isEngaged,
-        startAutoScrubOnFallback
-      )
+      if (!preview) {
+        restorePortraitCardWidth(state);
+        if (config.showNoPreviewMessage) {
+          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+            if (state.previewActive && requestToken === state.latestRequestToken && isEngaged()) {
+              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+            }
+          });
+        }
+        return;
+      }
+
+      hideUnavailableMessage(state);
+      applyPreview(card, preview, percent, {
+        onTrailerUnavailable: () =>
+          recoverFromUnavailableTrailer(
+            card,
+            state,
+            itemId,
+            itemType,
+            percent,
+            requestToken,
+            isEngaged,
+            startAutoScrubOnFallback
+          )
+      });
+
+      if (startAutoScrubOnFallback && !isVideoPreviewSource(preview.source)) {
+        startAutoScrub(card);
+      }
+    })
+    .catch((error) => {
+      restorePortraitCardWidth(state);
+      debugLog('Failed to recover from an unavailable trailer.', itemId, error);
     });
-
-    if (startAutoScrubOnFallback && preview.source !== PREVIEW_SOURCE_TRAILER) {
-      startAutoScrub(card);
-    }
-  }).catch((error) => {
-    restorePortraitCardWidth(state);
-    debugLog('Failed to recover from an unavailable trailer.', itemId, error);
-  });
 }
 
 function startHoverCountdown(
@@ -192,15 +214,7 @@ function getInitialHoverPercent(
 }
 
 function getDefaultPreloadPercent(): number {
-  return config.hoverMode === HOVER_MODE_AUTO
-    ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
-    : 0.5;
-}
-
-function previewSourceUsesTrickplay(source: string): boolean {
-  return source === PREVIEW_SOURCE_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRICKPLAY
-    || source === PREVIEW_SOURCE_PREFER_TRAILER;
+  return config.hoverMode === HOVER_MODE_AUTO ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1) : 0.5;
 }
 
 function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {
@@ -248,62 +262,65 @@ function scheduleHoverActivation(
       showLoadingIndicator(state);
     }
 
-    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
-      if (!state.previewActive || requestToken !== state.latestRequestToken) {
-        hideLoadingIndicator(state);
-        resetHoverCountdown(state);
-        return;
-      }
-
-      if (!state.previewActive || !preview) {
-        hideLoadingIndicator(state);
-        resetHoverCountdown(state);
-        debugCardSummary(card, 'Hover activation found no preview source.', {
-          itemId,
-          previewSource: config.previewSource
-        });
-        if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
-          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
-            if (state.previewActive && requestToken === state.latestRequestToken && state.pointerInside) {
-              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
-            }
-          });
+    getPreviewUrl(itemId, initialPercent, itemType)
+      .then((preview) => {
+        if (!state.previewActive || requestToken !== state.latestRequestToken || !state.pointerInside) {
+          hideLoadingIndicator(state);
+          resetHoverCountdown(state);
+          return;
         }
-        return;
-      }
 
-      resetHoverCountdown(state);
-      hideUnavailableMessage(state);
-      hideLoadingIndicator(state);
-      applyPreview(card, preview, initialPercent, {
-        onTrailerUnavailable: () => recoverFromUnavailableTrailer(
-          card,
-          state,
-          itemId,
-          itemType,
-          initialPercent,
-          requestToken,
-          () => state.pointerInside,
-          config.hoverMode === HOVER_MODE_AUTO
-        )
+        if (!state.previewActive || !preview) {
+          hideLoadingIndicator(state);
+          resetHoverCountdown(state);
+          debugCardSummary(card, 'Hover activation found no preview source.', {
+            itemId,
+            previewSource: config.previewSource
+          });
+          if (state.previewActive && config.showNoPreviewMessage && state.pointerInside) {
+            getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+              if (state.previewActive && requestToken === state.latestRequestToken && state.pointerInside) {
+                showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+              }
+            });
+          }
+          return;
+        }
+
+        resetHoverCountdown(state);
+        hideUnavailableMessage(state);
+        hideLoadingIndicator(state);
+        applyPreview(card, preview, initialPercent, {
+          onTrailerUnavailable: () =>
+            recoverFromUnavailableTrailer(
+              card,
+              state,
+              itemId,
+              itemType,
+              initialPercent,
+              requestToken,
+              () => state.pointerInside,
+              config.hoverMode === HOVER_MODE_AUTO
+            )
+        });
+
+        if (isVideoPreviewSource(preview.source)) {
+          return;
+        }
+
+        if (config.hoverMode === HOVER_MODE_AUTO) {
+          startAutoScrub(card);
+        }
+      })
+      .catch((error) => {
+        if (requestToken !== state.latestRequestToken) {
+          return;
+        }
+
+        resetHoverCountdown(state);
+        hideLoadingIndicator(state);
+        debugLog('Hover activation failed.', itemId, error);
       });
-
-      if (preview.source === PREVIEW_SOURCE_TRAILER) {
-        return;
-      }
-
-      if (config.hoverMode === HOVER_MODE_AUTO) {
-        startAutoScrub(card);
-      }
-    }).catch((error) => {
-      if (requestToken !== state.latestRequestToken) {
-        return;
-      }
-
-      resetHoverCountdown(state);
-      hideLoadingIndicator(state);
-      debugLog('Hover activation failed.', itemId, error);
-    });
   }, effectiveDelayMs);
 
   startHoverCountdown(card, state, effectiveDelayMs);
@@ -331,46 +348,49 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
       showLoadingIndicator(state);
     }
 
-    getPreviewUrl(itemId, initialPercent, itemType).then((preview) => {
-      if (!state.previewActive || requestToken !== state.latestRequestToken) {
-        hideLoadingIndicator(state);
-        return;
-      }
-
-      if (!preview) {
-        hideLoadingIndicator(state);
-        if (config.showNoPreviewMessage && state.focusInside) {
-          getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
-            if (state.previewActive && requestToken === state.latestRequestToken && state.focusInside) {
-              showUnavailableMessage(state, getNoPreviewMessage(previewSource));
-            }
-          });
+    getPreviewUrl(itemId, initialPercent, itemType)
+      .then((preview) => {
+        if (!state.previewActive || requestToken !== state.latestRequestToken || !state.focusInside) {
+          hideLoadingIndicator(state);
+          return;
         }
-        return;
-      }
 
-      hideUnavailableMessage(state);
-      hideLoadingIndicator(state);
-      applyPreview(card, preview, initialPercent, {
-        onTrailerUnavailable: () => recoverFromUnavailableTrailer(
-          card,
-          state,
-          itemId,
-          itemType,
-          initialPercent,
-          requestToken,
-          () => state.focusInside,
-          false
-        )
+        if (!preview) {
+          hideLoadingIndicator(state);
+          if (config.showNoPreviewMessage && state.focusInside) {
+            getPreviewSourceForItem(itemId, itemType).then((previewSource) => {
+              if (state.previewActive && requestToken === state.latestRequestToken && state.focusInside) {
+                showUnavailableMessage(state, getNoPreviewMessage(previewSource));
+              }
+            });
+          }
+          return;
+        }
+
+        hideUnavailableMessage(state);
+        hideLoadingIndicator(state);
+        applyPreview(card, preview, initialPercent, {
+          onTrailerUnavailable: () =>
+            recoverFromUnavailableTrailer(
+              card,
+              state,
+              itemId,
+              itemType,
+              initialPercent,
+              requestToken,
+              () => state.focusInside,
+              false
+            )
+        });
+      })
+      .catch((error) => {
+        if (requestToken !== state.latestRequestToken) {
+          return;
+        }
+
+        hideLoadingIndicator(state);
+        debugLog('Keyboard preview activation failed.', itemId, error);
       });
-    }).catch((error) => {
-      if (requestToken !== state.latestRequestToken) {
-        return;
-      }
-
-      hideLoadingIndicator(state);
-      debugLog('Keyboard preview activation failed.', itemId, error);
-    });
   }, delayMs);
 }
 
@@ -385,19 +405,25 @@ export function runPreviewUpdate(card: HTMLElement, percent: number): void {
   state.latestRequestToken += 1;
   const requestToken = state.latestRequestToken;
 
-  getPreviewUrl(itemId, percent, itemType).then((preview) => {
-    if (!preview) {
-      return;
-    }
+  getPreviewUrl(itemId, percent, itemType)
+    .then((preview) => {
+      if (!preview) {
+        return;
+      }
 
-    if (!state.previewActive || requestToken !== state.latestRequestToken) {
-      return;
-    }
+      if (
+        !state.previewActive ||
+        requestToken !== state.latestRequestToken ||
+        (!state.pointerInside && !state.focusInside)
+      ) {
+        return;
+      }
 
-    applyPreview(card, preview, percent);
-  }).catch((error) => {
-    debugLog('Preview update failed.', itemId, error);
-  });
+      applyPreview(card, preview, percent);
+    })
+    .catch((error) => {
+      debugLog('Preview update failed.', itemId, error);
+    });
 }
 
 export function schedulePreviewUpdate(card: HTMLElement, percent: number): void {
@@ -437,9 +463,10 @@ export function schedulePreviewUpdate(card: HTMLElement, percent: number): void 
     return;
   }
 
-  const minHoldMs = config.hoverMode === HOVER_MODE_AUTO
-    ? clampAdaptiveDelay(getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo))
-    : getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo);
+  const minHoldMs =
+    config.hoverMode === HOVER_MODE_AUTO
+      ? clampAdaptiveDelay(getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo))
+      : getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo);
   const elapsedSinceLastRender = Date.now() - (state.lastTrickplayRenderAt || 0);
   if (elapsedSinceLastRender >= minHoldMs) {
     queueUpdateOnFrame();
@@ -450,12 +477,18 @@ export function schedulePreviewUpdate(card: HTMLElement, percent: number): void 
     return;
   }
 
-  state.queuedMoveTimer = window.setTimeout(() => {
-    queueUpdateOnFrame();
-  }, Math.max(0, minHoldMs - elapsedSinceLastRender));
+  state.queuedMoveTimer = window.setTimeout(
+    () => {
+      queueUpdateOnFrame();
+    },
+    Math.max(0, minHoldMs - elapsedSinceLastRender)
+  );
 }
 
-export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }): void {
+export function handlePointerEnter(
+  card: HTMLElement,
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+): void {
   if (!config.enabled || event.pointerType !== 'mouse' || runtimeState.expandedTrailerSession) {
     return;
   }
@@ -479,7 +512,10 @@ export function handlePointerEnter(card: HTMLElement, event: PointerEvent | { po
   scheduleHoverActivation(card, state, event);
 }
 
-export function handlePointerMove(card: HTMLElement, event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }): void {
+export function handlePointerMove(
+  card: HTMLElement,
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+): void {
   if (runtimeState.expandedTrailerSession || (event.pointerType && event.pointerType !== 'mouse')) {
     return;
   }
@@ -498,7 +534,7 @@ export function handlePointerMove(card: HTMLElement, event: PointerEvent | { poi
     }
   }
 
-  if (!state.previewActive || state.activePreviewSource === PREVIEW_SOURCE_TRAILER || config.hoverMode === HOVER_MODE_AUTO) {
+  if (!state.previewActive || isVideoPreviewSource(state.activePreviewSource) || config.hoverMode === HOVER_MODE_AUTO) {
     return;
   }
 
@@ -518,7 +554,11 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
     return;
   }
 
-  if (config.debug) {
+  // Debug hold is useful for inspecting a rendered Trickplay frame, but it
+  // must never keep asynchronous source requests or playing media alive after
+  // the pointer leaves. Direct Play is especially likely to resolve after a
+  // slower metadata request and would otherwise render into a stale card.
+  if (config.debug && state.activePreviewSource === PREVIEW_SOURCE_TRICKPLAY && !state.trailerMedia) {
     clearLeaveHold(state);
     state.leaveHoldTimer = window.setTimeout(() => {
       state.leaveHoldTimer = null;
@@ -604,19 +644,16 @@ export function handleKeyboardPreviewKey(card: HTMLElement, event: KeyboardEvent
     return;
   }
 
-  if (!config.keyboardArrowScrubEnabled || !state.previewActive || state.activePreviewSource === PREVIEW_SOURCE_TRAILER) {
+  if (!config.keyboardArrowScrubEnabled || !state.previewActive || isVideoPreviewSource(state.activePreviewSource)) {
     return;
   }
 
   let nextPercent: number | null = null;
   const step = clamp((Number(config.keyboardArrowStepPercent) || 8) / 100, 0.01, 1);
-  const currentPercent = state.currentTrickplayInfo && state.lastRenderedTrickplayFrameIndex !== null
-    ? clamp(
-      state.lastRenderedTrickplayFrameIndex / Math.max(1, state.currentTrickplayInfo.thumbnailCount - 1),
-      0,
-      1
-    )
-    : clamp((Number(config.keyboardPreviewStartPercent) || 50) / 100, 0, 1);
+  const currentPercent =
+    state.currentTrickplayInfo && state.lastRenderedTrickplayFrameIndex !== null
+      ? clamp(state.lastRenderedTrickplayFrameIndex / Math.max(1, state.currentTrickplayInfo.thumbnailCount - 1), 0, 1)
+      : clamp((Number(config.keyboardPreviewStartPercent) || 50) / 100, 0, 1);
 
   if (event.key === 'ArrowLeft') {
     nextPercent = Math.max(0, currentPercent - step);
