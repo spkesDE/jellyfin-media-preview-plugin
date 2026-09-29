@@ -336,7 +336,10 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
         `<path d="${path}"></path>`,
         '</svg>'
       ].join('');
-      button.addEventListener('pointerdown', (event) => event.stopPropagation());
+      button.addEventListener('pointerdown', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      });
       return button;
     };
 
@@ -406,6 +409,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       expandTrailer(card);
     });
     trailerExpandButton.addEventListener('pointerdown', (event) => {
+      event.preventDefault();
       event.stopPropagation();
     });
 

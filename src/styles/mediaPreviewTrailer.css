@@ -64,6 +64,20 @@
   background: rgba(22, 28, 38, 0.9);
 }
 
+.jmp-trailer-expand:focus,
+.jmp-trailer-expand:focus-visible {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+}
+
+.jmp-trailer-expand:focus-visible {
+  background: rgba(22, 28, 38, 0.94);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    inset 0 -2px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
 .jmp-trailer-expand svg {
   width: 19px;
   height: 19px;
