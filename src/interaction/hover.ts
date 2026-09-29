@@ -264,7 +264,7 @@ function scheduleHoverActivation(
 
     getPreviewUrl(itemId, initialPercent, itemType)
       .then((preview) => {
-        if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        if (!state.previewActive || requestToken !== state.latestRequestToken || !state.pointerInside) {
           hideLoadingIndicator(state);
           resetHoverCountdown(state);
           return;
@@ -350,7 +350,7 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
 
     getPreviewUrl(itemId, initialPercent, itemType)
       .then((preview) => {
-        if (!state.previewActive || requestToken !== state.latestRequestToken) {
+        if (!state.previewActive || requestToken !== state.latestRequestToken || !state.focusInside) {
           hideLoadingIndicator(state);
           return;
         }
@@ -411,7 +411,11 @@ export function runPreviewUpdate(card: HTMLElement, percent: number): void {
         return;
       }
 
-      if (!state.previewActive || requestToken !== state.latestRequestToken) {
+      if (
+        !state.previewActive ||
+        requestToken !== state.latestRequestToken ||
+        (!state.pointerInside && !state.focusInside)
+      ) {
         return;
       }
 
@@ -550,7 +554,11 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
     return;
   }
 
-  if (config.debug) {
+  // Debug hold is useful for inspecting a rendered Trickplay frame, but it
+  // must never keep asynchronous source requests or playing media alive after
+  // the pointer leaves. Direct Play is especially likely to resolve after a
+  // slower metadata request and would otherwise render into a stale card.
+  if (config.debug && state.activePreviewSource === PREVIEW_SOURCE_TRICKPLAY && !state.trailerMedia) {
     clearLeaveHold(state);
     state.leaveHoldTimer = window.setTimeout(() => {
       state.leaveHoldTimer = null;
