@@ -286,9 +286,6 @@ onBeforeUnmount(() => {
   background: rgb(255 255 255 / 8%);
   outline: 0;
 }
-.jmp-multiPickerOption.is-selected {
-  background: rgb(255 255 255 / 12%);
-}
 .jmp-multiPickerCheck {
   color: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
   font-size: 1.25rem;
