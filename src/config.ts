@@ -48,7 +48,7 @@ const standaloneFallbackConfig: PluginConfig = {
     { source: 'local-trailer', enabled: true },
     { source: 'remote-trailer', enabled: true },
     { source: 'direct-play', enabled: true },
-    { source: 'trickplay', enabled: false }
+    { source: 'trickplay', enabled: true }
   ],
   preferTrickplayFallbacks: [
     { source: 'local-trailer', enabled: true },
@@ -56,9 +56,9 @@ const standaloneFallbackConfig: PluginConfig = {
     { source: 'direct-play', enabled: true }
   ],
   preferDirectPlayFallbacks: [
+    { source: 'trickplay', enabled: true },
     { source: 'local-trailer', enabled: true },
-    { source: 'remote-trailer', enabled: true },
-    { source: 'trickplay', enabled: false }
+    { source: 'remote-trailer', enabled: true }
   ],
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,

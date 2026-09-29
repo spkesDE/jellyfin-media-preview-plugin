@@ -22,10 +22,20 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.Equal(1500, defaults.DirectPlayTranscodeVideoBitrateKbps);
         Assert.Collection(
             defaults.PreferTrailerFallbacks,
-            entry => Assert.Equal("local-trailer", entry.Source),
-            entry => Assert.Equal("remote-trailer", entry.Source),
-            entry => Assert.Equal("direct-play", entry.Source),
-            entry => Assert.Equal("trickplay", entry.Source));
+            entry => AssertDefaultSource(entry, "local-trailer"),
+            entry => AssertDefaultSource(entry, "remote-trailer"),
+            entry => AssertDefaultSource(entry, "direct-play"),
+            entry => AssertDefaultSource(entry, "trickplay"));
+        Assert.Collection(
+            defaults.PreferTrickplayFallbacks,
+            entry => AssertDefaultSource(entry, "local-trailer"),
+            entry => AssertDefaultSource(entry, "remote-trailer"),
+            entry => AssertDefaultSource(entry, "direct-play"));
+        Assert.Collection(
+            defaults.PreferDirectPlayFallbacks,
+            entry => AssertDefaultSource(entry, "trickplay"),
+            entry => AssertDefaultSource(entry, "local-trailer"),
+            entry => AssertDefaultSource(entry, "remote-trailer"));
         Assert.Equal(defaults.PreviewSource, normalized.PreviewSource);
         Assert.Equal(defaults.HoverMode, normalized.HoverMode);
         Assert.Equal(defaults.YouTubeCropStrength, normalized.YouTubeCropStrength);
@@ -147,5 +157,11 @@ public sealed class PluginConfigurationNormalizerTests
 
         Assert.Equal("remote-trailer", remoteFirst.PreferTrailerFallbacks[0].Source);
         Assert.Equal("local-trailer", remoteFirst.PreferTrailerFallbacks[1].Source);
+    }
+
+    private static void AssertDefaultSource(PreviewFallbackSource entry, string source)
+    {
+        Assert.Equal(source, entry.Source);
+        Assert.True(entry.Enabled);
     }
 }

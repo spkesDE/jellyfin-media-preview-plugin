@@ -31,7 +31,7 @@ export const CONFIG_DEFAULTS = {
     { Source: 'local-trailer', Enabled: true },
     { Source: 'remote-trailer', Enabled: true },
     { Source: 'direct-play', Enabled: true },
-    { Source: 'trickplay', Enabled: false }
+    { Source: 'trickplay', Enabled: true }
   ] as ConfigPreviewFallbackSource[],
   PreferTrickplayFallbacks: [
     { Source: 'local-trailer', Enabled: true },
@@ -39,9 +39,9 @@ export const CONFIG_DEFAULTS = {
     { Source: 'direct-play', Enabled: true }
   ] as ConfigPreviewFallbackSource[],
   PreferDirectPlayFallbacks: [
+    { Source: 'trickplay', Enabled: true },
     { Source: 'local-trailer', Enabled: true },
-    { Source: 'remote-trailer', Enabled: true },
-    { Source: 'trickplay', Enabled: false }
+    { Source: 'remote-trailer', Enabled: true }
   ] as ConfigPreviewFallbackSource[],
   ShowNoPreviewMessage: false,
   TrailerAudioEnabled: false,

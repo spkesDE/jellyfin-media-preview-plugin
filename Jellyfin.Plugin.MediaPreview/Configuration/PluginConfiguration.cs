@@ -51,7 +51,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
         new() { Source = "local-trailer", Enabled = true },
         new() { Source = "remote-trailer", Enabled = true },
         new() { Source = "direct-play", Enabled = true },
-        new() { Source = "trickplay", Enabled = false }
+        new() { Source = "trickplay", Enabled = true }
     ];
 
     public List<PreviewFallbackSource> PreferTrickplayFallbacks { get; set; } =
@@ -63,9 +63,9 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public List<PreviewFallbackSource> PreferDirectPlayFallbacks { get; set; } =
     [
+        new() { Source = "trickplay", Enabled = true },
         new() { Source = "local-trailer", Enabled = true },
-        new() { Source = "remote-trailer", Enabled = true },
-        new() { Source = "trickplay", Enabled = false }
+        new() { Source = "remote-trailer", Enabled = true }
     ];
 
     public bool MetadataOverlayEnabled { get; set; } = false;
