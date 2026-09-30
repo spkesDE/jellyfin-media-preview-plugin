@@ -1,5 +1,14 @@
 # Changelog
 
+## v12.3.0.0 - 2026-09-30
+
+### Features
+
+- feat(injection): add direct injection and robust automatic selection
+
+### Fixes
+
+- fix(config): preserve preferred source order across updates
 ## v12.2.1.0 - 2026-09-30
 
 ### Fixes

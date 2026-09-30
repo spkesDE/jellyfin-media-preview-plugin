@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/logo.png",
   "versions": [
     {
+      "version": "12.3.0.0",
+      "changelog": "- feat(injection): add direct injection and robust automatic selection\n- fix(config): preserve preferred source order across updates\n",
+      "targetAbi": "12.1.0.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v12.3.0.0/MediaPreview.zip",
+      "checksum": "de8d14c11feaeebec2da1cf3466f7fca",
+      "timestamp": "2026-09-30 17:01:46"
+    },
+    {
       "version": "12.2.1.0",
       "changelog": "- fix(manifest): Update manifest.json for failed v12.2.0.0 release\n- fix(manifest): Update manifest.json with version 12.2.0.1 changes\n- fix(trickplay): resolve series and season cards to an episode (#31)\n",
       "targetAbi": "12.1.0.0",
