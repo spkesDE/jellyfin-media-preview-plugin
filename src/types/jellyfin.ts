@@ -34,6 +34,10 @@ export interface JellyfinItem {
   Trickplay?: Record<string, Record<string, JellyfinTrickplayManifest>>;
 }
 
+export interface JellyfinItemsResult {
+  Items?: JellyfinItem[];
+}
+
 export interface JellyfinTrickplayManifest {
   Width?: number;
   Height?: number;

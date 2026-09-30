@@ -13,10 +13,12 @@ import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
 import { getScopedPreviewCacheKey, itemInfoCache, missingTrickplayCache } from '../core/storage';
 import { requestJson } from '../core/request';
-import type { JellyfinItem, JellyfinTrickplayManifest } from '../types/jellyfin';
+import type { JellyfinItem, JellyfinItemsResult, JellyfinTrickplayManifest } from '../types/jellyfin';
 import type { TrickplayInfo, TrickplayPreview } from '../types/preview';
 
 const missingTrickplayCacheCooldownMs = 10 * 60 * 1000;
+const trickplayEpisodeContainerTypes = new Set(['Series', 'Season']);
+const trickplayEpisodeLookupLimit = 10;
 
 function isMissingTrickplayCached(cacheKey: string): boolean {
   const cachedAt = missingTrickplayCache.get(cacheKey);
@@ -190,6 +192,67 @@ export function normalizeTrickplayManifest(item: JellyfinItem | null | undefined
   };
 }
 
+function pickEpisodeWithTrickplay(episodes: JellyfinItem[] | null | undefined): JellyfinItem | null {
+  if (!Array.isArray(episodes)) {
+    return null;
+  }
+
+  return episodes.find((episode) => !!normalizeTrickplayManifest(episode)) || null;
+}
+
+function fetchNextUpEpisode(seriesId: string, userId: string): Promise<JellyfinItem | null> {
+  return requestJson<JellyfinItemsResult>('Shows/NextUp', {
+    UserId: userId,
+    SeriesId: seriesId,
+    Limit: trickplayEpisodeLookupLimit,
+    Fields: 'Trickplay,MediaSources'
+  })
+    .then((result) => pickEpisodeWithTrickplay(result?.Items))
+    .catch((error) => {
+      debugLog('Failed to load Next Up episode for trickplay resolution.', seriesId, error);
+      return null;
+    });
+}
+
+function fetchChildEpisode(containerId: string, userId: string): Promise<JellyfinItem | null> {
+  return requestJson<JellyfinItemsResult>('Items', {
+    UserId: userId,
+    ParentId: containerId,
+    Recursive: true,
+    IncludeItemTypes: 'Episode',
+    IsMissing: false,
+    SortBy: 'SortName',
+    SortOrder: 'Ascending',
+    Limit: trickplayEpisodeLookupLimit,
+    Fields: 'Trickplay,MediaSources'
+  })
+    .then((result) => pickEpisodeWithTrickplay(result?.Items))
+    .catch((error) => {
+      debugLog('Failed to load episodes for trickplay resolution.', containerId, error);
+      return null;
+    });
+}
+
+// Series and Season items do not carry trickplay themselves; preview one of their episodes instead.
+function resolveTrickplayItem(item: JellyfinItem, userId: string): Promise<JellyfinItem> {
+  const itemType = item.Type || '';
+  const containerId = item.Id;
+  if (!containerId || !trickplayEpisodeContainerTypes.has(itemType)) {
+    return Promise.resolve(item);
+  }
+
+  const nextUpRequest = itemType === 'Series' ? fetchNextUpEpisode(containerId, userId) : Promise.resolve(null);
+
+  return nextUpRequest.then((nextUpEpisode) => {
+    if (nextUpEpisode) {
+      return nextUpEpisode;
+    }
+
+    // Fall back to the first episode that has a usable trickplay manifest.
+    return fetchChildEpisode(containerId, userId).then((firstEpisode) => firstEpisode || item);
+  });
+}
+
 export function getTrickplayInfo(itemId: string | null | undefined): Promise<TrickplayInfo | null> {
   if (!itemId) {
     return Promise.resolve(null);
@@ -225,19 +288,21 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
         return null;
       }
 
-      const normalized = normalizeTrickplayManifest(item);
-      if (!normalized) {
-        debugLog('No usable trickplay manifest found for item.', {
-          itemId,
-          type: item.Type,
-          trickplayKeys: item.Trickplay ? Object.keys(item.Trickplay) : []
-        });
-        return null;
-      }
+      return resolveTrickplayItem(item, userId).then((resolvedItem) => {
+        const normalized = normalizeTrickplayManifest(resolvedItem);
+        if (!normalized) {
+          debugLog('No usable trickplay manifest found for item.', {
+            itemId,
+            type: resolvedItem.Type,
+            trickplayKeys: resolvedItem.Trickplay ? Object.keys(resolvedItem.Trickplay) : []
+          });
+          return null;
+        }
 
-      debugLog('Resolved trickplay info.', normalized);
-      missingTrickplayCache.delete(cacheKey);
-      return normalized;
+        debugLog('Resolved trickplay info.', normalized);
+        missingTrickplayCache.delete(cacheKey);
+        return normalized;
+      });
     })
     .catch((error) => {
       debugLog('Failed to load trickplay metadata for item.', itemId, error);
@@ -269,8 +334,9 @@ export function getTrickplayPreview(itemId: string, percent: number): Promise<Tr
     const frameIndexInTile = frameIndex % info.totalFramesPerTile;
     const frameColumn = frameIndexInTile % info.tilesPerRow;
     const frameRow = Math.floor(frameIndexInTile / info.tilesPerRow);
+    const previewItemId = info.itemId || itemId;
     const tileUrl = buildApiUrl(
-      `Videos/${encodeURIComponent(itemId)}/Trickplay/${encodeURIComponent(info.width)}/${encodeURIComponent(tileIndex)}.jpg`,
+      `Videos/${encodeURIComponent(previewItemId)}/Trickplay/${encodeURIComponent(info.width)}/${encodeURIComponent(tileIndex)}.jpg`,
       info.mediaSourceId ? { mediaSourceId: info.mediaSourceId } : undefined
     );
 
