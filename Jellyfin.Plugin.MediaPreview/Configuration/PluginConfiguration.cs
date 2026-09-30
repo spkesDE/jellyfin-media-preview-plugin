@@ -46,27 +46,14 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public List<LibraryPreviewSourceOverride> LibraryPreviewSourceOverrides { get; set; } = [];
 
-    public List<PreviewFallbackSource> PreferTrailerFallbacks { get; set; } =
-    [
-        new() { Source = "local-trailer", Enabled = true },
-        new() { Source = "remote-trailer", Enabled = true },
-        new() { Source = "direct-play", Enabled = true },
-        new() { Source = "trickplay", Enabled = true }
-    ];
+    // Keep these collections empty until normalization. XmlSerializer populates an
+    // existing List instead of replacing it, so inline defaults would be prepended
+    // to persisted entries every time the plugin configuration is reloaded.
+    public List<PreviewFallbackSource> PreferTrailerFallbacks { get; set; } = [];
 
-    public List<PreviewFallbackSource> PreferTrickplayFallbacks { get; set; } =
-    [
-        new() { Source = "local-trailer", Enabled = true },
-        new() { Source = "remote-trailer", Enabled = true },
-        new() { Source = "direct-play", Enabled = true }
-    ];
+    public List<PreviewFallbackSource> PreferTrickplayFallbacks { get; set; } = [];
 
-    public List<PreviewFallbackSource> PreferDirectPlayFallbacks { get; set; } =
-    [
-        new() { Source = "trickplay", Enabled = true },
-        new() { Source = "local-trailer", Enabled = true },
-        new() { Source = "remote-trailer", Enabled = true }
-    ];
+    public List<PreviewFallbackSource> PreferDirectPlayFallbacks { get; set; } = [];
 
     public bool MetadataOverlayEnabled { get; set; } = false;
 
