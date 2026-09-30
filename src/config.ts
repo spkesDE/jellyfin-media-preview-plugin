@@ -141,7 +141,7 @@ export const config: PluginConfig = {
 } as PluginConfig;
 
 export function normalizeConfig(): void {
-  if (!['automatic', 'file-transformation', 'javascript-injector'].includes(config.frontendInjectionMethod)) {
+  if (!['automatic', 'file-transformation', 'javascript-injector', 'direct'].includes(config.frontendInjectionMethod)) {
     config.frontendInjectionMethod = 'automatic';
   }
 

@@ -1,9 +1,9 @@
 import { computed, inject, reactive, ref, type ComputedRef, type InjectionKey, type Ref } from 'vue';
 import { getGlobalApiClient } from '../../core/apiClient';
-import type { ContentTypePreviewSource, PreviewSource } from '../../types/config';
+import type { ContentTypePreviewSource, FrontendInjectionMethod, PreviewSource } from '../../types/config';
 import { loadAppearancePreview } from './appearanceApi';
 import { createDefaultAppearancePreview, createDefaultConfig, type StoreConfig } from './defaults';
-import { loadLibraries } from './jellyfinApi';
+import { loadLibraries, requestJson } from './jellyfinApi';
 import {
   createConfigSnapshot,
   loadConfig as loadPluginConfig,
@@ -42,6 +42,7 @@ export interface ConfigStore {
   appearance: Ref<AppearancePreview>;
   activeTab: Ref<ConfigTab>;
   loading: Ref<boolean>;
+  injectionMethodsAvailable: Ref<Record<FrontendInjectionMethod, boolean>>;
   saveState: ComputedRef<SaveState>;
   canUseTrailer: ComputedRef<boolean>;
   canUseTrickplay: ComputedRef<boolean>;
@@ -61,6 +62,12 @@ export function createConfigStore(): ConfigStore {
   const appearance = ref<AppearancePreview>(createDefaultAppearancePreview());
   const activeTab = ref<ConfigTab>('general');
   const loading = ref(false);
+  const injectionMethodsAvailable = ref<Record<FrontendInjectionMethod, boolean>>({
+    automatic: true,
+    'file-transformation': false,
+    'javascript-injector': false,
+    direct: false
+  });
   const lastSavedSnapshot = ref(createConfigSnapshot(config));
   const savedFeedback = ref(false);
   let saveFeedbackTimer: number | null = null;
@@ -128,12 +135,22 @@ export function createConfigStore(): ConfigStore {
     loading.value = true;
     window.Dashboard?.showLoadingMsg();
     try {
-      const [serverConfig, loadedLibraries] = await Promise.all([
+      const [serverConfig, loadedLibraries, loadedInjectionMethods] = await Promise.all([
         apiClient.getPluginConfiguration(PLUGIN_ID),
-        loadLibraries()
+        loadLibraries(),
+        requestJson('media-preview/config/injection-methods').catch(() => null)
       ]);
       Object.assign(config, loadPluginConfig(serverConfig));
       libraries.value = loadedLibraries;
+      if (loadedInjectionMethods && typeof loadedInjectionMethods === 'object') {
+        const availability = loadedInjectionMethods as Partial<Record<FrontendInjectionMethod, boolean>>;
+        injectionMethodsAvailable.value = {
+          automatic: true,
+          'file-transformation': availability['file-transformation'] === true,
+          'javascript-injector': availability['javascript-injector'] === true,
+          direct: availability.direct === true
+        };
+      }
       lastSavedSnapshot.value = createConfigSnapshot(config);
       savedFeedback.value = false;
 
@@ -203,6 +220,7 @@ export function createConfigStore(): ConfigStore {
     appearance,
     activeTab,
     loading,
+    injectionMethodsAvailable,
     saveState,
     canUseTrailer,
     canUseTrickplay,

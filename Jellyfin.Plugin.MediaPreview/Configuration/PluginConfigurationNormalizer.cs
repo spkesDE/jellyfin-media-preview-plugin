@@ -6,7 +6,8 @@ internal static class PluginConfigurationNormalizer
     {
         FrontendInjectionMethods.Automatic,
         FrontendInjectionMethods.FileTransformation,
-        FrontendInjectionMethods.JavaScriptInjector
+        FrontendInjectionMethods.JavaScriptInjector,
+        FrontendInjectionMethods.Direct
     };
 
     private static readonly HashSet<string> ValidPreviewSources = new(StringComparer.Ordinal)

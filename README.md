@@ -6,146 +6,120 @@
   <a href="./LICENSE"><img alt="License" src="https://img.shields.io/github/license/spkesDE/jellyfin-media-preview-plugin?color=00A4DC&amp;cacheSeconds=3600" /></a>
   <a href="https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/spkesDE/jellyfin-media-preview-plugin?color=AA5CC3&amp;cacheSeconds=3600" /></a>
   <img alt="Jellyfin version" src="https://img.shields.io/badge/Jellyfin-12.x-AA5CC3?labelColor=555&amp;logo=jellyfin&amp;logoColor=00A4DC&amp;cacheSeconds=3600" />
-  <a href="https://github.com/spkesDE/jellyfin-media-preview-plugin/actions/workflows/ci.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/spkesDE/jellyfin-media-preview-plugin/ci.yml?branch=main&amp;color=00A4DC&amp;cacheSeconds=3600" /></a>
   <img alt="Downloads" src="https://img.shields.io/github/downloads/spkesDE/jellyfin-media-preview-plugin/total?color=AA5CC3&amp;cacheSeconds=3600" />
 </p>
 
-`Jellyfin Media Preview` adds hover previews to Jellyfin Web.
-
-Hover a movie, series, or episode card and the plugin can show a quick preview using Jellyfin Trickplay thumbnails, local trailers, or YouTube trailers already known to Jellyfin.
+Jellyfin Media Preview adds previews directly to cards in Jellyfin Web.
 
 ## Features
 
-- Hover previews on supported Jellyfin Web cards
-- Trickplay thumbnail previews
-- Local trailer and YouTube trailer previews
-- Source rules for Trickplay, trailers, Direct Play, and fallback priority
-- Optional trailer audio after browser interaction
-- Keyboard and focus previews for web-based TV, touch, and hybrid clients
-- Lightweight visual options for poster backdrops
+- Scrub through Trickplay images with the pointer or play them automatically.
+- Preview local trailers, supported online and YouTube trailers, or the media item itself.
+- Choose different preview sources for libraries, movies, series, episodes, and other videos.
+- Set the fallback order when the preferred preview is unavailable.
+- Adjust hover behavior, card layout, backdrops, metadata, and playback controls.
+- Use experimental keyboard and remote navigation on supported web-based clients.
 
-## Requirements
-
-- Jellyfin with the web interface
-- One frontend injection plugin:
-  - [File Transformation](https://www.iamparadox.dev/jellyfin/plugins/manifest.json), or
-  - [JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector)
-- Trickplay data, trailer metadata, or both for the items you want to preview
-
-Media Preview does not generate Trickplay data or fetch trailer metadata. It uses preview data that Jellyfin already has.
+> [!NOTE]
+> Previews only appear in Jellyfin Web and clients that use the Jellyfin Web interface. Native apps with their own library screens cannot show them.
 
 ## Installation
 
-Install Media Preview and one frontend injection plugin:
-
-1. `Media Preview`
-2. `File Transformation` or `JavaScript Injector`
-
-### Media Preview
-
-1. Open `Dashboard -> Catalog -> Settings` in Jellyfin.
+1. In Jellyfin, open `Dashboard -> Catalog -> Settings`.
 2. Add this plugin repository:
 
    ```text
    https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/manifest.json
    ```
 
-3. Save, open the plugin catalog, and install `Media Preview`.
+3. Install **Media Preview** from the plugin catalog.
 4. Restart Jellyfin.
 
-### File Transformation
+> [!IMPORTANT]
+> [File Transformation](https://github.com/IAmParadox27/jellyfin-plugin-file-transformation) or [JavaScript Injector](https://github.com/n00bcodr/Jellyfin-JavaScript-Injector) is recommended for frontend loading. Without a helper, Media Preview can inject its loader directly when `jellyfin-web/index.html` is writable.
 
-1. Add the File Transformation repository:
+### Frontend helper repositories
 
-   ```text
-   https://www.iamparadox.dev/jellyfin/plugins/manifest.json
-   ```
+**File Transformation:**
 
-2. Install `File Transformation`.
-3. Restart Jellyfin.
+```text
+https://www.iamparadox.dev/jellyfin/plugins/manifest.json
+```
 
-### JavaScript Injector (alternative)
+**JavaScript Injector:**
 
-1. Add the JavaScript Injector repository:
+```text
+https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/manifest.json
+```
 
-   ```text
-   https://raw.githubusercontent.com/n00bcodr/jellyfin-plugins/main/manifest.json
-   ```
+### Frontend injection
 
-2. Install `JavaScript Injector`.
-3. Restart Jellyfin.
+The default `Automatic` mode checks which helpers are installed, enabled, supported, and ready before selecting a method:
 
-Media Preview registers its loader with JavaScript Injector automatically. You do not need to paste a script into the injector settings.
+1. **File Transformation**
+2. **JavaScript Injector**
+3. **Direct injection** into `jellyfin-web/index.html`
 
-You only need one of the two injection plugins. If both are installed, Media Preview prevents duplicate frontend initialization.
+If one method cannot register, Automatic continues with the next available method. The explicit choices under `Advanced -> Frontend Injection Method` are disabled and marked unavailable when their helper or required file access is missing.
 
-When both are installed, `Automatic` prefers File Transformation. You can choose `File Transformation only` or `JavaScript Injector only` under `Media Preview -> Advanced -> Frontend Injection Method`. Restart Jellyfin after changing the method.
+Direct injection is idempotent: Media Preview replaces an existing Media Preview loader instead of adding duplicates. When a helper takes over successfully, the directly injected loader is removed from `index.html`.
+
+> [!TIP]
+> Keep the injection method set to `Automatic` unless you need to force a specific available integration.
+
+> [!WARNING]
+> Direct injection requires write access to `jellyfin-web/index.html`. Jellyfin updates replace this file, so Media Preview adds its loader again on the next server start.
 
 ## Setup
 
-1. Open the Jellyfin admin dashboard.
-2. Open the `Media Preview` plugin settings.
-3. Choose a preview source mode.
-4. Save.
-5. Refresh Jellyfin Web.
+1. Open `Dashboard -> Plugins -> Media Preview`.
+2. Choose the preview source you want to use.
+3. Adjust hover behavior and appearance if needed.
+4. Save, then refresh Jellyfin Web.
 
-For most libraries, `Prefer Trickplay` is a good starting point. If your library has better trailer metadata than Trickplay coverage, try `Prefer Trailer`.
+> [!NOTE]
+> The default source is Trickplay. Media Preview uses existing Trickplay and trailer data; it does not generate images or find new trailers.
 
-## Preview Sources
+## Preview sources
 
-| Source           | Best for                                                              |
-| ---------------- | --------------------------------------------------------------------- |
-| Trickplay        | Lightweight previews from Jellyfin thumbnail sheets                   |
-| Local trailers   | Video previews served by your Jellyfin server                         |
-| YouTube trailers | Trailer previews when Jellyfin already has YouTube trailer metadata   |
-| Direct Play      | The media item itself, selected directly or used after Prefer Trailer |
+**Trickplay** uses Jellyfin's thumbnail sheets. Move across the card to scrub through the title, or enable automatic motion.
 
-If no supported preview source is available for an item, the card stays unchanged.
+**Trailers** can use local files or supported remote and YouTube links already known to Jellyfin. Trailer audio is optional and may stay muted until the browser has received user input.
 
-The preferred modes use these fallback chains:
+**Direct Play** previews the media item itself. The start point, speed, duration, and optional transcode fallback can be changed in the plugin settings.
 
-- `Prefer Trickplay`, `Prefer Trailer`, and `Prefer Direct Play` use configurable source chains.
-- The preferred source stays fixed on top. Local trailers, remote/YouTube trailers, Trickplay, and Direct Play can be reordered or disabled under `Media Preview -> Advanced`.
+> [!TIP]
+> Use a `Prefer` mode to try other sources when the first choice is unavailable. Fallback sources can be reordered or disabled under `Advanced`.
 
-Direct Play previews start 20% into the item by default, play at 1.5x speed, stay muted, and pause after 15 seconds.
-These values are configurable under `Media Preview -> Trailer`. Local trailer and Direct Play overlays also include
-pause/resume and mute/unmute controls. The optional Jellyfin transcode fallback can be
-disabled completely or limited by height and bitrate. Direct Play previews themselves can also be disabled globally;
-this disables `Only Direct Play` and every Direct Play step in a preferred source chain.
+> [!WARNING]
+> Some YouTube videos block embedded playback because they are private, removed, restricted, or not allowed to play outside YouTube.
 
 ## Troubleshooting
 
-If previews do not show up:
+If previews do not appear:
 
-1. Make sure `Media Preview` and either `JavaScript Injector` or `File Transformation` are installed and enabled.
-2. Restart Jellyfin after installing or updating plugins.
-3. Hard-refresh Jellyfin Web in your browser.
-4. Check whether the item has Trickplay or trailer data.
-5. Try another preview source mode.
+1. Confirm that Media Preview is enabled. If direct injection is unavailable, install and enable a frontend helper.
+2. Restart Jellyfin, then hard-refresh the browser.
+3. Check that the title has data for the selected preview source.
+4. Try a `Prefer` mode to allow another source as a fallback.
+5. Keep the injection method on `Automatic`.
+6. Open `Advanced -> Frontend Injection Method` and check which explicit methods are available.
+7. For direct injection, confirm that the Jellyfin service account can write to `jellyfin-web/index.html`.
+8. Turn on debug logging under `Advanced` and check the browser console and Jellyfin server log.
 
-Trailer audio may stay muted until you interact with the page. This is normal browser autoplay behavior.
+If it works in a browser but not in a TV app, that app probably uses its own library interface.
 
-YouTube trailers may also be blocked by privacy tools, ad blockers, browser settings, or non-embeddable trailer videos.
+> [!TIP]
+> When reporting a problem, include the Jellyfin version, plugin version, selected injection method, preview source, and relevant browser or server log lines.
 
-## Documentation
+## More information
 
-- [Build guide](./BUILD.md)
-- [Contributing](./CONTRIBUTING.md)
-- [AI assistance disclosure](./AI_USAGE.md)
+> [!TIP]
+> Like Jellyfin Media Preview? Check out my other plugin: [**Jellyfin Featured**](https://github.com/spkesDE/jellyfin-featured-plugin).
+
 - [Changelog](./CHANGELOG.md)
+- [Contributing](./CONTRIBUTING.md)
 
-## More Jellyfin plugins
+## License
 
-Check out my other plugin: [Jellyfin Featured](https://github.com/spkesDE/jellyfin-featured-plugin).
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=spkesde%2Fjellyfin-media-preview-plugin&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
- </picture>
-</a>
-
-This project is licensed under the [MIT License](./LICENSE).
+Licensed under the [MIT License](./LICENSE).
