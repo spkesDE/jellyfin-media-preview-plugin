@@ -1,5 +1,12 @@
 # Changelog
 
+## v12.2.1.0 - 2026-09-30
+
+### Fixes
+
+- fix(manifest): Update manifest.json for failed v12.2.0.0 release
+- fix(manifest): Update manifest.json with version 12.2.0.1 changes
+- fix(trickplay): resolve series and season cards to an episode (#31)
 ## v12.2.0.1 - 2026-09-29
 
 ### Other
