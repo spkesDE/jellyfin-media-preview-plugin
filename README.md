@@ -120,6 +120,16 @@ If it works in a browser but not in a TV app, that app probably uses its own lib
 - [Changelog](./CHANGELOG.md)
 - [Contributing](./CONTRIBUTING.md)
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=spkesde%2Fjellyfin-media-preview-plugin&type=date&legend=top-left">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=spkesde/jellyfin-media-preview-plugin&type=date&legend=top-left" />
+ </picture>
+</a>
+
 ## License
 
 Licensed under the [MIT License](./LICENSE).
