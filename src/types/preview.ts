@@ -51,6 +51,7 @@ export interface MetadataOverlayInfo {
 export interface PlaybackProgress {
   isInProgress: boolean;
   positionTicks: number;
+  positionPercent: number | null;
 }
 
 export interface TrickplayPreview {

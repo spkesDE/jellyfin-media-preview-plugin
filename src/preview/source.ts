@@ -24,6 +24,11 @@ type ResolvedPreviewSource = PreviewChainSource | 'trailer';
 interface ItemPreviewRule {
   source: string;
   resumePositionTicks: number | null;
+  resumePercent: number | null;
+}
+
+interface PreviewRequestOptions {
+  startAtResumePosition?: boolean;
 }
 
 export function getEffectivePreviewSource(): string {
@@ -101,7 +106,7 @@ async function getPreviewRuleForItem(itemId: string, itemType?: string | null): 
   const resolveProgress = getInProgressPreviewSource(true) !== PREVIEW_SOURCE_INHERIT;
   const progressPromise = resolveProgress
     ? getPlaybackProgressForItem(itemId)
-    : Promise.resolve({ isInProgress: false, positionTicks: 0 });
+    : Promise.resolve({ isInProgress: false, positionTicks: 0, positionPercent: null });
   const libraryPromise = config.libraryPreviewSourceOverrides.length
     ? getLibraryIdForItem(
         itemId,
@@ -116,7 +121,8 @@ async function getPreviewRuleForItem(itemId: string, itemType?: string | null): 
       inProgressOverride !== PREVIEW_SOURCE_INHERIT
         ? inProgressOverride
         : getResolvedPreviewSource(itemType, libraryId),
-    resumePositionTicks: inProgressOverride !== PREVIEW_SOURCE_INHERIT ? progress.positionTicks : null
+    resumePositionTicks: inProgressOverride !== PREVIEW_SOURCE_INHERIT ? progress.positionTicks : null,
+    resumePercent: inProgressOverride !== PREVIEW_SOURCE_INHERIT ? progress.positionPercent : null
   };
 }
 
@@ -223,9 +229,12 @@ function getPreviewForSource(
 export function getPreviewUrl(
   itemId: string,
   percent: number,
-  itemType?: string | null
+  itemType?: string | null,
+  options?: PreviewRequestOptions
 ): Promise<PreviewResult | null> {
-  return getPreviewRuleForItem(itemId, itemType).then((rule) =>
-    getPreviewForSource(itemId, percent, rule.source, rule.resumePositionTicks)
-  );
+  return getPreviewRuleForItem(itemId, itemType).then((rule) => {
+    const effectivePercent =
+      options?.startAtResumePosition && rule.resumePercent !== null ? rule.resumePercent : percent;
+    return getPreviewForSource(itemId, effectivePercent, rule.source, rule.resumePositionTicks);
+  });
 }

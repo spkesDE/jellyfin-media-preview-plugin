@@ -17,7 +17,7 @@ describe('in-progress item detection', () => {
         RunTimeTicks: 10_000,
         UserData: { PlaybackPositionTicks: 4_000, Played: false }
       })
-    ).toEqual({ isInProgress: true, positionTicks: 4_000 });
+    ).toEqual({ isInProgress: true, positionTicks: 4_000, positionPercent: 0.4 });
   });
 
   it('does not match an unwatched Next Up item', () => {
@@ -26,7 +26,7 @@ describe('in-progress item detection', () => {
         RunTimeTicks: 10_000,
         UserData: { PlaybackPositionTicks: 0, Played: false }
       })
-    ).toEqual({ isInProgress: false, positionTicks: 0 });
+    ).toEqual({ isInProgress: false, positionTicks: 0, positionPercent: 0 });
   });
 
   it('does not match played items or a position at the end', () => {

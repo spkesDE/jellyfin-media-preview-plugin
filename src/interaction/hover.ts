@@ -113,7 +113,7 @@ function recoverFromUnavailableTrailer(
     return;
   }
 
-  getPreviewUrl(itemId, percent, itemType)
+  getPreviewUrl(itemId, percent, itemType, { startAtResumePosition: true })
     .then((preview) => {
       if (!state.previewActive || requestToken !== state.latestRequestToken || !isEngaged()) {
         return;
@@ -262,7 +262,7 @@ function scheduleHoverActivation(
       showLoadingIndicator(state);
     }
 
-    getPreviewUrl(itemId, initialPercent, itemType)
+    getPreviewUrl(itemId, initialPercent, itemType, { startAtResumePosition: true })
       .then((preview) => {
         if (!state.previewActive || requestToken !== state.latestRequestToken || !state.pointerInside) {
           hideLoadingIndicator(state);
@@ -348,7 +348,7 @@ function scheduleKeyboardActivation(card: HTMLElement, state: ReturnType<typeof 
       showLoadingIndicator(state);
     }
 
-    getPreviewUrl(itemId, initialPercent, itemType)
+    getPreviewUrl(itemId, initialPercent, itemType, { startAtResumePosition: true })
       .then((preview) => {
         if (!state.previewActive || requestToken !== state.latestRequestToken || !state.focusInside) {
           hideLoadingIndicator(state);

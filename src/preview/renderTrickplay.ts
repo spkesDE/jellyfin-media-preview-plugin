@@ -110,6 +110,7 @@ export function applyTrickplayPreview(
   state.lastRenderedTrickplayFrameIndex = preview.frameIndex;
   state.lastRequestedTrickplayFrameIndex = preview.frameIndex;
   state.lastTrickplayRenderAt = Date.now();
+  state.autoScrubPercent = percent;
   clearTrailerMedia(state);
   const applyFrameStyles = (frame: HTMLDivElement) => {
     frame.style.backgroundImage = `url("${tileUrl.replace(/"/g, '\\"')}")`;

@@ -11,15 +11,17 @@ export function resolvePlaybackProgress(item: JellyfinItem | null | undefined): 
   const positionTicks = Math.max(0, Number(item?.UserData?.PlaybackPositionTicks) || 0);
   const runtimeTicks = Math.max(0, Number(item?.RunTimeTicks) || 0);
   const isBeforeEnd = runtimeTicks <= 0 || positionTicks < runtimeTicks;
+  const positionPercent = runtimeTicks > 0 ? Math.max(0, Math.min(1, positionTicks / runtimeTicks)) : null;
 
   return {
     isInProgress: positionTicks > 0 && item?.UserData?.Played !== true && isBeforeEnd,
-    positionTicks
+    positionTicks,
+    positionPercent
   };
 }
 
 export function getPlaybackProgressForItem(itemId: string | null | undefined): Promise<PlaybackProgress> {
-  const fallback: PlaybackProgress = { isInProgress: false, positionTicks: 0 };
+  const fallback: PlaybackProgress = { isInProgress: false, positionTicks: 0, positionPercent: null };
   if (!itemId) {
     return Promise.resolve(fallback);
   }
