@@ -15,6 +15,11 @@ export interface JellyfinRemoteTrailer {
   Url?: string;
 }
 
+export interface JellyfinUserData {
+  PlaybackPositionTicks?: number;
+  Played?: boolean;
+}
+
 export interface JellyfinItem {
   Id?: string;
   Name?: string;
@@ -32,6 +37,7 @@ export interface JellyfinItem {
   RemoteTrailers?: JellyfinRemoteTrailer[];
   MediaSources?: JellyfinMediaSource[];
   Trickplay?: Record<string, Record<string, JellyfinTrickplayManifest>>;
+  UserData?: JellyfinUserData;
 }
 
 export interface JellyfinItemsResult {

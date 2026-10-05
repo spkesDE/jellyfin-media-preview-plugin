@@ -15,7 +15,7 @@ Jellyfin Media Preview adds previews directly to cards in Jellyfin Web.
 
 - Scrub through Trickplay images with the pointer or play them automatically.
 - Preview local trailers, supported online and YouTube trailers, or the media item itself.
-- Choose different preview sources for libraries, movies, series, episodes, and other videos.
+- Choose different preview sources for in-progress items, libraries, movies, series, episodes, and other videos.
 - Set the fallback order when the preferred preview is unavailable.
 - Adjust hover behavior, card layout, backdrops, metadata, and playback controls.
 - Use experimental keyboard and remote navigation on supported web-based clients.
@@ -87,6 +87,8 @@ Direct injection is idempotent: Media Preview replaces an existing Media Preview
 **Trailers** can use local files or supported remote and YouTube links already known to Jellyfin. Trailer audio is optional and may stay muted until the browser has received user input.
 
 **Direct Play** previews the media item itself. The start point, speed, duration, and optional transcode fallback can be changed in the plugin settings.
+
+The optional **In Progress** rule has the highest priority. It matches items with a saved playback position (but not unwatched Next Up episodes), and Direct Play starts at that saved position.
 
 > [!TIP]
 > Use a `Prefer` mode to try other sources when the first choice is unavailable. Fallback sources can be reordered or disabled under `Advanced`.

@@ -5,6 +5,8 @@ describe('preferred source chain defaults', () => {
   it('enables every fallback in the requested default order', () => {
     const config = createDefaultConfig();
 
+    expect(config.InProgressPreviewSource).toBe('inherit');
+
     expect(config.PreferTrailerFallbacks).toEqual([
       { Source: 'local-trailer', Enabled: true },
       { Source: 'remote-trailer', Enabled: true },

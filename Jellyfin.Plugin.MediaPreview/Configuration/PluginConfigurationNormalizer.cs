@@ -131,6 +131,10 @@ internal static class PluginConfigurationNormalizer
                 ValidFrontendInjectionMethods,
                 FrontendInjectionMethods.Automatic),
             PreviewSource = NormalizeChoice(source.PreviewSource, ValidPreviewSources, "trickplay"),
+            InProgressPreviewSource = NormalizeChoice(
+                source.InProgressPreviewSource,
+                ValidContentTypePreviewSources,
+                "inherit"),
             MoviePreviewSource = NormalizeChoice(source.MoviePreviewSource, ValidContentTypePreviewSources, "inherit"),
             SeriesPreviewSource = NormalizeChoice(source.SeriesPreviewSource, ValidContentTypePreviewSources, "inherit"),
             EpisodePreviewSource = NormalizeChoice(source.EpisodePreviewSource, ValidContentTypePreviewSources, "inherit"),

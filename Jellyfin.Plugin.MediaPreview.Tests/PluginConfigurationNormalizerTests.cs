@@ -12,6 +12,7 @@ public sealed class PluginConfigurationNormalizerTests
         PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(defaults);
 
         Assert.Equal("trickplay", defaults.PreviewSource);
+        Assert.Equal("inherit", defaults.InProgressPreviewSource);
         Assert.Equal("scrub", defaults.HoverMode);
         Assert.Equal("medium", defaults.YouTubeCropStrength);
         Assert.True(defaults.DirectPlayPreviewEnabled);
@@ -43,6 +44,7 @@ public sealed class PluginConfigurationNormalizerTests
             entry => AssertDefaultSource(entry, "local-trailer"),
             entry => AssertDefaultSource(entry, "remote-trailer"));
         Assert.Equal(defaults.PreviewSource, normalized.PreviewSource);
+        Assert.Equal(defaults.InProgressPreviewSource, normalized.InProgressPreviewSource);
         Assert.Equal(defaults.HoverMode, normalized.HoverMode);
         Assert.Equal(defaults.YouTubeCropStrength, normalized.YouTubeCropStrength);
     }
@@ -66,6 +68,7 @@ public sealed class PluginConfigurationNormalizerTests
         PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
         {
             PreviewSource = "invalid",
+            InProgressPreviewSource = "invalid",
             HoverMode = "invalid",
             YouTubeCropStrength = "invalid",
             DirectPlayStartPercent = 100,
@@ -76,6 +79,7 @@ public sealed class PluginConfigurationNormalizerTests
         });
 
         Assert.Equal("trickplay", normalized.PreviewSource);
+        Assert.Equal("inherit", normalized.InProgressPreviewSource);
         Assert.Equal("scrub", normalized.HoverMode);
         Assert.Equal("medium", normalized.YouTubeCropStrength);
         Assert.Equal(20, normalized.DirectPlayStartPercent);
@@ -91,6 +95,7 @@ public sealed class PluginConfigurationNormalizerTests
         PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
         {
             PreviewSource = "direct-play",
+            InProgressPreviewSource = "direct-play",
             MoviePreviewSource = "direct-play",
             SeriesPreviewSource = "direct-play",
             EpisodePreviewSource = "direct-play",
@@ -106,6 +111,7 @@ public sealed class PluginConfigurationNormalizerTests
         });
 
         Assert.Equal("direct-play", normalized.PreviewSource);
+        Assert.Equal("direct-play", normalized.InProgressPreviewSource);
         Assert.Equal("direct-play", normalized.MoviePreviewSource);
         Assert.Equal("direct-play", normalized.SeriesPreviewSource);
         Assert.Equal("direct-play", normalized.EpisodePreviewSource);

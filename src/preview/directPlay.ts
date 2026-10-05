@@ -60,10 +60,15 @@ export function clearDirectPlayFallbackState(): void {
 export function resolveDirectPlayStartSeconds(
   runtimeSeconds: number,
   startPercent: number,
-  previewDurationSeconds: number
+  previewDurationSeconds: number,
+  resumePositionSeconds?: number | null
 ): number {
   const normalizedRuntime = Math.max(0, Number(runtimeSeconds) || 0);
-  const requestedStart = Math.floor(normalizedRuntime * Math.max(0, Math.min(0.9, startPercent / 100)));
+  const configuredStart = Math.floor(normalizedRuntime * Math.max(0, Math.min(0.9, startPercent / 100)));
+  const requestedStart =
+    resumePositionSeconds !== null && resumePositionSeconds !== undefined && Number(resumePositionSeconds) > 0
+      ? Math.floor(Number(resumePositionSeconds))
+      : configuredStart;
   const duration = Math.max(0, Number(previewDurationSeconds) || 0);
   const latestStart = duration > 0 ? Math.max(0, normalizedRuntime - duration) : normalizedRuntime;
 
@@ -72,7 +77,8 @@ export function resolveDirectPlayStartSeconds(
 
 export function createDirectPlayCandidate(
   item: JellyfinItem,
-  mediaSource: JellyfinMediaSource
+  mediaSource: JellyfinMediaSource,
+  resumePositionTicks?: number | null
 ): TrailerCandidate | null {
   if (!config.directPlayPreviewEnabled || !item.Id) {
     return null;
@@ -85,7 +91,8 @@ export function createDirectPlayCandidate(
   const startSeconds = resolveDirectPlayStartSeconds(
     runtimeSeconds,
     Number(config.directPlayStartPercent) || 0,
-    previewDurationSeconds
+    previewDurationSeconds,
+    resumePositionTicks ? Number(resumePositionTicks) / 10_000_000 : null
   );
   const directSrc =
     container && SUPPORTED_DIRECT_PLAY_CONTAINERS.has(container)
@@ -124,7 +131,10 @@ export function createDirectPlayCandidate(
   };
 }
 
-export async function getDirectPlayPreview(itemId: string): Promise<DirectPlayPreview | null> {
+export async function getDirectPlayPreview(
+  itemId: string,
+  resumePositionTicks: number | null = null
+): Promise<DirectPlayPreview | null> {
   if (!config.directPlayPreviewEnabled) {
     debugLog('Skipping Direct Play because Direct Play Preview is disabled.', { itemId });
     return null;
@@ -180,7 +190,7 @@ export async function getDirectPlayPreview(itemId: string): Promise<DirectPlayPr
     const mediaSource =
       mediaSources.find((source) => SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')) ||
       mediaSources[0];
-    const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource) : null;
+    const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource, resumePositionTicks) : null;
     if (!candidate) {
       debugLog('Direct Play has no usable media candidate.', {
         itemId,

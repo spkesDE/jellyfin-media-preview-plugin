@@ -5,6 +5,7 @@ import { getContentTypePreviewSource, getPreviewSourceChain, getResolvedPreviewS
 
 const originalConfig = {
   previewSource: config.previewSource,
+  inProgressPreviewSource: config.inProgressPreviewSource,
   moviePreviewSource: config.moviePreviewSource,
   libraryPreviewSourceOverrides: [...config.libraryPreviewSourceOverrides],
   preferTrailerFallbacks: [...config.preferTrailerFallbacks],
@@ -15,6 +16,7 @@ const originalConfig = {
 describe('Direct Play preview source rules', () => {
   afterEach(() => {
     config.previewSource = originalConfig.previewSource;
+    config.inProgressPreviewSource = originalConfig.inProgressPreviewSource;
     config.moviePreviewSource = originalConfig.moviePreviewSource;
     config.libraryPreviewSourceOverrides = [...originalConfig.libraryPreviewSourceOverrides];
     config.preferTrailerFallbacks = [...originalConfig.preferTrailerFallbacks];
@@ -39,6 +41,19 @@ describe('Direct Play preview source rules', () => {
     expect(getContentTypePreviewSource('Movie')).toBe('trailer');
     expect(getResolvedPreviewSource('Movie', 'movies')).toBe('direct-play');
     expect(getResolvedPreviewSource('Movie', 'MOVIES')).toBe('direct-play');
+  });
+
+  it('lets an in-progress rule override library and type rules', () => {
+    config.previewSource = 'trickplay';
+    config.moviePreviewSource = 'trailer';
+    config.libraryPreviewSourceOverrides = [{ libraryId: 'movies', previewSource: 'prefer-trailer' }];
+    config.inProgressPreviewSource = 'direct-play';
+
+    expect(getResolvedPreviewSource('Movie', 'movies', false)).toBe('prefer-trailer');
+    expect(getResolvedPreviewSource('Movie', 'movies', true)).toBe('direct-play');
+
+    config.inProgressPreviewSource = 'inherit';
+    expect(getResolvedPreviewSource('Movie', 'movies', true)).toBe('prefer-trailer');
   });
 
   it('uses configured order and skips disabled preferred fallbacks', () => {

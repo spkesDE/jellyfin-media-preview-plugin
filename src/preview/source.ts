@@ -14,11 +14,17 @@ import { getTrailerPreview } from './trailer';
 import { getTrickplayPreview } from './trickplay';
 import { getDirectPlayPreview } from './directPlay';
 import { getLibraryIdForItem } from './library';
+import { getPlaybackProgressForItem } from './progress';
 import { debugLog } from '../core/logger';
 import type { PreviewResult } from '../types/preview';
 import type { PreviewChainSource, PreviewFallbackSource } from '../types/config';
 
 type ResolvedPreviewSource = PreviewChainSource | 'trailer';
+
+interface ItemPreviewRule {
+  source: string;
+  resumePositionTicks: number | null;
+}
 
 export function getEffectivePreviewSource(): string {
   return VALID_PREVIEW_SOURCES.has(config.previewSource) ? config.previewSource : PREVIEW_SOURCE_TRICKPLAY;
@@ -61,7 +67,28 @@ export function getLibraryPreviewSource(libraryId?: string | null): string {
   return override.previewSource;
 }
 
-export function getResolvedPreviewSource(itemType?: string | null, libraryId?: string | null): string {
+export function getInProgressPreviewSource(isInProgress: boolean): string {
+  if (
+    !isInProgress ||
+    !VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.inProgressPreviewSource) ||
+    config.inProgressPreviewSource === PREVIEW_SOURCE_INHERIT
+  ) {
+    return PREVIEW_SOURCE_INHERIT;
+  }
+
+  return config.inProgressPreviewSource;
+}
+
+export function getResolvedPreviewSource(
+  itemType?: string | null,
+  libraryId?: string | null,
+  isInProgress = false
+): string {
+  const inProgressOverride = getInProgressPreviewSource(isInProgress);
+  if (inProgressOverride !== PREVIEW_SOURCE_INHERIT) {
+    return inProgressOverride;
+  }
+
   const libraryOverride = getLibraryPreviewSource(libraryId);
   if (libraryOverride !== PREVIEW_SOURCE_INHERIT) {
     return libraryOverride;
@@ -70,21 +97,38 @@ export function getResolvedPreviewSource(itemType?: string | null, libraryId?: s
   return getContentTypePreviewSource(itemType);
 }
 
-export function getPreviewSourceForItem(itemId: string, itemType?: string | null): Promise<string> {
-  if (!config.libraryPreviewSourceOverrides.length) {
-    return Promise.resolve(getContentTypePreviewSource(itemType));
-  }
+async function getPreviewRuleForItem(itemId: string, itemType?: string | null): Promise<ItemPreviewRule> {
+  const resolveProgress = getInProgressPreviewSource(true) !== PREVIEW_SOURCE_INHERIT;
+  const progressPromise = resolveProgress
+    ? getPlaybackProgressForItem(itemId)
+    : Promise.resolve({ isInProgress: false, positionTicks: 0 });
+  const libraryPromise = config.libraryPreviewSourceOverrides.length
+    ? getLibraryIdForItem(
+        itemId,
+        config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
+      )
+    : Promise.resolve(null);
 
-  return getLibraryIdForItem(
-    itemId,
-    config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
-  ).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
+  const [progress, libraryId] = await Promise.all([progressPromise, libraryPromise]);
+  const inProgressOverride = getInProgressPreviewSource(progress.isInProgress);
+  return {
+    source:
+      inProgressOverride !== PREVIEW_SOURCE_INHERIT
+        ? inProgressOverride
+        : getResolvedPreviewSource(itemType, libraryId),
+    resumePositionTicks: inProgressOverride !== PREVIEW_SOURCE_INHERIT ? progress.positionTicks : null
+  };
+}
+
+export function getPreviewSourceForItem(itemId: string, itemType?: string | null): Promise<string> {
+  return getPreviewRuleForItem(itemId, itemType).then((rule) => rule.source);
 }
 
 function getPreviewForSingleSource(
   itemId: string,
   percent: number,
-  source: ResolvedPreviewSource
+  source: ResolvedPreviewSource,
+  resumePositionTicks: number | null
 ): Promise<PreviewResult | null> {
   if (source === PREVIEW_SOURCE_TRICKPLAY) {
     return getTrickplayPreview(itemId, percent);
@@ -103,7 +147,7 @@ function getPreviewForSingleSource(
   }
 
   if (source === PREVIEW_SOURCE_DIRECT_PLAY) {
-    return getDirectPlayPreview(itemId);
+    return getDirectPlayPreview(itemId, resumePositionTicks);
   }
 
   return Promise.resolve(null);
@@ -145,7 +189,12 @@ export function previewSourceUsesTrickplay(effectiveSource: string): boolean {
   return getPreviewSourceChain(effectiveSource).includes(PREVIEW_SOURCE_TRICKPLAY);
 }
 
-function getPreviewForSource(itemId: string, percent: number, effectiveSource: string): Promise<PreviewResult | null> {
+function getPreviewForSource(
+  itemId: string,
+  percent: number,
+  effectiveSource: string,
+  resumePositionTicks: number | null
+): Promise<PreviewResult | null> {
   const chain = getPreviewSourceChain(effectiveSource);
   debugLog('Resolving preview source chain.', {
     itemId,
@@ -160,7 +209,7 @@ function getPreviewForSource(itemId: string, percent: number, effectiveSource: s
       }
 
       debugLog('Trying preview source.', { itemId, source });
-      return getPreviewForSingleSource(itemId, percent, source).then((resolvedPreview) => {
+      return getPreviewForSingleSource(itemId, percent, source, resumePositionTicks).then((resolvedPreview) => {
         debugLog(resolvedPreview ? 'Preview source resolved.' : 'Preview source unavailable; trying next source.', {
           itemId,
           source
@@ -176,7 +225,7 @@ export function getPreviewUrl(
   percent: number,
   itemType?: string | null
 ): Promise<PreviewResult | null> {
-  return getPreviewSourceForItem(itemId, itemType).then((effectiveSource) =>
-    getPreviewForSource(itemId, percent, effectiveSource)
+  return getPreviewRuleForItem(itemId, itemType).then((rule) =>
+    getPreviewForSource(itemId, percent, rule.source, rule.resumePositionTicks)
   );
 }

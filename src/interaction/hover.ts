@@ -222,7 +222,7 @@ function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean 
     return false;
   }
 
-  if (config.libraryPreviewSourceOverrides.length) {
+  if (config.libraryPreviewSourceOverrides.length || config.inProgressPreviewSource !== 'inherit') {
     return true;
   }
 

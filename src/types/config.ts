@@ -31,6 +31,7 @@ export interface PluginConfig {
   enabled: boolean;
   frontendInjectionMethod: FrontendInjectionMethod;
   previewSource: PreviewSource;
+  inProgressPreviewSource: ContentTypePreviewSource;
   moviePreviewSource: ContentTypePreviewSource;
   seriesPreviewSource: ContentTypePreviewSource;
   episodePreviewSource: ContentTypePreviewSource;

@@ -48,6 +48,11 @@ export interface MetadataOverlayInfo {
   communityRating: number | null;
 }
 
+export interface PlaybackProgress {
+  isInProgress: boolean;
+  positionTicks: number;
+}
+
 export interface TrickplayPreview {
   source: 'trickplay';
   info: TrickplayInfo;
