@@ -20,6 +20,6 @@ export function applyPreview(
     return;
   }
 
-  applyTrickplayPreview(card, preview, percent);
+  applyTrickplayPreview(card, preview, Number.isFinite(preview.percent) ? preview.percent : percent);
   renderMetadataOverlay(card);
 }

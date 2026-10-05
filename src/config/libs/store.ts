@@ -75,6 +75,7 @@ export function createConfigStore(): ConfigStore {
   const configuredModes = computed<PreviewSource[]>(() => {
     const modes: PreviewSource[] = [config.PreviewSource];
     [
+      config.InProgressPreviewSource,
       config.MoviePreviewSource,
       config.SeriesPreviewSource,
       config.EpisodePreviewSource,

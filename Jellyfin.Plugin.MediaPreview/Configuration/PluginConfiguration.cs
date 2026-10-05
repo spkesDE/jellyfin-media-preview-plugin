@@ -36,6 +36,8 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public bool TrickplayLoadingIndicatorEnabled { get; set; } = true;
 
+    public string InProgressPreviewSource { get; set; } = "inherit";
+
     public string MoviePreviewSource { get; set; } = "inherit";
 
     public string SeriesPreviewSource { get; set; } = "inherit";

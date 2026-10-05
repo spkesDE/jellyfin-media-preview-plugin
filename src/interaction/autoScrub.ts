@@ -55,7 +55,7 @@ function scheduleSmoothAutoScrubFrame(
 }
 
 function startSmoothAutoScrub(card: HTMLElement, state: CardState, itemId: string, generation: number): void {
-  state.autoScrubPercent = clamp(config.autoScrubStartPercent / 100, 0, 1);
+  state.autoScrubPercent = clamp(state.autoScrubPercent ?? (Number(config.autoScrubStartPercent) || 0) / 100, 0, 1);
   state.autoScrubStartedAt = null;
   schedulePreviewUpdate(card, state.autoScrubPercent);
 
@@ -116,7 +116,7 @@ function startStepAutoScrubInterval(card: HTMLElement, state: CardState, frameCo
 }
 
 function startStepAutoScrub(card: HTMLElement, state: CardState, itemId: string, generation: number): void {
-  state.autoScrubPercent = clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1);
+  state.autoScrubPercent = clamp(state.autoScrubPercent ?? (Number(config.autoScrubStartPercent) || 0) / 100, 0, 1);
   schedulePreviewUpdate(card, state.autoScrubPercent);
 
   getTrickplayInfo(itemId)
