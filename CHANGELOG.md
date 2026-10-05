@@ -1,5 +1,15 @@
 # Changelog
 
+## v12.4.0.0 - 2026-10-05
+
+### Features
+
+- feat(preview): add in-progress source override (#35)
+
+### Other
+
+- Add Star History section to README
+- deps(deps): bump the npm-minor-and-patch group with 8 updates (#33)
 ## v12.3.0.0 - 2026-09-30
 
 ### Features

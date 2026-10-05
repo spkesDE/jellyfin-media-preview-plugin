@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/logo.png",
   "versions": [
     {
+      "version": "12.4.0.0",
+      "changelog": "- feat(preview): add in-progress source override (#35)\n- Add Star History section to README\n- deps(deps): bump the npm-minor-and-patch group with 8 updates (#33)\n",
+      "targetAbi": "12.1.0.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v12.4.0.0/MediaPreview.zip",
+      "checksum": "43b86ce4967b29805489b49d06446cc5",
+      "timestamp": "2026-10-05 16:48:45"
+    },
+    {
       "version": "12.3.0.0",
       "changelog": "- feat(injection): add direct injection and robust automatic selection\n- fix(config): preserve preferred source order across updates\n",
       "targetAbi": "12.1.0.0",
