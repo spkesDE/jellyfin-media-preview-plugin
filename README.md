@@ -29,7 +29,7 @@ Jellyfin Media Preview adds previews directly to cards in Jellyfin Web.
 2. Add this plugin repository:
 
    ```text
-   https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/manifest.json
+   https://jellyfin.spkes.dev
    ```
 
 3. Install **Media Preview** from the plugin catalog.
