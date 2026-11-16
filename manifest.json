@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/logo.png",
   "versions": [
     {
+      "version": "12.5.0.0",
+      "changelog": "- feat(users): save preview mute and volume per user\n- docs: update plugin repository URL in README\n- deps(deps-dev): bump the npm-minor-and-patch group with 5 updates (#36)\n- deps: Bump the nuget-minor-and-patch group with 3 updates (#39)\n- deps(deps-dev): bump typescript from 5.9.3 to 6.0.3 (#37)\n- deps: Bump the nuget-test-minor-and-patch group with 4 updates (#38)\n- deps: Bump the nuget-test-minor-and-patch group with 1 update (#42)\n- deps(deps): bump the npm-minor-and-patch group with 7 updates (#41)\n- deps(deps-dev): bump happy-dom from 20.14.6 to 21.0.4 (#40)\n- deps(deps-dev): bump the npm-minor-and-patch group with 3 updates (#43)\n- deps: Bump the nuget-minor-and-patch group with 3 updates (#44)\n- deps: Bump the nuget-test-minor-and-patch group with 3 updates (#45)\n- deps(deps-dev): bump the npm-minor-and-patch group with 3 updates (#46)\n- deps: Bump the nuget-minor-and-patch group with 3 updates (#47)\n- deps: Bump the nuget-test-minor-and-patch group with 1 update (#50)\n- deps(deps): bump the npm-minor-and-patch group across 1 directory with 10 updates (#51)\n- chore(.gitignore): update .gitignore\n",
+      "targetAbi": "12.4.0.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v12.5.0.0/MediaPreview.zip",
+      "checksum": "c0b49512de0215e5eb85dfbdd34cc0db",
+      "timestamp": "2026-11-16 13:29:47"
+    },
+    {
       "version": "12.4.0.0",
       "changelog": "- feat(preview): add in-progress source override (#35)\n- Add Star History section to README\n- deps(deps): bump the npm-minor-and-patch group with 8 updates (#33)\n",
       "targetAbi": "12.1.0.0",

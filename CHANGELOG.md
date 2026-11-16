@@ -1,5 +1,32 @@
 # Changelog
 
+## v12.5.0.0 - 2026-11-16
+
+### Features
+
+- feat(users): save preview mute and volume per user
+
+### Documentation
+
+- docs: update plugin repository URL in README
+
+### Other
+
+- deps(deps-dev): bump the npm-minor-and-patch group with 5 updates (#36)
+- deps: Bump the nuget-minor-and-patch group with 3 updates (#39)
+- deps(deps-dev): bump typescript from 5.9.3 to 6.0.3 (#37)
+- deps: Bump the nuget-test-minor-and-patch group with 4 updates (#38)
+- deps: Bump the nuget-test-minor-and-patch group with 1 update (#42)
+- deps(deps): bump the npm-minor-and-patch group with 7 updates (#41)
+- deps(deps-dev): bump happy-dom from 20.14.6 to 21.0.4 (#40)
+- deps(deps-dev): bump the npm-minor-and-patch group with 3 updates (#43)
+- deps: Bump the nuget-minor-and-patch group with 3 updates (#44)
+- deps: Bump the nuget-test-minor-and-patch group with 3 updates (#45)
+- deps(deps-dev): bump the npm-minor-and-patch group with 3 updates (#46)
+- deps: Bump the nuget-minor-and-patch group with 3 updates (#47)
+- deps: Bump the nuget-test-minor-and-patch group with 1 update (#50)
+- deps(deps): bump the npm-minor-and-patch group across 1 directory with 10 updates (#51)
+- chore(.gitignore): update .gitignore
 ## v12.4.0.0 - 2026-10-05
 
 ### Features
@@ -49,7 +76,6 @@
 
 ### Fixes
 
-- fix(build): update image URL to use logo instead of hero in build script and manifest
 - fix: Refactor star history section in README (#23)
 - fix(preview): ignore overlay images as render hosts, fixes #24
 - fix(build): update image URL to use logo instead of hero in build script and manifest
@@ -74,6 +100,7 @@
 - fix: add spacing between keyboard settings grids
 - fix(preview/hover): prevent stale media after pointer leave
 - fix(preview/library): honor library-specific source overrides
+- fix(build): update image URL to use logo instead of hero in build script and manifest
 
 ### Build
 
