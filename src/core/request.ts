@@ -66,3 +66,44 @@ export function postJson(path: string, body: unknown): Promise<void> {
     }
   });
 }
+
+export function putJson<T>(
+  path: string,
+  body: unknown,
+  query?: Record<string, string | number | boolean | null | undefined>
+): Promise<T> {
+  const apiClient = getGlobalApiClient();
+  const url = buildApiUrl(path, query);
+  if (!apiClient || !url) {
+    return Promise.reject(new Error('ApiClient is not available.'));
+  }
+
+  const serializedBody = JSON.stringify(body);
+  if (typeof apiClient.ajax === 'function') {
+    return Promise.resolve(
+      apiClient.ajax({
+        type: 'PUT',
+        url,
+        contentType: 'application/json',
+        data: serializedBody,
+        dataType: 'json'
+      }) as Promise<T> | T
+    );
+  }
+
+  return fetch(url, {
+    method: 'PUT',
+    credentials: 'same-origin',
+    headers: {
+      ...getAuthHeaders(apiClient),
+      'Content-Type': 'application/json'
+    },
+    body: serializedBody
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
+  });
+}

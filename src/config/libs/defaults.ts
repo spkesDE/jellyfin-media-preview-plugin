@@ -47,6 +47,7 @@ export const CONFIG_DEFAULTS = {
   ShowNoPreviewMessage: false,
   TrailerAudioEnabled: false,
   TrailerVolumePercent: 35,
+  UserAudioPreferencesEnabled: true,
   VideoControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
   AudioControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
   DirectPlayPreviewEnabled: true,

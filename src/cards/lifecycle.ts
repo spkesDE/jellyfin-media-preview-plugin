@@ -16,6 +16,7 @@ import { cancelScheduledTrickplayPreload, disconnectTrickplayPreloadObserver } f
 import { expandTrailer } from '../trailerOverlay/expandedTrailer';
 import { clearAutoScrub } from '../interaction/autoScrub';
 import { runtimeState } from '../runtime';
+import { persistCurrentAudioPreference } from '../userPreferences/api';
 import mediaPreviewGlobalStyles from '../styles/mediaPreviewGlobal.css';
 import mediaPreviewHoverStyles from '../styles/mediaPreviewHover.css';
 import mediaPreviewMetadataStyles from '../styles/mediaPreviewMetadata.css';
@@ -433,6 +434,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       config.trailerAudioEnabled = shouldUnmute;
       setTrailerMediaMuted(state, !shouldUnmute);
       syncTrailerMediaControls(state);
+      persistCurrentAudioPreference();
     });
 
     const trailerVolumeControl = document.createElement('div');
@@ -459,6 +461,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
       setTrailerMediaVolume(state, volumePercent / 100);
       setTrailerMediaMuted(state, volumePercent === 0);
       syncTrailerMediaControls(state);
+      persistCurrentAudioPreference();
     });
     trailerVolumeInput.addEventListener('pointerup', () => trailerVolumeInput.blur());
     trailerVolumeInput.addEventListener('pointercancel', () => trailerVolumeInput.blur());

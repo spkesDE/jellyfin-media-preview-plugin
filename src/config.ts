@@ -65,6 +65,7 @@ const standaloneFallbackConfig: PluginConfig = {
   showNoPreviewMessage: false,
   trailerAudioEnabled: false,
   trailerVolumePercent: 35,
+  userAudioPreferencesEnabled: true,
   videoControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
   audioControlSources: ['local-trailer', 'remote-trailer', 'direct-play'],
   directPlayPreviewEnabled: true,

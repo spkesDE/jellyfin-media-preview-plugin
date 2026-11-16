@@ -10,6 +10,7 @@ const tabs: Array<{ id: ConfigTab; label: string; badge?: string }> = [
   { id: 'trickplay', label: 'Trickplay' },
   { id: 'trailer', label: 'Trailer' },
   { id: 'appearance', label: 'Appearance' },
+  { id: 'users', label: 'Users' },
   { id: 'advanced', label: 'Advanced' }
 ];
 

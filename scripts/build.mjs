@@ -10,6 +10,10 @@ const isProduction = !isWatch;
 const cssTextPlugin = {
   name: 'css-text',
   setup(build) {
+    // Shared modules use Vite's `?inline` suffix so the same import yields CSS text in both bundles.
+    build.onResolve({ filter: /\.css\?inline$/ }, (args) => ({
+      path: path.resolve(args.resolveDir, args.path.replace(/\?inline$/, ''))
+    }));
     build.onLoad({ filter: /\.css$/ }, async (args) => {
       const source = await readFile(args.path, 'utf8');
       const result = await esbuild.transform(source, {

@@ -1,4 +1,5 @@
 import { scheduleAdminNavigationRefresh } from '../admin/navigation';
+import { syncCurrentUserPreferences } from '../userPreferences/api';
 import { scheduleScan } from './observer';
 import { runtimeState } from '../runtime';
 
@@ -12,6 +13,7 @@ export function bindRouteEvents(): void {
   const scheduleFullScan = () => {
     scheduleScan(document);
     scheduleAdminNavigationRefresh();
+    void syncCurrentUserPreferences();
   };
 
   window.addEventListener('hashchange', scheduleFullScan, { passive: true });

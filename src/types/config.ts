@@ -43,6 +43,7 @@ export interface PluginConfig {
   showNoPreviewMessage: boolean;
   trailerAudioEnabled: boolean;
   trailerVolumePercent: number;
+  userAudioPreferencesEnabled: boolean;
   videoControlSources: MediaControlSource[];
   audioControlSources: MediaControlSource[];
   directPlayPreviewEnabled: boolean;

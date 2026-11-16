@@ -1,11 +1,15 @@
-import { NAMESPACE } from './constants';
+import { NAMESPACE, USER_PREFERENCES_CHANGED_EVENT } from './constants';
 import { normalizeConfig } from './config';
 import { ensureInjectedStyles, destroyCardBindings } from './cards/lifecycle';
 import { bindUserActivationEvents, unbindUserActivationEvents } from './interaction/userActivation';
 import { bindRouteEvents, unbindRouteEvents } from './core/router';
 import { bindDelegatedHoverEvents, unbindDelegatedHoverEvents } from './interaction/delegatedEvents';
 import { bindCards } from './interaction/hover';
-import { cancelAdminNavigationRefresh, scheduleAdminNavigationRefresh } from './admin/navigation';
+import {
+  cancelAdminNavigationRefresh,
+  removeUserSettingsEntries,
+  scheduleAdminNavigationRefresh
+} from './admin/navigation';
 import { cancelScheduledScan, observePageChanges, scheduleScan } from './core/observer';
 import { runtimeState } from './runtime';
 import { log } from './core/logger';
@@ -16,6 +20,19 @@ import { clearPreviewCaches } from './core/storage';
 import { clearTrickplayPreloads } from './preview/preload';
 import { clearUnavailableTrailerCacheState } from './preview/trailer';
 import { clearDirectPlayFallbackState } from './preview/directPlay';
+import {
+  applyEffectivePreferences,
+  clearUserPreferenceState,
+  syncCurrentUserPreferences,
+  type UserPreferencesResponse
+} from './userPreferences/api';
+
+function handleUserPreferencesChanged(event: Event): void {
+  const response = (event as CustomEvent<UserPreferencesResponse>).detail;
+  if (response?.effective) {
+    applyEffectivePreferences(response);
+  }
+}
 
 export function destroy(): void {
   destroyExpandedTrailerDom();
@@ -35,6 +52,9 @@ export function destroy(): void {
   clearPreviewCaches();
   clearUnavailableTrailerCacheState();
   clearDirectPlayFallbackState();
+  document.removeEventListener(USER_PREFERENCES_CHANGED_EVENT, handleUserPreferencesChanged);
+  removeUserSettingsEntries();
+  clearUserPreferenceState();
 }
 
 export function start(): void {
@@ -46,6 +66,8 @@ export function start(): void {
   }
 
   ensureInjectedStyles();
+  document.addEventListener(USER_PREFERENCES_CHANGED_EVENT, handleUserPreferencesChanged);
+  void syncCurrentUserPreferences();
   bindUserActivationEvents();
   bindRouteEvents();
   bindDelegatedHoverEvents();

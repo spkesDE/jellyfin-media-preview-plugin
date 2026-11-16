@@ -1,6 +1,6 @@
 import { getCurrentUserId, getGlobalApiClient } from '../../core/apiClient';
 import type { JellyfinItem } from '../../types/jellyfin';
-import type { ConfigLibrary } from './types';
+import type { ConfigLibrary, ConfigUser } from './types';
 
 export function requestJson(path: string): Promise<unknown> {
   const apiClient = getGlobalApiClient();
@@ -42,4 +42,17 @@ export async function loadLibraries(): Promise<ConfigLibrary[]> {
   } catch {
     return [];
   }
+}
+
+export async function loadUsers(): Promise<ConfigUser[]> {
+  const payload = await requestJson('Users');
+  const users = Array.isArray(payload) ? (payload as Array<Record<string, unknown>>) : [];
+  return users
+    .filter((user) => typeof user.Id === 'string' && typeof user.Name === 'string')
+    .map((user) => ({
+      Id: user.Id as string,
+      Name: user.Name as string,
+      IsAdministrator: (user.Policy as { IsAdministrator?: unknown } | undefined)?.IsAdministrator === true
+    }))
+    .sort((left, right) => left.Name.localeCompare(right.Name));
 }

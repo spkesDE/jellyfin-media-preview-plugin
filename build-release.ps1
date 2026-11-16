@@ -1,6 +1,14 @@
 param(
     [string]$Configuration = "Release",
-    [string]$Changelog
+    [string]$Changelog,
+
+    # Local builds the release folder and ZIP. Server installs the build straight into the
+    # Jellyfin plugin folder. When omitted, an interactive session asks; CI and other
+    # non-interactive runs build locally.
+    [ValidateSet("Local", "Server")]
+    [string]$Target,
+
+    [string]$ServerPluginsPath = "U:\Jellyfin\config\plugins"
 )
 
 $ErrorActionPreference = "Stop"
@@ -127,6 +135,153 @@ function Remove-TempBuild {
     }
 }
 
+function Test-InteractiveSession {
+    if ($env:CI -or $env:GITHUB_ACTIONS) {
+        return $false
+    }
+
+    if (-not [Environment]::UserInteractive) {
+        return $false
+    }
+
+    return -not [Console]::IsInputRedirected
+}
+
+function Select-BuildTarget {
+    param(
+        [string]$Requested
+    )
+
+    if (-not [string]::IsNullOrWhiteSpace($Requested)) {
+        return $Requested
+    }
+
+    if (-not (Test-InteractiveSession)) {
+        return "Local"
+    }
+
+    $choices = [System.Management.Automation.Host.ChoiceDescription[]]@(
+        (New-Object System.Management.Automation.Host.ChoiceDescription "&Local", "Build the release folder and ZIP in this repository."),
+        (New-Object System.Management.Automation.Host.ChoiceDescription "&Server", "Install the build into the Jellyfin plugin folder at $ServerPluginsPath.")
+    )
+    $selection = $Host.UI.PromptForChoice("Build target", "Build locally or install on the server?", $choices, 0)
+
+    return @("Local", "Server")[$selection]
+}
+
+function Find-InstalledPluginFolder {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$PluginsPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Guid
+    )
+
+    if (-not (Test-Path -LiteralPath $PluginsPath)) {
+        throw "Jellyfin plugin folder not found: $PluginsPath"
+    }
+
+    $candidates = foreach ($folder in Get-ChildItem -LiteralPath $PluginsPath -Directory) {
+        $metaPath = Join-Path $folder.FullName "meta.json"
+
+        if (-not (Test-Path -LiteralPath $metaPath)) {
+            continue
+        }
+
+        try {
+            $meta = Get-Content -LiteralPath $metaPath -Raw | ConvertFrom-Json
+        } catch {
+            Write-Warning "Skipping $($folder.Name): meta.json could not be read."
+            continue
+        }
+
+        if ([string]$meta.guid -ne $Guid) {
+            continue
+        }
+
+        $version = [Version]"0.0.0.0"
+        [void][Version]::TryParse([string]$meta.version, [ref]$version)
+
+        [pscustomobject]@{
+            Path = $folder.FullName
+            Name = $folder.Name
+            Version = $version
+            Status = [string]$meta.status
+        }
+    }
+
+    if (-not $candidates) {
+        throw "No installed plugin with GUID $Guid was found in $PluginsPath. Install it once through the Jellyfin catalog first."
+    }
+
+    # Jellyfin loads the newest installed version, so that is the folder to replace.
+    return $candidates | Sort-Object -Property Version -Descending | Select-Object -First 1
+}
+
+function Install-ToServer {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$SourceDir,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Files,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PluginsPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Guid,
+
+        [Parameter(Mandatory = $true)]
+        [string]$BuiltVersion,
+
+        [Parameter(Mandatory = $true)]
+        [string]$BackupRoot
+    )
+
+    $installed = Find-InstalledPluginFolder -PluginsPath $PluginsPath -Guid $Guid
+    Write-Host "Installed plugin folder: $($installed.Path)"
+
+    if ($installed.Status -and $installed.Status -ne "Active") {
+        Write-Warning "The installed plugin is marked '$($installed.Status)' in meta.json; Jellyfin may not load it."
+    }
+
+    if ($installed.Version.ToString() -ne $BuiltVersion) {
+        Write-Warning "Installed version $($installed.Version) differs from built version $BuiltVersion. The files are replaced anyway; meta.json is left unchanged."
+    }
+
+    $backupDir = Join-Path $BackupRoot ("{0}_{1}" -f $installed.Name, (Get-Date -Format "yyyyMMdd-HHmmss"))
+    New-Item -ItemType Directory -Path $backupDir -Force | Out-Null
+
+    foreach ($file in $Files) {
+        $sourcePath = Join-Path $SourceDir $file
+
+        if (-not (Test-Path -LiteralPath $sourcePath)) {
+            continue
+        }
+
+        $targetPath = Join-Path $installed.Path $file
+
+        if (Test-Path -LiteralPath $targetPath) {
+            Copy-Item -LiteralPath $targetPath -Destination $backupDir -Force
+        }
+
+        try {
+            Copy-Item -LiteralPath $sourcePath -Destination $targetPath -Force
+        } catch {
+            throw "Could not replace $targetPath. Stop Jellyfin if the file is locked, then run the script again. $($_.Exception.Message)"
+        }
+
+        Write-Host "  replaced $file"
+    }
+
+    Write-Host ""
+    Write-Host "Previous files backed up to:"
+    Write-Host "  $backupDir"
+    Write-Host "Restart Jellyfin to load the new build."
+}
+
 function Step {
     param(
         [Parameter(Mandatory = $true)]
@@ -165,6 +320,9 @@ $bundlePath = Join-RepoPath @($repoRoot, "dist", "mediapreview.bundle.js")
 $configBundlePath = Join-RepoPath @($repoRoot, "dist", "config.bundle.js")
 $verifyScript = Join-RepoPath @($repoRoot, "scripts", "verify-embedded-bundle.ps1")
 $syncFrontendVersionScript = Join-RepoPath @($repoRoot, "scripts", "sync-frontend-version.mjs")
+
+$Target = Select-BuildTarget -Requested $Target
+Write-Host "Build target: $Target"
 
 try {
     Step "Reading project metadata"
@@ -318,6 +476,27 @@ try {
         ) "Embedded frontend bundle verification failed."
     }
 
+    $includeFiles = @(
+        "Jellyfin.Plugin.MediaPreview.dll",
+        "Jellyfin.Plugin.MediaPreview.deps.json",
+        "Jellyfin.Plugin.MediaPreview.runtimeconfig.json",
+        "Newtonsoft.Json.dll"
+    )
+
+    if ($Target -eq "Server") {
+        Step "Installing into Jellyfin plugin folder"
+
+        Install-ToServer `
+            -SourceDir $buildOutput `
+            -Files $includeFiles `
+            -PluginsPath $ServerPluginsPath `
+            -Guid $pluginGuid `
+            -BuiltVersion $pluginVersion `
+            -BackupRoot (Join-RepoPath @($releaseRoot, "server-backup"))
+
+        return
+    }
+
     Step "Preparing release folder"
 
     if (Test-Path -LiteralPath $stageDir) {
@@ -329,13 +508,6 @@ try {
     }
 
     New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
-
-    $includeFiles = @(
-        "Jellyfin.Plugin.MediaPreview.dll",
-        "Jellyfin.Plugin.MediaPreview.deps.json",
-        "Jellyfin.Plugin.MediaPreview.runtimeconfig.json",
-        "Newtonsoft.Json.dll"
-    )
 
     foreach ($file in $includeFiles) {
         $sourcePath = Join-RepoPath @($buildOutput, $file)

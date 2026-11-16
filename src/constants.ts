@@ -114,3 +114,9 @@ export const VALID_TRAILER_EXPAND_BUTTON_POSITIONS = new Set([
 
 export const SUPPORTED_TYPES = new Set(['Movie', 'Episode', 'Series', 'Season', 'Video']);
 export const DIRECT_PLAY_TYPES = new Set(['Movie', 'Episode', 'Video']);
+
+/** Material icon used for every Media Preview entry in Jellyfin's menus and navigation. */
+export const PLUGIN_ICON = 'ondemand_video';
+export const PLUGIN_DISPLAY_NAME = 'Media Preview';
+export const USER_PREFERENCES_CHANGED_EVENT = 'media-preview:user-preferences-changed';
+export const USER_PREFERENCES_STYLE_ID = 'jellyfin-media-preview-user-preferences-style';

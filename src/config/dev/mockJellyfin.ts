@@ -21,6 +21,52 @@ const previewImage = `data:image/svg+xml,${encodeURIComponent(`
   </svg>
 `)}`;
 
+type DevAudioPreferences = {
+  trailerAudioEnabled: boolean | null;
+  trailerVolumePercent: number | null;
+  rememberAudioChanges: boolean | null;
+};
+
+const devPreferences = new Map<string, DevAudioPreferences>();
+
+function devPreferencesResponse(userId: string) {
+  const settings = pluginConfig as Record<string, unknown>;
+  const stored = devPreferences.get(userId) ?? {
+    trailerAudioEnabled: null,
+    trailerVolumePercent: null,
+    rememberAudioChanges: null
+  };
+  const enabled = settings.UserAudioPreferencesEnabled !== false;
+  const defaults = {
+    trailerAudioEnabled: settings.TrailerAudioEnabled === true,
+    trailerVolumePercent: Number(settings.TrailerVolumePercent ?? 35),
+    rememberAudioChanges: enabled
+  };
+  return {
+    enabled,
+    preferences: stored,
+    defaults,
+    effective: enabled
+      ? {
+          trailerAudioEnabled: stored.trailerAudioEnabled ?? defaults.trailerAudioEnabled,
+          trailerVolumePercent: stored.trailerVolumePercent ?? defaults.trailerVolumePercent,
+          rememberAudioChanges: stored.rememberAudioChanges ?? true
+        }
+      : defaults
+  };
+}
+
+function handleDevPreferences(url: string, type: string | undefined, data: string | undefined) {
+  const userId = new URL(url, window.location.origin).searchParams.get('userId') ?? 'dev-user';
+  if (type === 'PUT') {
+    const body = JSON.parse(data ?? '{}') as { reset?: boolean; preferences?: DevAudioPreferences };
+    if (body.reset) devPreferences.delete(userId);
+    else if (body.preferences) devPreferences.set(userId, body.preferences);
+    console.info('Saved Media Preview development user preferences', userId, devPreferences.get(userId));
+  }
+  return devPreferencesResponse(userId);
+}
+
 export function installJellyfinDevMocks(): void {
   window.Dashboard = {
     showLoadingMsg() {},
@@ -30,7 +76,14 @@ export function installJellyfinDevMocks(): void {
 
   window.ApiClient = {
     getCurrentUserId: () => 'dev-user',
-    getUrl: (path) => path,
+    getUrl: (path, query) => {
+      const params = new URLSearchParams();
+      Object.entries(query ?? {}).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && value !== '') params.set(key, String(value));
+      });
+      const search = params.toString();
+      return search ? `${path}?${search}` : path;
+    },
     getImageUrl: () => previewImage,
     getPluginConfiguration: async () => structuredClone(pluginConfig),
     updatePluginConfiguration: async (_pluginId, config) => {
@@ -38,7 +91,19 @@ export function installJellyfinDevMocks(): void {
       console.info('Saved Media Preview development config', config);
       return {};
     },
-    ajax: async ({ url }) => {
+    ajax: async ({ url, type, data }) => {
+      if (url.includes('media-preview/preferences')) {
+        return handleDevPreferences(url, type, data);
+      }
+
+      if (url === 'Users') {
+        return [
+          { Id: 'dev-user', Name: 'Admin', Policy: { IsAdministrator: true } },
+          { Id: 'guest-user', Name: 'Guest', Policy: { IsAdministrator: false } },
+          { Id: 'kid-user', Name: 'Kids', Policy: { IsAdministrator: false } }
+        ];
+      }
+
       if (url.includes('/Views')) {
         return {
           Items: [

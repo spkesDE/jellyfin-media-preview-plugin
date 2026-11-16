@@ -31,6 +31,7 @@ import { markDirectPlayUnavailable } from './directPlay';
 import type { VideoPreview } from '../types/preview';
 import type { MediaControlSource } from '../types/config';
 import type { CardState } from '../types/state';
+import { rememberUserAudioChange } from '../userPreferences/api';
 
 export function updateTrailerAudioState(
   mediaElement: HTMLVideoElement | HTMLIFrameElement | null,
@@ -329,7 +330,14 @@ export function applyTrailerPreview(
     updateTrailerAudioState(mediaElement, isDirectPlay);
     mediaElement.onplay = () => syncTrailerMediaControls(state);
     mediaElement.onpause = () => syncTrailerMediaControls(state);
-    mediaElement.onvolumechange = () => syncTrailerMediaControls(state);
+    mediaElement.onvolumechange = () => {
+      // Native controls are only shown in the expanded trailer, so a change while they are
+      // visible came from the viewer and is saved like the preview's own buttons.
+      if (mediaElement.controls) {
+        rememberUserAudioChange(mediaElement.muted, Math.round(mediaElement.volume * 100));
+      }
+      syncTrailerMediaControls(state);
+    };
 
     if (previewDurationSeconds > 0) {
       mediaElement.dataset.jmpPreviewStartSeconds = String(Math.max(0, Number(trailer.startSeconds) || 0));

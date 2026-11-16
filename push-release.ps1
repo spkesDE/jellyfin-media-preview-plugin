@@ -233,7 +233,7 @@ if ($hasStagedChanges) {
 }
 
 if (-not $SkipBuild) {
-    & (Join-Path $repoRoot "build-release.ps1")
+    & (Join-Path $repoRoot "build-release.ps1") -Target Local
 }
 
 Write-Host "Pushing branch '$branch'..."

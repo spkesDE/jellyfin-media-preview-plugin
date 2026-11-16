@@ -16,6 +16,12 @@ export interface ConfigLibrary {
   CollectionType?: string;
 }
 
+export interface ConfigUser {
+  Id: string;
+  Name: string;
+  IsAdministrator: boolean;
+}
+
 export interface AppearancePreview {
   title: string;
   year: string;
@@ -26,5 +32,5 @@ export interface AppearancePreview {
   previewUrl: string;
 }
 
-export type ConfigTab = 'general' | 'keyboard' | 'trickplay' | 'trailer' | 'appearance' | 'advanced';
+export type ConfigTab = 'general' | 'keyboard' | 'trickplay' | 'trailer' | 'appearance' | 'users' | 'advanced';
 export type SaveState = 'clean' | 'dirty' | 'saved';

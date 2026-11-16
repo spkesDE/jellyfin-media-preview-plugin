@@ -35,14 +35,20 @@ release\MediaPreview\
 release\MediaPreview.zip
 ```
 
+When run in a terminal, the script asks where to build:
+
+- **Local** creates the release folder and ZIP above.
+- **Server** finds the installed Media Preview folder in the Jellyfin plugin directory (by plugin GUID, newest version), replaces its DLL and `deps.json`, and backs up the old files to `release\server-backup\`.
+
+Skip the question with `-Target Local` or `-Target Server`. The plugin directory defaults to `U:\Jellyfin\config\plugins`; change it with `-ServerPluginsPath`. CI and other non-interactive runs build locally.
+
 To test a change:
 
 1. Make your changes.
-2. Run `.\build-release.ps1`.
-3. Copy the generated plugin files to your Jellyfin plugin directory.
-4. Restart Jellyfin.
-5. Test the changes in Jellyfin Web.
-6. Repeat as needed.
+2. Run `.\build-release.ps1` and choose **Server**.
+3. Restart Jellyfin.
+4. Test the changes in Jellyfin Web.
+5. Repeat as needed.
 
 You do not need to run `npm run build` separately before using the release script.
 

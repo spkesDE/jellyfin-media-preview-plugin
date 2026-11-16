@@ -1,3 +1,16 @@
+#MediaPreviewConfigPage {
+  --jmp-theme-primary: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
+  --jmp-theme-primary-dark: var(--jf-palette-primary-dark, var(--jmp-theme-primary));
+  --jmp-theme-primary-contrast: var(--jf-palette-primary-contrastText, #fff);
+  --jmp-theme-paper: var(--jf-palette-background-paper, #202020);
+  --jmp-theme-divider: var(--jf-palette-divider, rgba(255, 255, 255, 0.12));
+  --jmp-theme-action-hover: var(--jf-palette-action-hover, rgba(255, 255, 255, 0.08));
+  --jmp-theme-error-light: var(--jf-palette-error-light, #ffb4ab);
+  --jmp-theme-radius: var(--jf-card-borderRadius, 0.25rem);
+  --jmp-theme-text-primary: var(--jf-palette-text-primary, #fff);
+  --jmp-theme-action-focus: var(--jf-palette-action-focus, rgba(255, 255, 255, 0.18));
+}
+
 #MediaPreviewConfigPage .jmp-configForm,
 #MediaPreviewConfigPage .sectionTitleContainer,
 #MediaPreviewConfigPage .verticalSection,

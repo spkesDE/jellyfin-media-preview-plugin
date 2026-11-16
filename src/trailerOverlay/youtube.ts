@@ -25,6 +25,8 @@ interface YouTubePlayer {
   mute: () => void;
   unMute: () => void;
   setVolume: (volume: number) => void;
+  getVolume?: () => number;
+  isMuted?: () => boolean;
 }
 
 interface YouTubePlayerApi {
@@ -115,6 +117,11 @@ export function monitorYouTubeEmbed(
     loop?: boolean;
     initialMuted?: boolean;
     initialVolume?: number;
+    /**
+     * Called when the viewer changes mute or volume in YouTube's own controls. The player API
+     * has no volume event, so the player is polled while it has focus.
+     */
+    onUserVolumeChange?: (muted: boolean, volume: number) => void;
   }
 ): YouTubeEmbedMonitor {
   let disposed = false;
@@ -127,6 +134,37 @@ export function monitorYouTubeEmbed(
   let paused = false;
   let muted = callbacks.initialMuted !== false;
   let volume = Math.max(0, Math.min(1, Number(callbacks.initialVolume) || 0));
+  let volumePollTimer: number | null = null;
+  // Our own mute/volume calls take a moment to show up in the player; ignore it meanwhile.
+  let ignoreVolumeUntil = 0;
+  const VOLUME_POLL_MS = 500;
+  const VOLUME_SETTLE_MS = 1200;
+
+  const pollUserVolume = () => {
+    if (!ready || !player || Date.now() < ignoreVolumeUntil) {
+      return;
+    }
+    // Only a viewer using YouTube's controls moves focus into the frame; this keeps the
+    // browser's own autoplay muting from being saved as the viewer's choice.
+    if (document.activeElement !== iframe) {
+      return;
+    }
+
+    try {
+      const playerMuted = !!player.isMuted?.();
+      const playerVolume = Math.max(0, Math.min(1, Number(player.getVolume?.() ?? volume * 100) / 100));
+      if (playerMuted === muted && Math.abs(playerVolume - volume) < 0.01) {
+        return;
+      }
+
+      muted = playerMuted;
+      volume = playerVolume;
+      callbacks.onUserVolumeChange?.(muted, volume);
+      callbacks.onPlaybackStateChange?.();
+    } catch {
+      /* the player may already be torn down */
+    }
+  };
 
   const startPlayer = () => {
     if (disposed || playerStarted || !iframeLoaded || !api || !iframe.isConnected) {
@@ -150,6 +188,10 @@ export function monitorYouTubeEmbed(
             }
             player = event.target;
             ready = true;
+            ignoreVolumeUntil = Date.now() + VOLUME_SETTLE_MS;
+            if (callbacks.onUserVolumeChange && volumePollTimer === null) {
+              volumePollTimer = window.setInterval(pollUserVolume, VOLUME_POLL_MS);
+            }
             try {
               player.setVolume(Math.round(volume * 100));
               if (muted || volume === 0) {
@@ -214,6 +256,10 @@ export function monitorYouTubeEmbed(
   return {
     cleanup() {
       disposed = true;
+      if (volumePollTimer !== null) {
+        window.clearInterval(volumePollTimer);
+        volumePollTimer = null;
+      }
       iframe.removeEventListener('load', handleIframeLoad);
       player?.destroy();
       player = null;
@@ -231,6 +277,7 @@ export function monitorYouTubeEmbed(
     },
     setMuted(nextMuted) {
       muted = nextMuted;
+      ignoreVolumeUntil = Date.now() + VOLUME_SETTLE_MS;
       if (ready) {
         if (muted) player?.mute();
         else player?.unMute();
@@ -239,6 +286,7 @@ export function monitorYouTubeEmbed(
     },
     setVolume(nextVolume) {
       volume = Math.max(0, Math.min(1, Number(nextVolume) || 0));
+      ignoreVolumeUntil = Date.now() + VOLUME_SETTLE_MS;
       if (ready) player?.setVolume(Math.round(volume * 100));
       callbacks.onPlaybackStateChange?.();
     },

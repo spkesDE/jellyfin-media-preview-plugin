@@ -37,6 +37,10 @@ public sealed class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
             new PluginPageInfo
             {
                 Name = ConfigurationPageName,
+                DisplayName = Name,
+                // Lets Jellyfin list the page in the dashboard sidebar with this Material icon.
+                EnableInMainMenu = true,
+                MenuIcon = "ondemand_video",
                 EmbeddedResourcePath = string.Format(
                     CultureInfo.InvariantCulture,
                     "{0}.Configuration.configPage.html",

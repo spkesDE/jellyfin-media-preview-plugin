@@ -1,6 +1,7 @@
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Plugins;
 using Jellyfin.Plugin.MediaPreview.Trailers;
+using Jellyfin.Plugin.MediaPreview.Users;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -11,6 +12,7 @@ public sealed class PluginServiceRegistrator : IPluginServiceRegistrator
     public void RegisterServices(IServiceCollection serviceCollection, IServerApplicationHost applicationHost)
     {
         serviceCollection.AddSingleton<UnavailableTrailerStore>();
+        serviceCollection.AddSingleton<UserPreferenceStore>();
         serviceCollection.AddSingleton<FrontendInjectionAvailabilityService>();
         serviceCollection.AddHostedService<FrontendRegistrationHostedService>();
     }

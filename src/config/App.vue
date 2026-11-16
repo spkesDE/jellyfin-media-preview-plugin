@@ -8,6 +8,7 @@ import GeneralTab from './tabs/GeneralTab.vue';
 import KeyboardTab from './tabs/KeyboardTab.vue';
 import TrailerTab from './tabs/TrailerTab.vue';
 import TrickplayTab from './tabs/TrickplayTab.vue';
+import UsersTab from './tabs/UsersTab.vue';
 
 const store = createConfigStore();
 provide(configStoreKey, store);
@@ -61,6 +62,7 @@ onBeforeUnmount(() => {
         <TrickplayTab v-show="store.activeTab.value === 'trickplay'" />
         <TrailerTab v-show="store.activeTab.value === 'trailer'" />
         <AppearanceTab v-show="store.activeTab.value === 'appearance'" />
+        <UsersTab v-show="store.activeTab.value === 'users'" />
         <AdvancedTab v-show="store.activeTab.value === 'advanced'" />
       </div>
     </form>

@@ -1,10 +1,17 @@
 import { EXPANDED_TRAILER_TRANSITION_MS } from '../constants';
 import { getPreviewModeForCard } from '../cards/layout';
 import { getOrCreateCardState } from '../cards/state';
-import { restoreCard, setTrailerExpandVisible, setTrailerMediaControlsVisible } from '../cards/lifecycle';
+import {
+  restoreCard,
+  setTrailerExpandVisible,
+  setTrailerMediaControlsVisible,
+  syncTrailerMediaControls
+} from '../cards/lifecycle';
+import { config } from '../config';
 import { canPlayTrailerAudio } from '../preview/renderTrailer';
 import { applyMediaLayout } from '../preview/mediaLayout';
-import { buildYouTubeEmbedUrl } from './youtube';
+import { buildYouTubeEmbedUrl, monitorYouTubeEmbed } from './youtube';
+import { rememberUserAudioChange } from '../userPreferences/api';
 import { runtimeState } from '../runtime';
 
 export function ensureExpandedTrailerDom() {
@@ -245,6 +252,18 @@ export function expandTrailer(card: HTMLElement): void {
       }) || 'about:blank';
     runtimeState.expandedTrailerSession.expandedMedia = expandedMedia;
     runtimeState.expandedTrailerSession.expandedPlaybackStartedAt = Date.now() - startSeconds * 1000;
+    // The expanded player replaces the card's player (it stays in the card after collapsing),
+    // so it takes over the card's controller: saved volume in, YouTube control changes out.
+    state.trailerMediaCleanup?.();
+    const expandedMonitor = monitorYouTubeEmbed(expandedMedia, {
+      initialMuted: !canPlayTrailerAudio(),
+      initialVolume: Math.max(0, Math.min(1, config.trailerVolumePercent / 100)),
+      onPlaybackStateChange: () => syncTrailerMediaControls(state),
+      onUserVolumeChange: (muted, volume) => rememberUserAudioChange(muted, Math.round(volume * 100)),
+      onError: () => undefined
+    });
+    state.trailerMediaController = expandedMonitor;
+    state.trailerMediaCleanup = () => expandedMonitor.cleanup();
     overlayState.mediaHost.appendChild(expandedMedia);
     if (state.trailerMedia instanceof HTMLIFrameElement) {
       state.trailerMedia.src = 'about:blank';

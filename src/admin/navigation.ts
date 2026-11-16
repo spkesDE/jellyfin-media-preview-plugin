@@ -1,5 +1,26 @@
-import { ADMIN_NAV_LINK_ATTR, CONFIGURATION_PAGE_HASH, CONFIGURATION_PAGE_NAME } from '../constants';
+import {
+  ADMIN_NAV_LINK_ATTR,
+  CONFIGURATION_PAGE_HASH,
+  CONFIGURATION_PAGE_NAME,
+  PLUGIN_DISPLAY_NAME,
+  PLUGIN_ICON
+} from '../constants';
+import { config } from '../config';
 import { runtimeState } from '../runtime';
+import { preloadUserPreferences } from '../userPreferences/api';
+import { openUserPreferencesDialog } from '../userPreferences/dialog';
+
+const USER_SETTINGS_LINK_ATTR = 'data-media-preview-user-settings-link';
+const USER_SETTINGS_PAGE_LINK_ATTR = 'data-media-preview-user-settings-page-link';
+const USER_PREFERENCES_SELECTOR = 'a[href="#/mypreferencesmenu"], a[href$="/#/mypreferencesmenu"]';
+
+export function createPluginIcon(): HTMLSpanElement {
+  const icon = document.createElement('span');
+  icon.className = 'material-icons';
+  icon.setAttribute('aria-hidden', 'true');
+  icon.textContent = PLUGIN_ICON;
+  return icon;
+}
 
 export function isPluginConfigurationLink(element: Element | null): boolean {
   return !!(
@@ -104,8 +125,13 @@ export function syncPluginsRootSelection(shouldSelectCustomEntry: boolean): void
 export function updateAdminNavigationEntry(entry: Element): void {
   entry.setAttribute(ADMIN_NAV_LINK_ATTR, 'true');
   entry.setAttribute('href', CONFIGURATION_PAGE_HASH);
-  entry.setAttribute('title', 'Media Preview');
+  entry.setAttribute('title', PLUGIN_DISPLAY_NAME);
   entry.removeAttribute('id');
+
+  const icon = entry.querySelector('.MuiListItemIcon-root');
+  if (icon && icon.textContent !== PLUGIN_ICON) {
+    icon.replaceChildren(createPluginIcon());
+  }
 
   const labelSelectors = [
     '.MuiListItemText-primary',
@@ -131,10 +157,121 @@ export function updateAdminNavigationEntry(entry: Element): void {
   }
 
   if (label) {
-    label.textContent = 'Media Preview';
+    label.textContent = PLUGIN_DISPLAY_NAME;
   } else {
-    entry.textContent = 'Media Preview';
+    entry.textContent = PLUGIN_DISPLAY_NAME;
   }
+}
+
+function isUserSettingsEnabled(): boolean {
+  return config.enabled && config.userAudioPreferencesEnabled;
+}
+
+function setEntryLabel(entry: Element, selectors: string[]): void {
+  for (const selector of selectors) {
+    const label = entry.querySelector(selector);
+    if (label) {
+      label.textContent = PLUGIN_DISPLAY_NAME;
+      return;
+    }
+  }
+  entry.textContent = PLUGIN_DISPLAY_NAME;
+}
+
+/** Adds a Media Preview entry below "Settings" in the Jellyfin user menu. */
+export function ensureUserSettingsMenuEntry(): void {
+  document.querySelectorAll<HTMLElement>('ul[role="menu"]').forEach((menu) => {
+    const settingsEntry = menu.querySelector<HTMLAnchorElement>(USER_PREFERENCES_SELECTOR);
+    if (!settingsEntry) {
+      return;
+    }
+
+    const existing = menu.querySelector<HTMLElement>(`[${USER_SETTINGS_LINK_ATTR}="true"]`);
+    if (!isUserSettingsEnabled()) {
+      existing?.remove();
+      return;
+    }
+    if (existing) {
+      return;
+    }
+
+    const entry = settingsEntry.cloneNode(true) as HTMLAnchorElement;
+    entry.setAttribute(USER_SETTINGS_LINK_ATTR, 'true');
+    entry.href = '#';
+    entry.removeAttribute('id');
+    entry.classList.remove('Mui-focusVisible', 'Mui-selected');
+    const icon = entry.querySelector('.MuiListItemIcon-root');
+    if (icon) {
+      icon.replaceChildren(createPluginIcon());
+    }
+    setEntryLabel(entry, ['.MuiListItemText-primary', '.MuiTypography-root']);
+    entry.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', bubbles: true }));
+      window.setTimeout(() => void openUserPreferencesDialog(), 0);
+    });
+    entry.addEventListener('pointerenter', preloadUserPreferences, { once: true });
+    entry.addEventListener('focus', preloadUserPreferences, { once: true });
+    settingsEntry.after(entry);
+  });
+}
+
+/** Adds a Media Preview row to the user "Settings" page (#/mypreferencesmenu). */
+export function ensureUserSettingsPageEntry(): void {
+  const page = document.querySelector<HTMLElement>('#myPreferencesMenuPage');
+  if (!page) {
+    return;
+  }
+
+  const existing = page.querySelector<HTMLElement>(`[${USER_SETTINGS_PAGE_LINK_ATTR}="true"]`);
+  if (!isUserSettingsEnabled()) {
+    existing?.remove();
+    return;
+  }
+  if (existing) {
+    return;
+  }
+
+  const section =
+    page.querySelector<HTMLElement>('.readOnlyContent > .verticalSection') ??
+    page.querySelector<HTMLElement>('.verticalSection');
+  const template =
+    section?.querySelector<HTMLAnchorElement>('.lnkPlaybackPreferences') ??
+    section?.querySelector<HTMLAnchorElement>('.lnkHomePreferences') ??
+    section?.querySelector<HTMLAnchorElement>('a.listItem-border');
+  if (!section || !template) {
+    return;
+  }
+
+  const entry = template.cloneNode(true) as HTMLAnchorElement;
+  entry.setAttribute(USER_SETTINGS_PAGE_LINK_ATTR, 'true');
+  entry.setAttribute('href', '#');
+  entry.removeAttribute('id');
+  entry.style.display = '';
+  Array.from(entry.classList)
+    .filter((className) => className.startsWith('lnk') || className === 'hide')
+    .forEach((className) => entry.classList.remove(className));
+  const icon = entry.querySelector<HTMLElement>('.listItemIcon');
+  if (icon) {
+    icon.className = 'material-icons listItemIcon listItemIcon-transparent';
+    icon.textContent = PLUGIN_ICON;
+  }
+  setEntryLabel(entry, ['.listItemBodyText']);
+  entry.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    void openUserPreferencesDialog();
+  });
+  entry.addEventListener('pointerenter', preloadUserPreferences, { once: true });
+  entry.addEventListener('focus', preloadUserPreferences, { once: true });
+  section.appendChild(entry);
+}
+
+export function removeUserSettingsEntries(): void {
+  document
+    .querySelectorAll(`[${USER_SETTINGS_LINK_ATTR}="true"], [${USER_SETTINGS_PAGE_LINK_ATTR}="true"]`)
+    .forEach((entry) => entry.remove());
 }
 
 export function ensureAdminNavigationLink(): void {
@@ -186,6 +323,8 @@ export function scheduleAdminNavigationRefresh(): void {
     runtimeState.adminNavRefreshFrame = null;
     runtimeState.adminNavRefreshScheduled = false;
     ensureAdminNavigationLink();
+    ensureUserSettingsMenuEntry();
+    ensureUserSettingsPageEntry();
   });
 }
 

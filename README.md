@@ -80,6 +80,12 @@ Direct injection is idempotent: Media Preview replaces an existing Media Preview
 > [!NOTE]
 > The default source is Trickplay. Media Preview uses existing Trickplay and trailer data; it does not generate images or find new trailers.
 
+### User settings
+
+Users can open **Media Preview** from the user menu or their `Settings` page to set preview audio and volume. The Mute button and volume slider on a preview change the same setting.
+
+Under `Users`, administrators decide whether this is saved per user on the server. When it is off, the choice only lasts until the page is reloaded.
+
 ## Preview sources
 
 **Trickplay** uses Jellyfin's thumbnail sheets. Move across the card to scrub through the title, or enable automatic motion.
