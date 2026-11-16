@@ -1,15 +1,10 @@
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
-using MediaBrowser.Common.Net;
 
 namespace Jellyfin.Plugin.MediaPreview;
 
 public static class Transformations
 {
-    private static readonly Regex ScriptMarkerRegex = new(
-        "<script[^>]*plugin=\\\"MediaPreview\\\"[^>]*></script>",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
     private static readonly Regex ClosingBodyRegex = new(
         "(</body>)",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -18,13 +13,15 @@ public static class Transformations
     {
         string contents = payload.Contents ?? string.Empty;
         PluginConfiguration configuration = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
+        string stripped = FrontendInjectionMarkup.Strip(contents);
         if (configuration.FrontendInjectionMethod == FrontendInjectionMethods.JavaScriptInjector)
         {
-            return ScriptMarkerRegex.Replace(contents, string.Empty);
+            return stripped;
         }
 
-        string scriptTag = BuildScriptTag();
-        string stripped = ScriptMarkerRegex.Replace(contents, string.Empty);
+        string scriptTag = FrontendInjectionMarkup.BuildScriptTag(
+            "FileTransformation",
+            FrontendInjectionMethods.FileTransformation);
 
         if (stripped.Contains(scriptTag, StringComparison.Ordinal))
         {
@@ -32,18 +29,6 @@ public static class Transformations
         }
 
         return ClosingBodyRegex.Replace(stripped, scriptTag + "$1");
-    }
-
-    private static string BuildScriptTag()
-    {
-        string basePath = string.Empty;
-        NetworkConfiguration? networkConfiguration = Plugin.Instance?.ServerConfigurationManager.GetNetworkConfiguration();
-        if (!string.IsNullOrWhiteSpace(networkConfiguration?.BaseUrl))
-        {
-            basePath = "/" + networkConfiguration.BaseUrl.Trim().Trim('/');
-        }
-
-        return $"<script FileTransformation=\"true\" plugin=\"MediaPreview\" defer=\"defer\" src=\"{basePath}/media-preview/script\"></script>";
     }
 }
 

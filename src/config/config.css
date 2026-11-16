@@ -70,8 +70,7 @@
   gap: 1.5rem;
 }
 
-#MediaPreviewConfigPage .jmp-selectionIntro,
-#MediaPreviewConfigPage .jmp-selectionFallback {
+#MediaPreviewConfigPage .jmp-selectionIntro {
   grid-column: 1 / -1;
 }
 
@@ -602,8 +601,7 @@
     grid-template-columns: 1fr;
   }
 
-  #MediaPreviewConfigPage .jmp-selectionIntro,
-  #MediaPreviewConfigPage .jmp-selectionFallback {
+  #MediaPreviewConfigPage .jmp-selectionIntro {
     grid-column: auto;
   }
 

@@ -28,15 +28,18 @@ public sealed class MediaPreviewController : ControllerBase
     private readonly ILogger<MediaPreviewController> _logger;
     private readonly ILibraryManager _libraryManager;
     private readonly UnavailableTrailerStore _unavailableTrailerStore;
+    private readonly FrontendInjectionAvailabilityService _frontendInjectionAvailability;
 
     public MediaPreviewController(
         ILogger<MediaPreviewController> logger,
         ILibraryManager libraryManager,
-        UnavailableTrailerStore unavailableTrailerStore)
+        UnavailableTrailerStore unavailableTrailerStore,
+        FrontendInjectionAvailabilityService frontendInjectionAvailability)
     {
         _logger = logger;
         _libraryManager = libraryManager;
         _unavailableTrailerStore = unavailableTrailerStore;
+        _frontendInjectionAvailability = frontendInjectionAvailability;
     }
 
     [HttpGet("script")]
@@ -100,6 +103,21 @@ public sealed class MediaPreviewController : ControllerBase
                 statusCode: StatusCodes.Status500InternalServerError,
                 title: "The embedded media preview configuration script is invalid.");
         }
+    }
+
+    [Authorize]
+    [HttpGet("config/injection-methods")]
+    [ProducesResponseType<Dictionary<string, bool>>(StatusCodes.Status200OK)]
+    public ActionResult<Dictionary<string, bool>> GetFrontendInjectionMethods()
+    {
+        FrontendInjectionAvailability availability = _frontendInjectionAvailability.GetAvailability();
+        return Ok(new Dictionary<string, bool>
+        {
+            [FrontendInjectionMethods.Automatic] = true,
+            [FrontendInjectionMethods.FileTransformation] = availability.FileTransformation,
+            [FrontendInjectionMethods.JavaScriptInjector] = availability.JavaScriptInjector,
+            [FrontendInjectionMethods.Direct] = availability.Direct
+        });
     }
 
     [Authorize]

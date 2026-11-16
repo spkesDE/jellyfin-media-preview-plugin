@@ -10,10 +10,19 @@ internal static class FileTransformationRegistrar
     internal const string TransformationId = "0d7f04d6-ef8b-48d1-8fcf-cc1655d89b9d";
     private const string FileTransformationInterfaceTypeName = "Jellyfin.Plugin.FileTransformation.PluginInterface";
 
+    internal static bool IsAvailable() => FindRegisterMethod() is not null;
+
     public static bool TryRegister(ILogger logger)
     {
         try
         {
+            MethodInfo? registerTransformationMethod = FindRegisterMethod();
+            if (registerTransformationMethod is null)
+            {
+                logger.LogDebug("File Transformation is not available for Media Preview.");
+                return false;
+            }
+
             JObject payload = new JObject
             {
                 { "id", TransformationId },
@@ -23,31 +32,13 @@ internal static class FileTransformationRegistrar
                 { "callbackMethod", nameof(Transformations.IndexTransformation) }
             };
 
-            Assembly? fileTransformationAssembly = AssemblyLoadContext.All
-                .SelectMany(context => context.Assemblies)
-                .FirstOrDefault(assembly => assembly.FullName?.Contains(".FileTransformation", StringComparison.OrdinalIgnoreCase) ?? false);
-
-            if (fileTransformationAssembly is null)
+            object? result = registerTransformationMethod.Invoke(null, new object?[] { payload });
+            if (result is false)
             {
-                logger.LogDebug("File Transformation plugin was not found.");
+                logger.LogWarning("File Transformation rejected the Media Preview registration.");
                 return false;
             }
 
-            Type? pluginInterfaceType = fileTransformationAssembly.GetType(FileTransformationInterfaceTypeName);
-            if (pluginInterfaceType is null)
-            {
-                logger.LogWarning("File Transformation plugin interface was not found.");
-                return false;
-            }
-
-            MethodInfo? registerTransformationMethod = pluginInterfaceType.GetMethod("RegisterTransformation");
-            if (registerTransformationMethod is null)
-            {
-                logger.LogWarning("RegisterTransformation method was not found on the File Transformation plugin interface.");
-                return false;
-            }
-
-            registerTransformationMethod.Invoke(null, new object?[] { payload });
             logger.LogInformation("Media Preview successfully registered its File Transformation patch.");
             return true;
         }
@@ -56,5 +47,13 @@ internal static class FileTransformationRegistrar
             logger.LogError(ex, "Failed to register Media Preview with the File Transformation plugin.");
             return false;
         }
+    }
+
+    private static MethodInfo? FindRegisterMethod()
+    {
+        Assembly? assembly = AssemblyLoadContext.All
+            .SelectMany(context => context.Assemblies)
+            .FirstOrDefault(candidate => candidate.FullName?.Contains(".FileTransformation", StringComparison.OrdinalIgnoreCase) ?? false);
+        return assembly?.GetType(FileTransformationInterfaceTypeName)?.GetMethod("RegisterTransformation");
     }
 }

@@ -1,5 +1,99 @@
 # Changelog
 
+## v12.4.0.0 - 2026-10-05
+
+### Features
+
+- feat(preview): add in-progress source override (#35)
+
+### Other
+
+- Add Star History section to README
+- deps(deps): bump the npm-minor-and-patch group with 8 updates (#33)
+## v12.3.0.0 - 2026-09-30
+
+### Features
+
+- feat(injection): add direct injection and robust automatic selection
+
+### Fixes
+
+- fix(config): preserve preferred source order across updates
+## v12.2.1.0 - 2026-09-30
+
+### Fixes
+
+- fix(manifest): Update manifest.json for failed v12.2.0.0 release
+- fix(manifest): Update manifest.json with version 12.2.0.1 changes
+- fix(trickplay): resolve series and season cards to an episode (#31)
+## v12.2.0.1 - 2026-09-29
+
+### Other
+
+- chore: add release-notes.md to .prettierignore
+## v12.2.0.0 - 2026-09-29
+
+### Features
+
+- feat(input): support keyboard previews without hover hardware
+- feat(preview): fall back to direct play after trailers
+- feat(preview): add configurable Direct Play controls
+- feat(config): expose Direct Play in preview rules
+- feat(preview): add Direct Play master toggle
+- feat(config): explain preview fallback stacks
+- feat(preview): add configurable source chains and media controls
+- feat(config): make Prefer Trailer chain fully sortable
+- feat: enable complete default source chains
+- feat: add source-specific preview media controls
+- feat: move expand controls to appearance
+
+### Fixes
+
+- fix(build): update image URL to use logo instead of hero in build script and manifest
+- fix: Refactor star history section in README (#23)
+- fix(preview): ignore overlay images as render hosts, fixes #24
+- fix(build): update image URL to use logo instead of hero in build script and manifest
+- fix(cache): scope preview data to server sessions
+- fix(trailer): stop media when hover ends
+- fix(youtube): align client and server URL parsing
+- fix(config): align backend and frontend defaults
+- fix(config): include component styles in production bundle
+- fix(build): preserve embedded config bundle boundary
+- fix(config): polish source chain drag editor
+- fix(config): align preference chain drag layout
+- fix(config): keep preview setting tabs accessible
+- fix(config): keep drag preview synced with cursor
+- fix(config): keep trickplay performance settings visible
+- fix(config): keep drag fallback inside list
+- fix(build): isolate injected config style bindings
+- fix(preview): cache missing trailer lookups
+- fix: diagnose direct play chain fallbacks
+- fix: prevent unsolicited home card previews
+- fix: remove pointer focus ring from preview controls
+- fix: keep multi-picker option backgrounds consistent
+- fix: add spacing between keyboard settings grids
+- fix(preview/hover): prevent stale media after pointer leave
+- fix(preview/library): honor library-specific source overrides
+
+### Build
+
+- build(config): compile scoped styles like Featured
+- build(preview): refresh browser bundle
+
+### Documentation
+
+- docs: Add Star History section to README
+- docs: Add section for more Jellyfin plugins
+
+### Other
+
+- chore: add additional badges to README for license, latest release, Jellyfin version, and build status
+- chore: Update JavaScript Injector manifest URL in README
+- test: add frontend backend and contract safety net
+- style: adopt Prettier formatting
+- deps: Bump Jellyfin to 12.1.0 (#27)
+- deps: Bump xunit.runner.visualstudio from 3.1.5 to 4.0.0 (#29)
+- deps: Bump Newtonsoft.Json from 13.0.3 to 13.0.4
 ## v12.1.1.0 - 2026-09-21
 
 ### Fixes

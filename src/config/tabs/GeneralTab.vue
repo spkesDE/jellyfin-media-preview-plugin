@@ -142,9 +142,23 @@ function updateLibraryOverride(libraryId: string, value: string): void {
         />
 
         <ConfigCard
-          title="Library Rule"
+          title="In Progress Rule"
           badge="Priority 1"
-          help='Everything in a configured library uses this rule first. "Use Type / Default Chain" falls through.'
+          help="Overrides the rules below for an item with a saved playback position. Next Up episodes without their own progress are not included."
+        >
+          <ConfigSelect
+            v-model="store.config.InProgressPreviewSource"
+            label="In Progress Items"
+            :help-text="describeSource(store.config.InProgressPreviewSource)"
+            :options="inheritedSourceOptions"
+          />
+          <p class="jmp-note">Direct Play starts at the saved playback position when this rule is active.</p>
+        </ConfigCard>
+
+        <ConfigCard
+          title="Library Rule"
+          badge="Priority 2"
+          help='After the in-progress rule, everything in a configured library uses this rule. "Use Type / Default Chain" falls through.'
         >
           <ConfigSelect
             v-for="library in store.libraries.value"
@@ -162,7 +176,7 @@ function updateLibraryOverride(libraryId: string, value: string): void {
 
         <ConfigCard
           title="Type Rule"
-          badge="Priority 2"
+          badge="Priority 3"
           help="Used only when the current library has no explicit rule."
         >
           <div class="jmp-compactGrid">
@@ -196,7 +210,7 @@ function updateLibraryOverride(libraryId: string, value: string): void {
         <ConfigCard
           class="jmp-selectionFallback"
           title="Default Fallback"
-          badge="Priority 3"
+          badge="Priority 4"
           badge-tone="muted"
           help="Used only when neither a library rule nor a type rule matches."
         >

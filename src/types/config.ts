@@ -2,7 +2,7 @@ export type PreviewSourceKind = 'trickplay' | 'direct-play' | 'trailer';
 export type PreviewChainSource = 'trickplay' | 'direct-play' | 'local-trailer' | 'remote-trailer';
 export type PreviewSource = PreviewSourceKind | 'prefer-trickplay' | 'prefer-trailer' | 'prefer-direct-play';
 export type ContentTypePreviewSource = PreviewSource | 'inherit';
-export type FrontendInjectionMethod = 'automatic' | 'file-transformation' | 'javascript-injector';
+export type FrontendInjectionMethod = 'automatic' | 'file-transformation' | 'javascript-injector' | 'direct';
 
 export interface LibraryPreviewSourceOverride {
   libraryId: string;
@@ -31,6 +31,7 @@ export interface PluginConfig {
   enabled: boolean;
   frontendInjectionMethod: FrontendInjectionMethod;
   previewSource: PreviewSource;
+  inProgressPreviewSource: ContentTypePreviewSource;
   moviePreviewSource: ContentTypePreviewSource;
   seriesPreviewSource: ContentTypePreviewSource;
   episodePreviewSource: ContentTypePreviewSource;

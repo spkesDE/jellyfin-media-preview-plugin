@@ -3,8 +3,7 @@ import { tilePreloadCache } from '../core/storage';
 import { config } from '../config';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
-import { getLibraryIdForItem } from './library';
-import { getContentTypePreviewSource, getResolvedPreviewSource, previewSourceUsesTrickplay } from './source';
+import { getPreviewSourceForItem, previewSourceUsesTrickplay } from './source';
 import { getTrickplayPreview } from './trickplay';
 import { runtimeState } from '../runtime';
 import type { TrickplayPreview } from '../types/preview';
@@ -42,17 +41,6 @@ function getMaxConcurrentTrickplayPreloads(): number {
   return Math.max(1, Math.floor(Number(config.trickplayPreloadLimit) || 2));
 }
 
-function getPreloadPreviewSource(itemId: string, itemType?: string | null): Promise<string> {
-  if (!config.libraryPreviewSourceOverrides.length) {
-    return Promise.resolve(getContentTypePreviewSource(itemType));
-  }
-
-  return getLibraryIdForItem(
-    itemId,
-    config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
-  ).then((libraryId) => getResolvedPreviewSource(itemType, libraryId));
-}
-
 function scheduleTrickplayPreloadQueue(): void {
   if (trickplayPreloadTimer !== null) {
     return;
@@ -74,7 +62,7 @@ function processTrickplayPreloadQueue(): void {
 
     activeTrickplayPreloads += 1;
     const generation = trickplayPreloadGeneration;
-    getPreloadPreviewSource(request.itemId, request.itemType)
+    getPreviewSourceForItem(request.itemId, request.itemType)
       .then((previewSource) => {
         if (!previewSourceUsesTrickplay(previewSource)) {
           return null;

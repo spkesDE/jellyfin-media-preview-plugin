@@ -13,6 +13,8 @@ internal static class JavaScriptInjectorRegistrar
     private const string JavaScriptInjectorAssemblyName = "Jellyfin.Plugin.JavaScriptInjector";
     private const string JavaScriptInjectorInterfaceTypeName = "Jellyfin.Plugin.JavaScriptInjector.PluginInterface";
 
+    internal static bool IsAvailable() => FindRegisterMethod() is not null;
+
     public static bool TryRegister(ILogger logger)
     {
         return TrySetEnabled(logger, true);
@@ -29,28 +31,10 @@ internal static class JavaScriptInjectorRegistrar
                 return false;
             }
 
-            Assembly? javaScriptInjectorAssembly = AssemblyLoadContext.All
-                .SelectMany(context => context.Assemblies)
-                .FirstOrDefault(assembly =>
-                    assembly.FullName?.Contains(JavaScriptInjectorAssemblyName, StringComparison.OrdinalIgnoreCase) ?? false);
-
-            if (javaScriptInjectorAssembly is null)
-            {
-                logger.LogDebug("JavaScript Injector plugin was not found.");
-                return false;
-            }
-
-            Type? pluginInterfaceType = javaScriptInjectorAssembly.GetType(JavaScriptInjectorInterfaceTypeName);
-            if (pluginInterfaceType is null)
-            {
-                logger.LogWarning("JavaScript Injector plugin interface was not found.");
-                return false;
-            }
-
-            MethodInfo? registerScriptMethod = pluginInterfaceType.GetMethod("RegisterScript");
+            MethodInfo? registerScriptMethod = FindRegisterMethod();
             if (registerScriptMethod is null)
             {
-                logger.LogWarning("RegisterScript method was not found on the JavaScript Injector plugin interface.");
+                logger.LogDebug("JavaScript Injector is not available for Media Preview.");
                 return false;
             }
 
@@ -85,6 +69,15 @@ internal static class JavaScriptInjectorRegistrar
         }
     }
 
+    private static MethodInfo? FindRegisterMethod()
+    {
+        Assembly? assembly = AssemblyLoadContext.All
+            .SelectMany(context => context.Assemblies)
+            .FirstOrDefault(candidate =>
+                candidate.FullName?.Contains(JavaScriptInjectorAssemblyName, StringComparison.OrdinalIgnoreCase) ?? false);
+        return assembly?.GetType(JavaScriptInjectorInterfaceTypeName)?.GetMethod("RegisterScript");
+    }
+
     internal static string BuildLoaderScript()
     {
         string basePath = string.Empty;
@@ -108,6 +101,7 @@ internal static class JavaScriptInjectorRegistrar
                 const script = document.createElement('script');
                 script.async = false;
                 script.dataset.plugin = 'MediaPreview';
+                script.dataset.injectionMethod = 'javascript-injector';
                 script.src = {{scriptUrl}};
                 (document.head || document.documentElement).appendChild(script);
             })();

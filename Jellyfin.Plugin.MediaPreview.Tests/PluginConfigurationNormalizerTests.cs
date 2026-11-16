@@ -1,3 +1,4 @@
+using System.Xml.Serialization;
 using Xunit;
 
 namespace Jellyfin.Plugin.MediaPreview.Tests;
@@ -11,6 +12,7 @@ public sealed class PluginConfigurationNormalizerTests
         PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(defaults);
 
         Assert.Equal("trickplay", defaults.PreviewSource);
+        Assert.Equal("inherit", defaults.InProgressPreviewSource);
         Assert.Equal("scrub", defaults.HoverMode);
         Assert.Equal("medium", defaults.YouTubeCropStrength);
         Assert.True(defaults.DirectPlayPreviewEnabled);
@@ -22,23 +24,27 @@ public sealed class PluginConfigurationNormalizerTests
         Assert.Equal(1500, defaults.DirectPlayTranscodeVideoBitrateKbps);
         Assert.Equal(["local-trailer", "remote-trailer", "direct-play"], defaults.VideoControlSources);
         Assert.Equal(["local-trailer", "remote-trailer", "direct-play"], defaults.AudioControlSources);
+        Assert.Empty(defaults.PreferTrailerFallbacks);
+        Assert.Empty(defaults.PreferTrickplayFallbacks);
+        Assert.Empty(defaults.PreferDirectPlayFallbacks);
         Assert.Collection(
-            defaults.PreferTrailerFallbacks,
+            normalized.PreferTrailerFallbacks,
             entry => AssertDefaultSource(entry, "local-trailer"),
             entry => AssertDefaultSource(entry, "remote-trailer"),
             entry => AssertDefaultSource(entry, "direct-play"),
             entry => AssertDefaultSource(entry, "trickplay"));
         Assert.Collection(
-            defaults.PreferTrickplayFallbacks,
+            normalized.PreferTrickplayFallbacks,
             entry => AssertDefaultSource(entry, "local-trailer"),
             entry => AssertDefaultSource(entry, "remote-trailer"),
             entry => AssertDefaultSource(entry, "direct-play"));
         Assert.Collection(
-            defaults.PreferDirectPlayFallbacks,
+            normalized.PreferDirectPlayFallbacks,
             entry => AssertDefaultSource(entry, "trickplay"),
             entry => AssertDefaultSource(entry, "local-trailer"),
             entry => AssertDefaultSource(entry, "remote-trailer"));
         Assert.Equal(defaults.PreviewSource, normalized.PreviewSource);
+        Assert.Equal(defaults.InProgressPreviewSource, normalized.InProgressPreviewSource);
         Assert.Equal(defaults.HoverMode, normalized.HoverMode);
         Assert.Equal(defaults.YouTubeCropStrength, normalized.YouTubeCropStrength);
     }
@@ -62,6 +68,7 @@ public sealed class PluginConfigurationNormalizerTests
         PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
         {
             PreviewSource = "invalid",
+            InProgressPreviewSource = "invalid",
             HoverMode = "invalid",
             YouTubeCropStrength = "invalid",
             DirectPlayStartPercent = 100,
@@ -72,6 +79,7 @@ public sealed class PluginConfigurationNormalizerTests
         });
 
         Assert.Equal("trickplay", normalized.PreviewSource);
+        Assert.Equal("inherit", normalized.InProgressPreviewSource);
         Assert.Equal("scrub", normalized.HoverMode);
         Assert.Equal("medium", normalized.YouTubeCropStrength);
         Assert.Equal(20, normalized.DirectPlayStartPercent);
@@ -87,6 +95,7 @@ public sealed class PluginConfigurationNormalizerTests
         PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(new PluginConfiguration
         {
             PreviewSource = "direct-play",
+            InProgressPreviewSource = "direct-play",
             MoviePreviewSource = "direct-play",
             SeriesPreviewSource = "direct-play",
             EpisodePreviewSource = "direct-play",
@@ -102,6 +111,7 @@ public sealed class PluginConfigurationNormalizerTests
         });
 
         Assert.Equal("direct-play", normalized.PreviewSource);
+        Assert.Equal("direct-play", normalized.InProgressPreviewSource);
         Assert.Equal("direct-play", normalized.MoviePreviewSource);
         Assert.Equal("direct-play", normalized.SeriesPreviewSource);
         Assert.Equal("direct-play", normalized.EpisodePreviewSource);
@@ -172,6 +182,69 @@ public sealed class PluginConfigurationNormalizerTests
 
         Assert.Equal("remote-trailer", remoteFirst.PreferTrailerFallbacks[0].Source);
         Assert.Equal("local-trailer", remoteFirst.PreferTrailerFallbacks[1].Source);
+    }
+
+    [Fact]
+    public void PreferredFallbacksPreserveOrderAndStateAcrossXmlReload()
+    {
+        PluginConfiguration original = new PluginConfiguration
+        {
+            PreferTrailerFallbacks =
+            [
+                new PreviewFallbackSource { Source = "remote-trailer", Enabled = true },
+                new PreviewFallbackSource { Source = "trickplay", Enabled = false },
+                new PreviewFallbackSource { Source = "direct-play", Enabled = true },
+                new PreviewFallbackSource { Source = "local-trailer", Enabled = false }
+            ],
+            PreferTrickplayFallbacks =
+            [
+                new PreviewFallbackSource { Source = "direct-play", Enabled = false },
+                new PreviewFallbackSource { Source = "remote-trailer", Enabled = true },
+                new PreviewFallbackSource { Source = "local-trailer", Enabled = false }
+            ],
+            PreferDirectPlayFallbacks =
+            [
+                new PreviewFallbackSource { Source = "remote-trailer", Enabled = false },
+                new PreviewFallbackSource { Source = "local-trailer", Enabled = true },
+                new PreviewFallbackSource { Source = "trickplay", Enabled = false }
+            ]
+        };
+
+        XmlSerializer serializer = new(typeof(PluginConfiguration));
+        using StringWriter writer = new();
+        serializer.Serialize(writer, original);
+        using StringReader reader = new(writer.ToString());
+        PluginConfiguration reloaded = Assert.IsType<PluginConfiguration>(serializer.Deserialize(reader));
+        PluginConfiguration normalized = PluginConfigurationNormalizer.Normalize(reloaded);
+
+        AssertFallbacks(
+            normalized.PreferTrailerFallbacks,
+            ("remote-trailer", true),
+            ("trickplay", false),
+            ("direct-play", true),
+            ("local-trailer", false));
+        AssertFallbacks(
+            normalized.PreferTrickplayFallbacks,
+            ("direct-play", false),
+            ("remote-trailer", true),
+            ("local-trailer", false));
+        AssertFallbacks(
+            normalized.PreferDirectPlayFallbacks,
+            ("remote-trailer", false),
+            ("local-trailer", true),
+            ("trickplay", false));
+    }
+
+    private static void AssertFallbacks(
+        IReadOnlyList<PreviewFallbackSource> actual,
+        params (string Source, bool Enabled)[] expected)
+    {
+        Assert.Equal(expected.Length, actual.Count);
+        for (int index = 0; index < expected.Length; index++)
+        {
+            Assert.Equal(expected[index].Source, actual[index].Source);
+            Assert.Equal(expected[index].Enabled, actual[index].Enabled);
+        }
     }
 
     private static void AssertDefaultSource(PreviewFallbackSource entry, string source)

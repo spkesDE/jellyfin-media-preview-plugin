@@ -22,6 +22,7 @@ export const CONFIG_DEFAULTS = {
   Enabled: true,
   FrontendInjectionMethod: 'automatic' as FrontendInjectionMethod,
   PreviewSource: 'trickplay' as PreviewSource,
+  InProgressPreviewSource: 'inherit' as ContentTypePreviewSource,
   MoviePreviewSource: 'inherit' as ContentTypePreviewSource,
   SeriesPreviewSource: 'inherit' as ContentTypePreviewSource,
   EpisodePreviewSource: 'inherit' as ContentTypePreviewSource,

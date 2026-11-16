@@ -40,6 +40,7 @@ const standaloneFallbackConfig: PluginConfig = {
   enabled: true,
   frontendInjectionMethod: 'automatic',
   previewSource: PREVIEW_SOURCE_TRICKPLAY,
+  inProgressPreviewSource: PREVIEW_SOURCE_INHERIT,
   moviePreviewSource: PREVIEW_SOURCE_INHERIT,
   seriesPreviewSource: PREVIEW_SOURCE_INHERIT,
   episodePreviewSource: PREVIEW_SOURCE_INHERIT,
@@ -141,7 +142,7 @@ export const config: PluginConfig = {
 } as PluginConfig;
 
 export function normalizeConfig(): void {
-  if (!['automatic', 'file-transformation', 'javascript-injector'].includes(config.frontendInjectionMethod)) {
+  if (!['automatic', 'file-transformation', 'javascript-injector', 'direct'].includes(config.frontendInjectionMethod)) {
     config.frontendInjectionMethod = 'automatic';
   }
 
@@ -154,6 +155,10 @@ export function normalizeConfig(): void {
 
   if (!VALID_PREVIEW_SOURCES.has(config.previewSource)) {
     config.previewSource = PREVIEW_SOURCE_TRICKPLAY;
+  }
+
+  if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.inProgressPreviewSource)) {
+    config.inProgressPreviewSource = PREVIEW_SOURCE_INHERIT;
   }
 
   if (!VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.moviePreviewSource)) {

@@ -39,6 +39,11 @@ describe('Direct Play preview policy', () => {
     expect(resolveDirectPlayStartSeconds(100, 90, 15)).toBe(85);
   });
 
+  it('prefers a saved playback position and keeps the preview inside the runtime', () => {
+    expect(resolveDirectPlayStartSeconds(1200, 20, 15, 615)).toBe(615);
+    expect(resolveDirectPlayStartSeconds(1200, 20, 15, 1195)).toBe(1185);
+  });
+
   it('applies playback speed and duration to a browser-compatible source', () => {
     config.directPlayStartPercent = 20;
     config.directPlayPlaybackRate = 1.5;
@@ -53,6 +58,16 @@ describe('Direct Play preview policy', () => {
     expect(candidate?.startSeconds).toBe(240);
     expect(candidate?.playbackRate).toBe(1.5);
     expect(candidate?.previewDurationSeconds).toBe(15);
+  });
+
+  it('starts an in-progress Direct Play candidate at its saved position', () => {
+    const candidate = createDirectPlayCandidate(
+      { Id: 'movie', Name: 'Movie', RunTimeTicks: 12_000_000_000 },
+      { Id: 'source', Container: 'mp4' },
+      6_150_000_000
+    );
+
+    expect(candidate?.startSeconds).toBe(615);
   });
 
   it('can disable the transcode fallback completely', () => {

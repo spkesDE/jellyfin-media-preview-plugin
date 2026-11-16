@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
 import ConfigCheckbox from '../components/ConfigCheckbox.vue';
@@ -7,11 +8,28 @@ import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue'
 import PreferenceChainEditor from '../components/PreferenceChainEditor.vue';
 
 const store = useConfigStore();
-const frontendInjectionOptions: SelectOption[] = [
-  { value: 'automatic', label: 'Automatic (prefer File Transformation)' },
-  { value: 'file-transformation', label: 'File Transformation only' },
-  { value: 'javascript-injector', label: 'JavaScript Injector only' }
-];
+const frontendInjectionOptions = computed<SelectOption[]>(() => [
+  { value: 'automatic', label: 'Automatic (File Transformation → JavaScript Injector → Direct)' },
+  {
+    value: 'file-transformation',
+    label: optionLabel('File Transformation only', store.injectionMethodsAvailable.value['file-transformation']),
+    disabled: !store.injectionMethodsAvailable.value['file-transformation']
+  },
+  {
+    value: 'javascript-injector',
+    label: optionLabel('JavaScript Injector only', store.injectionMethodsAvailable.value['javascript-injector']),
+    disabled: !store.injectionMethodsAvailable.value['javascript-injector']
+  },
+  {
+    value: 'direct',
+    label: optionLabel('Direct injection', store.injectionMethodsAvailable.value.direct),
+    disabled: !store.injectionMethodsAvailable.value.direct
+  }
+]);
+
+function optionLabel(label: string, available: boolean): string {
+  return available ? label : `${label} (unavailable)`;
+}
 </script>
 
 <template>
@@ -50,7 +68,7 @@ const frontendInjectionOptions: SelectOption[] = [
 
       <ConfigCard
         title="Frontend Injection"
-        help="Choose how Media Preview loads into Jellyfin Web. Restart Jellyfin after changing this setting."
+        help="Automatic selects the first available method in the order shown and falls back to direct injection when Jellyfin Web is writable. Restart Jellyfin after changing this setting."
       >
         <ConfigSelect
           v-model="store.config.FrontendInjectionMethod"
