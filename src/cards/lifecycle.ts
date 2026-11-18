@@ -16,6 +16,7 @@ import { cancelScheduledTrickplayPreload, disconnectTrickplayPreloadObserver } f
 import { expandTrailer } from '../trailerOverlay/expandedTrailer';
 import { clearAutoScrub } from '../interaction/autoScrub';
 import { runtimeState } from '../runtime';
+import { prefersReducedMotion } from '../core/userEnvironment';
 import { persistCurrentAudioPreference } from '../userPreferences/api';
 import mediaPreviewGlobalStyles from '../styles/mediaPreviewGlobal.css';
 import mediaPreviewHoverStyles from '../styles/mediaPreviewHover.css';
@@ -102,7 +103,11 @@ export function getPreviewTransitionDurationMs(): number {
 }
 
 export function hasPreviewTransition(): boolean {
-  return config.previewTransitionMode !== PREVIEW_TRANSITION_OFF && getPreviewTransitionDurationMs() > 0;
+  return (
+    config.previewTransitionMode !== PREVIEW_TRANSITION_OFF &&
+    getPreviewTransitionDurationMs() > 0 &&
+    !prefersReducedMotion()
+  );
 }
 
 export function isCrossfadePreviewTransition(): boolean {

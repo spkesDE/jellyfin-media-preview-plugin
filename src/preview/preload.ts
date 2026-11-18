@@ -1,6 +1,7 @@
 import { buildApiUrl, getApiContextKey, getGlobalApiClient } from '../core/apiClient';
 import { tilePreloadCache } from '../core/storage';
 import { config } from '../config';
+import { isDataSaverActive } from '../core/userEnvironment';
 import { clamp } from '../core/dom';
 import { debugLog } from '../core/logger';
 import { getPreviewSourceForItem, previewSourceUsesTrickplay } from './source';
@@ -96,7 +97,7 @@ export function queueTrickplayPreload(
   percent: number,
   itemType?: string | null
 ): void {
-  if (!config.trickplayPreloadEnabled || !itemId) {
+  if (!config.trickplayPreloadEnabled || !itemId || isDataSaverActive()) {
     return;
   }
 
@@ -122,7 +123,7 @@ export function scheduleTrickplayPreload(
   percent: number,
   itemType?: string | null
 ): void {
-  if (!config.trickplayPreloadEnabled || !itemId) {
+  if (!config.trickplayPreloadEnabled || !itemId || isDataSaverActive()) {
     return;
   }
 
@@ -186,7 +187,7 @@ export function observeTrickplayPreload(
   percent: number,
   itemType?: string | null
 ): void {
-  if (!config.trickplayPreloadEnabled || !itemId) {
+  if (!config.trickplayPreloadEnabled || !itemId || isDataSaverActive()) {
     return;
   }
 

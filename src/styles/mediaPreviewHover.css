@@ -98,3 +98,16 @@
     transform: rotate(360deg);
   }
 }
+
+/* Covers all Media Preview elements (trailer controls, expanded trailer, overlays). */
+@media (prefers-reduced-motion: reduce) {
+  [class^='jmp-'],
+  [class*=' jmp-'] {
+    transition-duration: 0ms !important;
+  }
+
+  /* The loading spinner keeps turning so progress stays visible, just slower. */
+  .jmp-hover-countdown.is-loading::before {
+    animation-duration: 2.5s;
+  }
+}

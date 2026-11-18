@@ -17,6 +17,7 @@ import { getLibraryIdForItem } from './library';
 import { ensureLibraryPreviewSourceOverrides } from './libraryOverrides';
 import { getPlaybackProgressForItem } from './progress';
 import { debugLog } from '../core/logger';
+import { isDataSaverActive } from '../core/userEnvironment';
 import type { PreviewResult } from '../types/preview';
 import type { PreviewChainSource, PreviewFallbackSource } from '../types/config';
 
@@ -193,8 +194,21 @@ export function getPreviewSourceChain(effectiveSource: string): ResolvedPreviewS
   return [];
 }
 
+/**
+ * The chain actually tried for a preview. With Data Saver or a very slow connection, video
+ * sources would download megabytes per hover, so only Trickplay images are used instead.
+ */
+export function getActivePreviewSourceChain(effectiveSource: string): ResolvedPreviewSource[] {
+  const chain = getPreviewSourceChain(effectiveSource);
+  if (!isDataSaverActive()) {
+    return chain;
+  }
+
+  return chain.length ? [PREVIEW_SOURCE_TRICKPLAY] : [];
+}
+
 export function previewSourceUsesTrickplay(effectiveSource: string): boolean {
-  return getPreviewSourceChain(effectiveSource).includes(PREVIEW_SOURCE_TRICKPLAY);
+  return getActivePreviewSourceChain(effectiveSource).includes(PREVIEW_SOURCE_TRICKPLAY);
 }
 
 function getPreviewForSource(
@@ -203,11 +217,12 @@ function getPreviewForSource(
   effectiveSource: string,
   resumePositionTicks: number | null
 ): Promise<PreviewResult | null> {
-  const chain = getPreviewSourceChain(effectiveSource);
+  const chain = getActivePreviewSourceChain(effectiveSource);
   debugLog('Resolving preview source chain.', {
     itemId,
     effectiveSource,
-    chain
+    chain,
+    dataSaver: isDataSaverActive()
   });
 
   return chain.reduce<Promise<PreviewResult | null>>((previewPromise, source) => {

@@ -10,6 +10,7 @@ import { getOrCreateCardState } from '../cards/state';
 import { clamp } from '../core/dom';
 import { getAutoScrubFrameCount, getEffectiveSmoothAutoScrubDurationMs, getTrickplayInfo } from '../preview/trickplay';
 import { schedulePreviewUpdate } from './hover';
+import { prefersReducedMotion } from '../core/userEnvironment';
 import type { CardState } from '../types/state';
 
 function canContinueAutoScrub(state: CardState, generation: number): boolean {
@@ -155,6 +156,10 @@ export function clearAutoScrub(state: CardState | null | undefined): void {
 export function startAutoScrub(card: HTMLElement): void {
   const state = getOrCreateCardState(card);
   clearAutoScrub(state);
+  if (prefersReducedMotion()) {
+    // The first frame stays visible; frames only change when the viewer scrubs.
+    return;
+  }
   const generation = state.autoScrubGeneration;
   const itemId = getItemIdFromCard(card);
 

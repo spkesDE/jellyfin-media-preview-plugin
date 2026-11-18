@@ -1,7 +1,6 @@
 import { config } from '../config';
 import {
   DEBUG_LEAVE_HOLD_MS,
-  HOVER_MODE_AUTO,
   NO_PREVIEW_MESSAGE_ANY,
   NO_PREVIEW_MESSAGE_DIRECT_PLAY,
   NO_PREVIEW_MESSAGE_TRAILER,
@@ -47,6 +46,7 @@ import {
   previewSourceUsesTrickplay
 } from '../preview/source';
 import { clamp } from '../core/dom';
+import { isAutoHoverMode } from '../core/userEnvironment';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
 import { clearAutoScrub, startAutoScrub } from './autoScrub';
 
@@ -208,13 +208,13 @@ function getInitialHoverPercent(
   card: HTMLElement,
   event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
 ): number {
-  return config.hoverMode === HOVER_MODE_AUTO
+  return isAutoHoverMode()
     ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1)
     : getRelativePercent(card, event);
 }
 
 function getDefaultPreloadPercent(): number {
-  return config.hoverMode === HOVER_MODE_AUTO ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1) : 0.5;
+  return isAutoHoverMode() ? clamp((Number(config.autoScrubStartPercent) || 0) / 100, 0, 1) : 0.5;
 }
 
 function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {
@@ -300,7 +300,7 @@ function scheduleHoverActivation(
               initialPercent,
               requestToken,
               () => state.pointerInside,
-              config.hoverMode === HOVER_MODE_AUTO
+              isAutoHoverMode()
             )
         });
 
@@ -308,7 +308,7 @@ function scheduleHoverActivation(
           return;
         }
 
-        if (config.hoverMode === HOVER_MODE_AUTO) {
+        if (isAutoHoverMode()) {
           startAutoScrub(card);
         }
       })
@@ -463,10 +463,9 @@ export function schedulePreviewUpdate(card: HTMLElement, percent: number): void 
     return;
   }
 
-  const minHoldMs =
-    config.hoverMode === HOVER_MODE_AUTO
-      ? clampAdaptiveDelay(getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo))
-      : getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo);
+  const minHoldMs = isAutoHoverMode()
+    ? clampAdaptiveDelay(getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo))
+    : getAdaptiveTrickplayFrameHoldMs(state.currentTrickplayInfo);
   const elapsedSinceLastRender = Date.now() - (state.lastTrickplayRenderAt || 0);
   if (elapsedSinceLastRender >= minHoldMs) {
     queueUpdateOnFrame();
@@ -534,7 +533,7 @@ export function handlePointerMove(
     }
   }
 
-  if (!state.previewActive || isVideoPreviewSource(state.activePreviewSource) || config.hoverMode === HOVER_MODE_AUTO) {
+  if (!state.previewActive || isVideoPreviewSource(state.activePreviewSource) || isAutoHoverMode()) {
     return;
   }
 
