@@ -3,10 +3,7 @@ header = ""
 body = """
 {% set features = commits | filter(attribute="group", value="Features") -%}
 {% set fixes = commits | filter(attribute="group", value="Fixes") -%}
-{% set builds = commits | filter(attribute="group", value="Build") -%}
-{% set docs = commits | filter(attribute="group", value="Documentation") -%}
-{% set refactors = commits | filter(attribute="group", value="Refactoring") -%}
-{% set other = commits | filter(attribute="group", value="Other") -%}
+{% set performance = commits | filter(attribute="group", value="Performance") -%}
 
 {% for commit in features -%}
 - {{ commit.message | split(pat="\n") | first | trim }}
@@ -14,16 +11,7 @@ body = """
 {% for commit in fixes -%}
 - {{ commit.message | split(pat="\n") | first | trim }}
 {% endfor -%}
-{% for commit in builds -%}
-- {{ commit.message | split(pat="\n") | first | trim }}
-{% endfor -%}
-{% for commit in docs -%}
-- {{ commit.message | split(pat="\n") | first | trim }}
-{% endfor -%}
-{% for commit in refactors -%}
-- {{ commit.message | split(pat="\n") | first | trim }}
-{% endfor -%}
-{% for commit in other -%}
+{% for commit in performance -%}
 - {{ commit.message | split(pat="\n") | first | trim }}
 {% endfor -%}
 """
@@ -44,42 +32,26 @@ ignore_tags = ""
 topo_order = true
 sort_commits = "oldest"
 
+# Only changes users notice go into the changelog: features, fixes and performance.
+# Everything else (build, docs, refactor, chore, ci, test, style, deps, release and merge commits,
+# messages without a type) is left out, and so are features and fixes with an internal scope.
+
 [[git.commit_parsers]]
-message = "^Prepare release .*"
+message = '^(feat|fix|perf)\((build|ci|release|manifest|deps|deps-dev)\)!?:'
 skip = true
 
 [[git.commit_parsers]]
-message = "^Update changelog and manifest for v.*"
-skip = true
-
-[[git.commit_parsers]]
-message = "^Merge .*"
-skip = true
-
-[[git.commit_parsers]]
-message = "^ci"
-skip = true
-
-[[git.commit_parsers]]
-message = "^feat"
+message = '^feat(\([^)]*\))?!?:'
 group = "Features"
 
 [[git.commit_parsers]]
-message = "^fix"
+message = '^fix(\([^)]*\))?!?:'
 group = "Fixes"
 
 [[git.commit_parsers]]
-message = "^build"
-group = "Build"
+message = '^perf(\([^)]*\))?!?:'
+group = "Performance"
 
 [[git.commit_parsers]]
-message = "^docs"
-group = "Documentation"
-
-[[git.commit_parsers]]
-message = "^refactor"
-group = "Refactoring"
-
-[[git.commit_parsers]]
-message = ".*"
-group = "Other"
+message = '.*'
+skip = true

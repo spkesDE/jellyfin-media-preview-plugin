@@ -1,6 +1,7 @@
 [changelog]
 header = "# Changelog\n\n"
 body = """
+{% if commits | length > 0 -%}
 {% if version -%}
 ## {{ version }} - {{ timestamp | date(format="%Y-%m-%d") }}
 {% else -%}
@@ -14,6 +15,7 @@ body = """
 - {{ commit.message | split(pat="\n") | first | trim }}
 {% endfor -%}
 {% endfor %}
+{% endif -%}
 """
 trim = true
 footer = ""
@@ -32,42 +34,26 @@ topo_order = true
 topo_order_commits = true
 sort_commits = "oldest"
 
+# Only changes users notice go into the changelog: features, fixes and performance.
+# Everything else (build, docs, refactor, chore, ci, test, style, deps, release and merge commits,
+# messages without a type) is left out, and so are features and fixes with an internal scope.
+
 [[git.commit_parsers]]
-message = "^Prepare release .*"
+message = '^(feat|fix|perf)\((build|ci|release|manifest|deps|deps-dev)\)!?:'
 skip = true
 
 [[git.commit_parsers]]
-message = "^Update changelog and manifest for v.*"
-skip = true
-
-[[git.commit_parsers]]
-message = "^Merge .*"
-skip = true
-
-[[git.commit_parsers]]
-message = "^ci"
-skip = true
-
-[[git.commit_parsers]]
-message = "^feat"
+message = '^feat(\([^)]*\))?!?:'
 group = "<!-- 0 -->Features"
 
 [[git.commit_parsers]]
-message = "^fix"
+message = '^fix(\([^)]*\))?!?:'
 group = "<!-- 1 -->Fixes"
 
 [[git.commit_parsers]]
-message = "^build"
-group = "<!-- 2 -->Build"
+message = '^perf(\([^)]*\))?!?:'
+group = "<!-- 2 -->Performance"
 
 [[git.commit_parsers]]
-message = "^docs"
-group = "<!-- 3 -->Documentation"
-
-[[git.commit_parsers]]
-message = "^refactor"
-group = "<!-- 4 -->Refactoring"
-
-[[git.commit_parsers]]
-message = ".*"
-group = "<!-- 5 -->Other"
+message = '.*'
+skip = true

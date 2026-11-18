@@ -63,6 +63,8 @@ This repository uses `git-cliff` to generate `CHANGELOG.md`, GitHub release note
 
 Because of that, commit messages should be short, clear, and useful on their own.
 
+Only `feat`, `fix` and `perf` commits appear in the changelog, release notes and manifest. Other types (`build`, `docs`, `refactor`, `chore`, `ci`, `test`, `style`, `deps`) and `feat`/`fix`/`perf` with an internal scope (`build`, `ci`, `release`, `manifest`, `deps`) are left out.
+
 Good examples:
 
 ```text
