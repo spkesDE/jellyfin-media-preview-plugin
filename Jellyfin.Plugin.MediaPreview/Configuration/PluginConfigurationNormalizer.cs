@@ -179,6 +179,7 @@ internal static class PluginConfigurationNormalizer
             DirectPlayPlaybackRate = Clamp(source.DirectPlayPlaybackRate, 0.5, 2, 1.5),
             DirectPlayPreviewDurationSeconds = Clamp(source.DirectPlayPreviewDurationSeconds, 0, 300, 15),
             DirectPlayRemuxEnabled = source.DirectPlayRemuxEnabled,
+            DirectPlaySkipSegmentsEnabled = source.DirectPlaySkipSegmentsEnabled,
             DirectPlayTranscodeFallbackEnabled = source.DirectPlayTranscodeFallbackEnabled,
             DirectPlayTranscodeMaxHeight = Clamp(source.DirectPlayTranscodeMaxHeight, 240, 2160, 480),
             DirectPlayTranscodeVideoBitrateKbps = Clamp(source.DirectPlayTranscodeVideoBitrateKbps, 250, 20000, 1500),

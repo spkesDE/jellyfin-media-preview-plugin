@@ -22,6 +22,7 @@ import { clearUnavailableTrailerCacheState } from './preview/trailer';
 import { clearDirectPlayFallbackState } from './preview/directPlay';
 import { clearLibraryPreviewSourceOverrideState } from './preview/libraryOverrides';
 import { clearTranscodeSessionState } from './preview/transcodeSessions';
+import { clearMediaSegmentCache } from './preview/mediaSegments';
 import {
   applyEffectivePreferences,
   clearUserPreferenceState,
@@ -57,6 +58,7 @@ export function destroy(): void {
   clearLibraryPreviewSourceOverrideState();
   window.removeEventListener('pagehide', clearTranscodeSessionState);
   clearTranscodeSessionState();
+  clearMediaSegmentCache();
   document.removeEventListener(USER_PREFERENCES_CHANGED_EVENT, handleUserPreferencesChanged);
   removeUserSettingsEntries();
   clearUserPreferenceState();

@@ -5,6 +5,7 @@ import { debugLog } from '../core/logger';
 import { postJsonForResult, requestJson } from '../core/request';
 import type { JellyfinItem, JellyfinMediaSource, JellyfinPlaybackInfoResponse } from '../types/jellyfin';
 import type { AspectRatio, DirectPlayPreview, TrailerCandidate } from '../types/preview';
+import { adjustStartForSegments, getMediaSegments, type MediaSegment } from './mediaSegments';
 
 const SUPPORTED_DIRECT_PLAY_CONTAINERS = new Set(['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'mov']);
 const FAILED_DIRECT_PLAY_RETRY_MS = 2 * 60 * 1000;
@@ -96,23 +97,39 @@ export function resolveDirectPlayStartSeconds(
   return Math.min(requestedStart, latestStart);
 }
 
-/** Where a Direct Play preview starts: the saved position when resuming, otherwise the configured percentage. */
-export function getDirectPlayStartSeconds(item: JellyfinItem, resumePositionTicks?: number | null): number {
+/**
+ * Where a Direct Play preview starts: the saved position when resuming, otherwise the configured
+ * percentage moved out of intros and recaps (see mediaSegments.ts).
+ */
+export function getDirectPlayStartSeconds(
+  item: JellyfinItem,
+  resumePositionTicks?: number | null,
+  segments: MediaSegment[] = []
+): number {
   const runtimeSeconds = Math.max(0, Number(item.RunTimeTicks) || 0) / 10_000_000;
   const previewDurationSeconds = Math.max(0, Number(config.directPlayPreviewDurationSeconds) || 0);
-  return resolveDirectPlayStartSeconds(
+  const resumeSeconds = resumePositionTicks ? Number(resumePositionTicks) / 10_000_000 : null;
+  const startSeconds = resolveDirectPlayStartSeconds(
     runtimeSeconds,
     Number(config.directPlayStartPercent) || 0,
     previewDurationSeconds,
-    resumePositionTicks ? Number(resumePositionTicks) / 10_000_000 : null
+    resumeSeconds
   );
+
+  // A saved position is where the viewer stopped; it is never moved.
+  if (resumeSeconds !== null && resumeSeconds > 0) {
+    return startSeconds;
+  }
+
+  return adjustStartForSegments(startSeconds, segments, previewDurationSeconds, runtimeSeconds);
 }
 
 export function createDirectPlayCandidate(
   item: JellyfinItem,
   mediaSource: JellyfinMediaSource,
   resumePositionTicks?: number | null,
-  remuxSrc?: string | null
+  remuxSrc?: string | null,
+  segments: MediaSegment[] = []
 ): TrailerCandidate | null {
   if (!config.directPlayPreviewEnabled || !item.Id) {
     return null;
@@ -121,7 +138,7 @@ export function createDirectPlayCandidate(
   const container = getContainer(mediaSource);
   const aspectRatio = getAspectRatio(mediaSource);
   const previewDurationSeconds = Math.max(0, Number(config.directPlayPreviewDurationSeconds) || 0);
-  const startSeconds = getDirectPlayStartSeconds(item, resumePositionTicks);
+  const startSeconds = getDirectPlayStartSeconds(item, resumePositionTicks, segments);
   const directSrc =
     container && SUPPORTED_DIRECT_PLAY_CONTAINERS.has(container)
       ? buildApiUrl(`Videos/${encodeURIComponent(item.Id)}/stream.${encodeURIComponent(container)}`, {
@@ -384,6 +401,8 @@ export async function getDirectPlayPreview(
   }
 
   try {
+    // Segments are only needed when the preview does not resume a saved position.
+    const segmentsPromise = resumePositionTicks ? Promise.resolve([]) : getMediaSegments(itemId);
     const item = await requestJson<JellyfinItem>(
       `Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`,
       { Fields: 'MediaSources,RunTimeTicks' }
@@ -412,12 +431,15 @@ export async function getDirectPlayPreview(
       mediaSources.find((source) => SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(source) || '')) ||
       mediaSources[0];
     const needsServerHelp = !!mediaSource && !SUPPORTED_DIRECT_PLAY_CONTAINERS.has(getContainer(mediaSource) || '');
-    const startSeconds = getDirectPlayStartSeconds(item, resumePositionTicks);
+    const segments = await segmentsPromise;
+    const startSeconds = getDirectPlayStartSeconds(item, resumePositionTicks, segments);
     const remuxSrc =
       mediaSource && needsServerHelp && config.directPlayRemuxEnabled
         ? await resolveRemuxSrc(item, mediaSource, userId, startSeconds)
         : null;
-    const candidate = mediaSource ? createDirectPlayCandidate(item, mediaSource, resumePositionTicks, remuxSrc) : null;
+    const candidate = mediaSource
+      ? createDirectPlayCandidate(item, mediaSource, resumePositionTicks, remuxSrc, segments)
+      : null;
     if (!candidate) {
       debugLog('Direct Play has no usable media candidate.', {
         itemId,
