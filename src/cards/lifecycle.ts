@@ -17,6 +17,7 @@ import { expandTrailer } from '../trailerOverlay/expandedTrailer';
 import { clearAutoScrub } from '../interaction/autoScrub';
 import { runtimeState } from '../runtime';
 import { prefersReducedMotion } from '../core/userEnvironment';
+import { t } from '../core/i18n';
 import { persistCurrentAudioPreference } from '../userPreferences/api';
 import mediaPreviewGlobalStyles from '../styles/mediaPreviewGlobal.css';
 import mediaPreviewHoverStyles from '../styles/mediaPreviewHover.css';
@@ -390,7 +391,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
 
     const trailerPlayPauseButton = createMediaButton(
       'jmp-trailer-playPause',
-      'Pause preview',
+      t('pausePreview'),
       'M6 5h4v14H6zm8 0h4v14h-4z'
     );
     trailerPlayPauseButton.addEventListener('click', (event) => {
@@ -425,7 +426,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
 
     const trailerMuteButton = createMediaButton(
       'jmp-trailer-mute',
-      'Unmute preview',
+      t('unmutePreview'),
       'M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.21.05-.42.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25A6.92 6.92 0 0 1 14 18.7v2.06a8.9 8.9 0 0 0 3.69-1.8L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z'
     );
     trailerMuteButton.addEventListener('click', (event) => {
@@ -457,7 +458,7 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     trailerVolumeInput.max = '100';
     trailerVolumeInput.step = '1';
     trailerVolumeInput.value = String(Math.round(config.trailerVolumePercent));
-    trailerVolumeInput.setAttribute('aria-label', 'Preview volume');
+    trailerVolumeInput.setAttribute('aria-label', t('previewVolume'));
     trailerVolumeInput.setAttribute('aria-orientation', 'vertical');
     trailerVolumeInput.addEventListener('input', () => {
       const volumePercent = Math.max(0, Math.min(100, Number(trailerVolumeInput.value) || 0));
@@ -476,8 +477,8 @@ export function ensureTrailerActions(card: HTMLElement, state: CardState | null 
     const trailerExpandButton = document.createElement('button');
     trailerExpandButton.className = 'jmp-trailer-expand';
     trailerExpandButton.type = 'button';
-    trailerExpandButton.title = 'Expand trailer';
-    trailerExpandButton.setAttribute('aria-label', 'Expand trailer');
+    trailerExpandButton.title = t('expandTrailer');
+    trailerExpandButton.setAttribute('aria-label', t('expandTrailer'));
     trailerExpandButton.innerHTML = [
       '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">',
       '<path d="M21 11V3h-8l3.29 3.29-10 10L3 13v8h8l-3.29-3.29 10-10L21 11z"></path>',
@@ -539,7 +540,7 @@ export function syncTrailerMediaControls(state: CardState | null | undefined): v
     setTrailerActionIcon(
       state.trailerPlayPauseButton,
       paused ? 'M8 5v14l11-7z' : 'M6 5h4v14H6zm8 0h4v14h-4z',
-      paused ? 'Play preview' : 'Pause preview'
+      paused ? t('playPreview') : t('pausePreview')
     );
   }
   if (state.trailerMuteButton) {
@@ -548,14 +549,15 @@ export function syncTrailerMediaControls(state: CardState | null | undefined): v
       muted
         ? 'M16.5 12A4.5 4.5 0 0 0 14 7.97v2.21l2.45 2.45c.03-.21.05-.42.05-.63zM19 12c0 .94-.2 1.82-.54 2.64l1.51 1.51A8.9 8.9 0 0 0 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3 3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25A6.92 6.92 0 0 1 14 18.7v2.06a8.9 8.9 0 0 0 3.69-1.8L19.73 21 21 19.73 4.27 3zM12 4 9.91 6.09 12 8.18V4z'
         : 'M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05A4.48 4.48 0 0 0 16.5 12zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z',
-      muted ? 'Unmute preview' : 'Mute preview'
+      muted ? t('unmutePreview') : t('mutePreview')
     );
   }
   if (state.trailerVolumeInput) {
     const volumePercent = Math.round(volume * 100);
     state.trailerVolumeInput.value = String(volumePercent);
     state.trailerVolumeInput.setAttribute('aria-valuetext', `${volumePercent}%`);
-    state.trailerVolumeInput.title = `Preview volume: ${volumePercent}%`;
+    state.trailerVolumeInput.title = t('previewVolumeValue', { value: volumePercent });
+    state.trailerVolumeInput.setAttribute('aria-label', t('previewVolume'));
   }
 }
 

@@ -1,10 +1,6 @@
 import { config } from '../config';
 import {
   DEBUG_LEAVE_HOLD_MS,
-  NO_PREVIEW_MESSAGE_ANY,
-  NO_PREVIEW_MESSAGE_DIRECT_PLAY,
-  NO_PREVIEW_MESSAGE_TRAILER,
-  NO_PREVIEW_MESSAGE_TRICKPLAY,
   PREVIEW_SOURCE_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_DIRECT_PLAY,
   PREVIEW_SOURCE_PREFER_TRAILER,
@@ -47,6 +43,7 @@ import {
 } from '../preview/source';
 import { clamp } from '../core/dom';
 import { isAutoHoverMode } from '../core/userEnvironment';
+import { t } from '../core/i18n';
 import { getAdaptiveTrickplayFrameHoldMs, getTrickplayFrameIndex, clampAdaptiveDelay } from '../preview/trickplay';
 import { clearAutoScrub, startAutoScrub } from './autoScrub';
 
@@ -72,15 +69,15 @@ function getEffectiveHoverDelayMs(state: ReturnType<typeof getOrCreateCardState>
 
 function getNoPreviewMessage(previewSource: string): string {
   if (previewSource === PREVIEW_SOURCE_TRAILER) {
-    return NO_PREVIEW_MESSAGE_TRAILER;
+    return t('noTrailer');
   }
 
   if (previewSource === PREVIEW_SOURCE_TRICKPLAY) {
-    return NO_PREVIEW_MESSAGE_TRICKPLAY;
+    return t('noTrickplay');
   }
 
   if (previewSource === PREVIEW_SOURCE_DIRECT_PLAY) {
-    return NO_PREVIEW_MESSAGE_DIRECT_PLAY;
+    return t('noDirectPlay');
   }
 
   if (
@@ -88,10 +85,10 @@ function getNoPreviewMessage(previewSource: string): string {
     previewSource === PREVIEW_SOURCE_PREFER_TRAILER ||
     previewSource === PREVIEW_SOURCE_PREFER_DIRECT_PLAY
   ) {
-    return NO_PREVIEW_MESSAGE_ANY;
+    return t('noPreview');
   }
 
-  return NO_PREVIEW_MESSAGE_ANY;
+  return t('noPreview');
 }
 
 function isVideoPreviewSource(source: string | null | undefined): boolean {

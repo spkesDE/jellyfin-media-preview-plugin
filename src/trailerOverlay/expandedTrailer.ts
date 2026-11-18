@@ -13,6 +13,7 @@ import { applyMediaLayout } from '../preview/mediaLayout';
 import { buildYouTubeEmbedUrl, monitorYouTubeEmbed } from './youtube';
 import { rememberUserAudioChange } from '../userPreferences/api';
 import { runtimeState } from '../runtime';
+import { t } from '../core/i18n';
 
 export function ensureExpandedTrailerDom() {
   if (runtimeState.expandedTrailerDom) {
@@ -46,8 +47,8 @@ export function ensureExpandedTrailerDom() {
   const closeButton = document.createElement('button');
   closeButton.className = 'jmp-expanded-trailer-close';
   closeButton.type = 'button';
-  closeButton.title = 'Close expanded trailer';
-  closeButton.setAttribute('aria-label', 'Close expanded trailer');
+  closeButton.title = t('closeExpandedTrailer');
+  closeButton.setAttribute('aria-label', t('closeExpandedTrailer'));
   closeButton.innerHTML = [
     '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">',
     '<path d="M18.3 5.71 12 12 5.7 5.71 4.29 7.12 10.59 13.41 4.29 19.71 5.7 21.12 12 14.83 18.3 21.12 19.71 19.71 13.41 13.41 19.71 7.12z"></path>',
@@ -229,7 +230,7 @@ export function expandTrailer(card: HTMLElement): void {
   };
 
   state.pointerInside = true;
-  overlayState.title.textContent = state.currentTrailer.title || 'Trailer';
+  overlayState.title.textContent = state.currentTrailer.title || t('trailer');
   overlayState.overlay.style.display = 'block';
   overlayState.overlay.setAttribute('aria-hidden', 'false');
   applyExpandedViewportRect(overlayState.viewport, runtimeState.expandedTrailerSession.sourceRect);

@@ -5,6 +5,7 @@ import {
   USER_PREFERENCES_STYLE_ID
 } from '../constants';
 // `?inline` gives the CSS as text in both the runtime and the admin page bundle.
+import { t } from '../core/i18n';
 import userPreferencesStyles from '../styles/mediaPreviewUserPreferences.css?inline';
 import {
   flushPendingAudioSave,
@@ -97,7 +98,7 @@ function renderForm(
   status.setAttribute('aria-live', 'polite');
   actions.appendChild(status);
 
-  const audioToggle = createCheckbox('Play preview audio', response.effective.trailerAudioEnabled);
+  const audioToggle = createCheckbox(t('playPreviewAudio'), response.effective.trailerAudioEnabled);
   content.appendChild(audioToggle.root);
 
   const volumeRow = createElement('label', 'jmp-prefs-volume');
@@ -107,7 +108,7 @@ function renderForm(
   volumeInput.max = '100';
   volumeInput.step = '1';
   volumeInput.value = String(response.effective.trailerVolumePercent);
-  volumeInput.setAttribute('aria-label', 'Preview volume');
+  volumeInput.setAttribute('aria-label', t('previewVolume'));
   const volumeOutput = createElement('output', undefined, `${volumeInput.value}%`);
   volumeRow.append(createIcon('volume_up'), volumeInput, volumeOutput);
   content.appendChild(volumeRow);
@@ -121,15 +122,12 @@ function renderForm(
   volumeInput.addEventListener('input', syncVolumeState);
   syncVolumeState();
 
-  const rememberToggle = createCheckbox(
-    'Save mute and volume changes automatically',
-    response.effective.rememberAudioChanges !== false
-  );
+  const rememberToggle = createCheckbox(t('saveAudioChanges'), response.effective.rememberAudioChanges !== false);
   rememberToggle.root.classList.add('jmp-prefs-remember');
   content.appendChild(rememberToggle.root);
 
-  const resetButton = createButton('Reset', 'jmp-prefs-reset');
-  const saveButton = createButton('Save', 'button-submit jmp-prefs-save', 'submit');
+  const resetButton = createButton(t('reset'), 'jmp-prefs-reset');
+  const saveButton = createButton(t('save'), 'button-submit jmp-prefs-save', 'submit');
   actions.append(resetButton, saveButton);
 
   const run = async (operation: () => Promise<UserPreferencesResponse>): Promise<void> => {
@@ -142,7 +140,7 @@ function renderForm(
       close();
     } catch {
       status.classList.add('is-error');
-      status.textContent = 'Could not save.';
+      status.textContent = t('couldNotSave');
       resetButton.disabled = false;
       saveButton.disabled = false;
     }
@@ -192,13 +190,13 @@ export async function openUserPreferencesDialog(profile?: UserPreferencesProfile
   title.append(createIcon(PLUGIN_ICON), heading);
   const closeButton = createElement('button', 'jmp-prefs-close');
   closeButton.type = 'button';
-  closeButton.setAttribute('aria-label', 'Close');
+  closeButton.setAttribute('aria-label', t('close'));
   closeButton.appendChild(createIcon('close'));
   header.append(title, closeButton);
 
   const loading = createElement('div', 'jmp-prefs-loading');
   loading.setAttribute('role', 'status');
-  loading.setAttribute('aria-label', 'Loading');
+  loading.setAttribute('aria-label', t('loading'));
   loading.appendChild(createElement('span', 'jmp-prefs-spinner'));
   dialog.append(header, loading);
   backdrop.appendChild(dialog);
@@ -240,6 +238,6 @@ export async function openUserPreferencesDialog(profile?: UserPreferencesProfile
     renderForm(dialog, response, profile, close);
   } catch {
     if (!backdrop.isConnected) return;
-    loading.replaceChildren(createElement('span', 'jmp-prefs-status is-error', 'Could not load.'));
+    loading.replaceChildren(createElement('span', 'jmp-prefs-status is-error', t('couldNotLoad')));
   }
 }
