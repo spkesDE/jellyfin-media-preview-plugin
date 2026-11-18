@@ -3,6 +3,7 @@ import { debugLog } from '../core/logger';
 import { requestJson } from '../core/request';
 import { getScopedPreviewCacheKey, playbackProgressCache } from '../core/storage';
 import type { JellyfinItem } from '../types/jellyfin';
+import { getBatchedItem } from './itemBatch';
 import type { PlaybackProgress } from '../types/preview';
 
 const PLAYBACK_PROGRESS_CACHE_MS = 30_000;
@@ -39,10 +40,14 @@ export function getPlaybackProgressForItem(itemId: string | null | undefined): P
     return cached.value;
   }
 
-  const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
-    Fields: 'RunTimeTicks',
-    EnableUserData: true
-  })
+  const fetchItem = () =>
+    requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
+      Fields: 'RunTimeTicks',
+      EnableUserData: true
+    });
+  // A batch for the cards near the viewport already carries runtime and user data.
+  const batched = getBatchedItem(cacheKey);
+  const request = (batched ? batched.then((item) => item || fetchItem()) : fetchItem())
     .then(resolvePlaybackProgress)
     .catch((error) => {
       playbackProgressCache.delete(cacheKey);

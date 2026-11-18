@@ -97,6 +97,7 @@ const standaloneFallbackConfig: PluginConfig = {
   trickplayWidth: 320,
   trickplayPreloadEnabled: false,
   trickplayPreloadLimit: 2,
+  trickplayPreloadMaxCards: 24,
   trickplayLoadingIndicatorEnabled: true,
   restoreOnLeave: true,
   showProgressIndicator: true,
@@ -293,6 +294,7 @@ export function normalizeConfig(): void {
   config.trickplayWidth = Math.max(1, numberOrFallback(config.trickplayWidth, 320));
   config.trickplayPreloadEnabled = config.trickplayPreloadEnabled === true;
   config.trickplayPreloadLimit = numberOrFallback(config.trickplayPreloadLimit, 2);
+  config.trickplayPreloadMaxCards = clamp(Math.floor(numberOrFallback(config.trickplayPreloadMaxCards, 24)), 0, 500);
   config.trickplayLoadingIndicatorEnabled = config.trickplayLoadingIndicatorEnabled !== false;
   config.trailerVolumePercent = clamp(numberOrFallback(config.trailerVolumePercent, 35), 0, 100);
   config.videoControlSources = normalizeMediaControlSources(

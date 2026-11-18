@@ -210,6 +210,7 @@ internal static class PluginConfigurationNormalizer
             TrickplayWidth = Math.Max(1, source.TrickplayWidth),
             TrickplayPreloadEnabled = source.TrickplayPreloadEnabled,
             TrickplayPreloadLimit = source.TrickplayPreloadLimit,
+            TrickplayPreloadMaxCards = Clamp(source.TrickplayPreloadMaxCards, 0, 500, 24),
             TrickplayLoadingIndicatorEnabled = source.TrickplayLoadingIndicatorEnabled,
             RestoreOnLeave = source.RestoreOnLeave,
             ShowProgressIndicator = source.ShowProgressIndicator,

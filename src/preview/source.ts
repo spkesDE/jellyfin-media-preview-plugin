@@ -135,7 +135,8 @@ async function getPreviewRuleForItem(itemId: string, itemType?: string | null): 
     usesLibraryRules && config.libraryPreviewSourceOverrides.length
       ? getLibraryIdForItem(
           itemId,
-          config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
+          config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId),
+          itemType
         )
       : Promise.resolve(null);
 

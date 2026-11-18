@@ -1,3 +1,4 @@
+import type { JellyfinItem } from '../types/jellyfin';
 import type { MetadataOverlayInfo, PlaybackProgress, TrailerInfo, TrickplayInfo } from '../types/preview';
 
 const ITEM_CACHE_LIMIT = 500;
@@ -55,6 +56,19 @@ export const libraryIdCache = new BoundedMap<string, Promise<string | null>>(ITE
 export const playbackProgressCache = new BoundedMap<string, { expiresAt: number; value: Promise<PlaybackProgress> }>(
   ITEM_CACHE_LIMIT
 );
+/**
+ * Raw items loaded in one batched request for the cards near the viewport. The promise is
+ * stored while the batch is in flight, so a hover in that window joins it instead of
+ * sending its own request; `item` holds the result once it arrived.
+ */
+export interface BatchedItemEntry {
+  expiresAt: number;
+  value: Promise<JellyfinItem | null>;
+  item?: JellyfinItem | null;
+}
+export const batchedItemCache = new BoundedMap<string, BatchedItemEntry>(ITEM_CACHE_LIMIT);
+/** Library rule result per ancestor folder (season, series, folder), shared by sibling items. */
+export const ancestorLibraryCache = new BoundedMap<string, string | null>(ITEM_CACHE_LIMIT);
 export const tilePreloadCache = new BoundedSet<string>(TILE_PRELOAD_CACHE_LIMIT);
 export const missingTrickplayCache = new BoundedMap<string, number>(ITEM_CACHE_LIMIT);
 export const missingTrailerCache = new BoundedMap<string, number>(ITEM_CACHE_LIMIT);
@@ -74,6 +88,8 @@ function clearPreviewCacheEntries(): void {
   metadataOverlayCache.clear();
   libraryIdCache.clear();
   playbackProgressCache.clear();
+  batchedItemCache.clear();
+  ancestorLibraryCache.clear();
   tilePreloadCache.clear();
   missingTrickplayCache.clear();
   missingTrailerCache.clear();

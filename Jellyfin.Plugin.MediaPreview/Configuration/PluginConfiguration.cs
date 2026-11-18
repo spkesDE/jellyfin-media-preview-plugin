@@ -38,6 +38,11 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int TrickplayPreloadLimit { get; set; } = 2;
 
+    /// <summary>
+    /// Gets or sets how many cards per page are preloaded when they come near the viewport. 0 means no limit.
+    /// </summary>
+    public int TrickplayPreloadMaxCards { get; set; } = 24;
+
     public bool TrickplayLoadingIndicatorEnabled { get; set; } = true;
 
     public string InProgressPreviewSource { get; set; } = "inherit";

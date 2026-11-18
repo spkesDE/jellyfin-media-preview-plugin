@@ -15,9 +15,11 @@ import { getScopedPreviewCacheKey, itemInfoCache, missingTrickplayCache } from '
 import { requestJson } from '../core/request';
 import type { JellyfinItem, JellyfinItemsResult, JellyfinTrickplayManifest } from '../types/jellyfin';
 import type { TrickplayInfo, TrickplayPreview } from '../types/preview';
+import { getBatchedItem } from './itemBatch';
 
 const missingTrickplayCacheCooldownMs = 10 * 60 * 1000;
-const trickplayEpisodeContainerTypes = new Set(['Series', 'Season']);
+/** Series and Season carry no Trickplay; they need Next Up or an episode lookup first. */
+export const trickplayEpisodeContainerTypes = new Set(['Series', 'Season']);
 const trickplayEpisodeLookupLimit = 10;
 
 function isMissingTrickplayCached(cacheKey: string): boolean {
@@ -276,9 +278,13 @@ export function getTrickplayInfo(itemId: string | null | undefined): Promise<Tri
     return itemInfoCache.get(cacheKey)!;
   }
 
-  const request = requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
-    Fields: 'Trickplay,MediaSources'
-  })
+  const fetchItem = () =>
+    requestJson<JellyfinItem>(`Users/${encodeURIComponent(userId)}/Items/${encodeURIComponent(itemId)}`, {
+      Fields: 'Trickplay,MediaSources'
+    });
+  // Reuse the batched viewport request (also while it is still in flight) instead of a new one.
+  const batched = getBatchedItem(cacheKey);
+  const request = (batched ? batched.then((item) => item || fetchItem()) : fetchItem())
     .then((item) => {
       if (!item || !SUPPORTED_TYPES.has(item.Type || '')) {
         debugLog('Item is unsupported or missing.', {

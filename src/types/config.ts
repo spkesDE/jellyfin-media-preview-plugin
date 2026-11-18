@@ -84,6 +84,8 @@ export interface PluginConfig {
   trickplayWidth: number;
   trickplayPreloadEnabled: boolean;
   trickplayPreloadLimit: number;
+  /** Cards preloaded per page when they come near the viewport; 0 means no limit. */
+  trickplayPreloadMaxCards: number;
   trickplayLoadingIndicatorEnabled: boolean;
   restoreOnLeave: boolean;
   showProgressIndicator: boolean;

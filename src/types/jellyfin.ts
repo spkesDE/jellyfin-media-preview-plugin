@@ -35,6 +35,9 @@ export interface JellyfinItem {
   Id?: string;
   Name?: string;
   Type?: string;
+  ParentId?: string;
+  SeriesId?: string;
+  SeasonId?: string;
   CollectionType?: string;
   ProductionYear?: number;
   RunTimeTicks?: number;
