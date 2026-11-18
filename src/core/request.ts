@@ -5,7 +5,7 @@ export function requestJson<T>(
   query?: Record<string, string | number | boolean | null | undefined>
 ): Promise<T> {
   const apiClient = getGlobalApiClient();
-  const url = buildApiUrl(path, query);
+  const url = buildApiUrl(path, query, { includeAccessToken: false });
   if (!apiClient || !url) {
     return Promise.reject(new Error('ApiClient is not available.'));
   }
@@ -35,7 +35,7 @@ export function requestJson<T>(
 
 export function postJson(path: string, body: unknown): Promise<void> {
   const apiClient = getGlobalApiClient();
-  const url = buildApiUrl(path);
+  const url = buildApiUrl(path, undefined, { includeAccessToken: false });
   if (!apiClient || !url) {
     return Promise.reject(new Error('ApiClient is not available.'));
   }
@@ -73,7 +73,7 @@ export function putJson<T>(
   query?: Record<string, string | number | boolean | null | undefined>
 ): Promise<T> {
   const apiClient = getGlobalApiClient();
-  const url = buildApiUrl(path, query);
+  const url = buildApiUrl(path, query, { includeAccessToken: false });
   if (!apiClient || !url) {
     return Promise.reject(new Error('ApiClient is not available.'));
   }

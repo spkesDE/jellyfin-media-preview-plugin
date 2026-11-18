@@ -14,6 +14,7 @@ import { getTrailerPreview } from './trailer';
 import { getTrickplayPreview } from './trickplay';
 import { getDirectPlayPreview } from './directPlay';
 import { getLibraryIdForItem } from './library';
+import { ensureLibraryPreviewSourceOverrides } from './libraryOverrides';
 import { getPlaybackProgressForItem } from './progress';
 import { debugLog } from '../core/logger';
 import type { PreviewResult } from '../types/preview';
@@ -107,6 +108,7 @@ async function getPreviewRuleForItem(itemId: string, itemType?: string | null): 
   const progressPromise = resolveProgress
     ? getPlaybackProgressForItem(itemId)
     : Promise.resolve({ isInProgress: false, positionTicks: 0, positionPercent: null });
+  await ensureLibraryPreviewSourceOverrides();
   const libraryPromise = config.libraryPreviewSourceOverrides.length
     ? getLibraryIdForItem(
         itemId,

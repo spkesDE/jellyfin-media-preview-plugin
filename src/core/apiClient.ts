@@ -55,7 +55,7 @@ export function getApiContextKey(
   return `${serverIdentity}\u001f${userId}`;
 }
 
-function normalizeApiKey(url: URL, fallbackToken: string | null): void {
+function normalizeApiKey(url: URL, fallbackToken: string | null, includeAccessToken: boolean): void {
   const token =
     url.searchParams.get('ApiKey') ||
     url.searchParams.get('api_key') ||
@@ -65,16 +65,28 @@ function normalizeApiKey(url: URL, fallbackToken: string | null): void {
   // Jellyfin 12 disables these legacy forms by default.
   url.searchParams.delete('api_key');
   url.searchParams.delete('X-Emby-Token');
+  url.searchParams.delete('ApiKey');
 
-  if (token) {
+  if (token && includeAccessToken) {
     url.searchParams.set('ApiKey', token);
   }
 }
 
+export interface BuildApiUrlOptions {
+  /**
+   * Puts the access token into the query string. Only media that the browser loads by
+   * itself (img, video) needs this; requests that send an Authorization header should
+   * leave it off so the token does not end up in proxy and server access logs.
+   */
+  includeAccessToken?: boolean;
+}
+
 export function buildApiUrl(
   path: string,
-  query?: Record<string, string | number | boolean | null | undefined>
+  query?: Record<string, string | number | boolean | null | undefined>,
+  options: BuildApiUrlOptions = {}
 ): string | null {
+  const includeAccessToken = options.includeAccessToken !== false;
   const apiClient = getGlobalApiClient();
   if (!apiClient) {
     return null;
@@ -90,7 +102,7 @@ export function buildApiUrl(
     }
 
     const finalUrl = new URL(builtUrl, window.location.origin);
-    normalizeApiKey(finalUrl, accessToken);
+    normalizeApiKey(finalUrl, accessToken, includeAccessToken);
 
     return finalUrl.toString();
   }
@@ -116,7 +128,7 @@ export function buildApiUrl(
     });
   }
 
-  normalizeApiKey(url, accessToken);
+  normalizeApiKey(url, accessToken, includeAccessToken);
 
   return url.toString();
 }

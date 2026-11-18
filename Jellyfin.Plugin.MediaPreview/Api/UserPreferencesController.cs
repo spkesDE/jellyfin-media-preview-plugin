@@ -19,7 +19,6 @@ namespace Jellyfin.Plugin.MediaPreview.Api;
 [Route("media-preview/preferences")]
 public sealed class UserPreferencesController : ControllerBase
 {
-    private const string UserIdClaimType = "Jellyfin-UserId";
     private readonly IUserManager _userManager;
     private readonly UserPreferenceStore _store;
 
@@ -163,21 +162,7 @@ public sealed class UserPreferencesController : ControllerBase
         };
     }
 
-    private JellyfinUser? GetActiveUser()
-    {
-        string? claimedId = User.FindFirst(UserIdClaimType)?.Value;
-        if (Guid.TryParse(claimedId, out Guid activeUserId))
-        {
-            JellyfinUser? byId = _userManager.GetUserById(activeUserId);
-            if (byId is not null)
-            {
-                return byId;
-            }
-        }
-
-        string? name = User.Identity?.Name;
-        return string.IsNullOrWhiteSpace(name) ? null : _userManager.GetUserByName(name);
-    }
+    private JellyfinUser? GetActiveUser() => ActiveUser.Resolve(User, _userManager);
 }
 
 public sealed class UserPreferencesUpdateRequest

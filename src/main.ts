@@ -20,6 +20,7 @@ import { clearPreviewCaches } from './core/storage';
 import { clearTrickplayPreloads } from './preview/preload';
 import { clearUnavailableTrailerCacheState } from './preview/trailer';
 import { clearDirectPlayFallbackState } from './preview/directPlay';
+import { clearLibraryPreviewSourceOverrideState } from './preview/libraryOverrides';
 import {
   applyEffectivePreferences,
   clearUserPreferenceState,
@@ -52,6 +53,7 @@ export function destroy(): void {
   clearPreviewCaches();
   clearUnavailableTrailerCacheState();
   clearDirectPlayFallbackState();
+  clearLibraryPreviewSourceOverrideState();
   document.removeEventListener(USER_PREFERENCES_CHANGED_EVENT, handleUserPreferencesChanged);
   removeUserSettingsEntries();
   clearUserPreferenceState();

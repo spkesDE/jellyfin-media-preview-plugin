@@ -37,6 +37,11 @@ export interface PluginConfig {
   episodePreviewSource: ContentTypePreviewSource;
   videoPreviewSource: ContentTypePreviewSource;
   libraryPreviewSourceOverrides: LibraryPreviewSourceOverride[];
+  /**
+   * Set by the server script instead of sending the override list anonymously. The list
+   * itself is fetched after sign-in (see preview/libraryOverrides.ts).
+   */
+  hasLibraryPreviewSourceOverrides?: boolean;
   preferTrailerFallbacks: PreviewFallbackSource[];
   preferTrickplayFallbacks: PreviewFallbackSource[];
   preferDirectPlayFallbacks: PreviewFallbackSource[];

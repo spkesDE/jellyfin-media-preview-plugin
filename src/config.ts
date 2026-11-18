@@ -181,6 +181,8 @@ export function normalizeConfig(): void {
   config.libraryPreviewSourceOverrides = Array.isArray(config.libraryPreviewSourceOverrides)
     ? normalizeLibraryPreviewSourceOverrides(config.libraryPreviewSourceOverrides)
     : [];
+  config.hasLibraryPreviewSourceOverrides =
+    config.hasLibraryPreviewSourceOverrides === true || config.libraryPreviewSourceOverrides.length > 0;
   config.preferTrailerFallbacks = normalizeFallbackSources(
     config.preferTrailerFallbacks,
     'local-trailer',
@@ -314,7 +316,7 @@ export function normalizeConfig(): void {
   config.trailerExpandButtonEnabled = config.trailerExpandButtonEnabled !== false;
 }
 
-function normalizeLibraryPreviewSourceOverrides(
+export function normalizeLibraryPreviewSourceOverrides(
   overrides: LibraryPreviewSourceOverride[]
 ): LibraryPreviewSourceOverride[] {
   const normalized = new Map<string, LibraryPreviewSourceOverride>();

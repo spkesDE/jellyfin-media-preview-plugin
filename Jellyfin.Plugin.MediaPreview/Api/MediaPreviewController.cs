@@ -2,11 +2,13 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using Jellyfin.Plugin.MediaPreview.Trailers;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using JellyfinUser = Jellyfin.Database.Implementations.Entities.User;
 
 namespace Jellyfin.Plugin.MediaPreview.Api;
 
@@ -16,6 +18,8 @@ public sealed class MediaPreviewController : ControllerBase
 {
     private const string ScriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.mediapreview.bundle.js";
     private const string ConfigScriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.config.bundle.js";
+    private const string LibraryOverridesKey = "libraryPreviewSourceOverrides";
+    private const string HasLibraryOverridesKey = "hasLibraryPreviewSourceOverrides";
     private static readonly JsonSerializerOptions RuntimeConfigJsonOptions = new(JsonSerializerDefaults.Web);
     private static readonly PropertyInfo[] PluginConfigurationProperties = typeof(PluginConfiguration)
         .GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
@@ -29,15 +33,18 @@ public sealed class MediaPreviewController : ControllerBase
     private readonly ILibraryManager _libraryManager;
     private readonly UnavailableTrailerStore _unavailableTrailerStore;
     private readonly FrontendInjectionAvailabilityService _frontendInjectionAvailability;
+    private readonly IUserManager _userManager;
 
     public MediaPreviewController(
         ILogger<MediaPreviewController> logger,
         ILibraryManager libraryManager,
+        IUserManager userManager,
         UnavailableTrailerStore unavailableTrailerStore,
         FrontendInjectionAvailabilityService frontendInjectionAvailability)
     {
         _logger = logger;
         _libraryManager = libraryManager;
+        _userManager = userManager;
         _unavailableTrailerStore = unavailableTrailerStore;
         _frontendInjectionAvailability = frontendInjectionAvailability;
     }
@@ -66,11 +73,16 @@ public sealed class MediaPreviewController : ControllerBase
         }
 
         PluginConfiguration config = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
-        string serializedConfig = JsonSerializer.Serialize(
-            PluginConfigurationProperties.ToDictionary(
-                property => JsonNamingPolicy.CamelCase.ConvertName(property.Name),
-                property => property.GetValue(config)),
-            RuntimeConfigJsonOptions);
+        Dictionary<string, object?> runtimeConfig = PluginConfigurationProperties.ToDictionary(
+            property => JsonNamingPolicy.CamelCase.ConvertName(property.Name),
+            property => property.GetValue(config));
+
+        // This script is served without authentication (it also loads on the login page), so
+        // library ids stay out of it. Signed-in clients fetch them from config/library-overrides.
+        runtimeConfig[LibraryOverridesKey] = Array.Empty<LibraryPreviewSourceOverride>();
+        runtimeConfig[HasLibraryOverridesKey] = config.LibraryPreviewSourceOverrides.Count > 0;
+
+        string serializedConfig = JsonSerializer.Serialize(runtimeConfig, RuntimeConfigJsonOptions);
 
         byte[] configBytes = Encoding.UTF8.GetBytes(
             "window.JellyfinMediaPreviewPluginConfig = " + serializedConfig + ";" + Environment.NewLine);
@@ -121,6 +133,25 @@ public sealed class MediaPreviewController : ControllerBase
     }
 
     [Authorize]
+    [HttpGet("config/library-overrides")]
+    [ProducesResponseType<LibraryOverridesResponse>(StatusCodes.Status200OK)]
+    public ActionResult<LibraryOverridesResponse> GetLibraryOverrides()
+    {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        PluginConfiguration config = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
+        return Ok(new LibraryOverridesResponse
+        {
+            Overrides = config.LibraryPreviewSourceOverrides
+                .Select(entry => new LibraryOverrideDto
+                {
+                    LibraryId = entry.LibraryId,
+                    PreviewSource = entry.PreviewSource
+                })
+                .ToArray()
+        });
+    }
+
+    [Authorize]
     [HttpGet("unavailable-trailers")]
     [ProducesResponseType<UnavailableTrailerListResponse>(StatusCodes.Status200OK)]
     public async Task<ActionResult<UnavailableTrailerListResponse>> GetUnavailableTrailers(
@@ -148,7 +179,15 @@ public sealed class MediaPreviewController : ControllerBase
             return BadRequest("The unavailable trailer report is invalid.");
         }
 
-        var item = _libraryManager.GetItemById(itemId);
+        JellyfinUser? user = ActiveUser.Resolve(User, _userManager);
+        if (user is null)
+        {
+            return Forbid();
+        }
+
+        // Resolving through the user returns null for items outside their libraries or
+        // parental limits, so a report cannot probe items the user cannot see.
+        BaseItem? item = _libraryManager.GetItemById<BaseItem>(itemId, user);
         bool trailerBelongsToItem = item?.RemoteTrailers?.Any(remoteTrailer =>
             string.Equals(
                 YouTubeVideoId.Extract(remoteTrailer.Url),
