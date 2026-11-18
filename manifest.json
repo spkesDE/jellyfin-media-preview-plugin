@@ -9,6 +9,14 @@
   "imageUrl": "https://raw.githubusercontent.com/spkesDE/jellyfin-media-preview-plugin/main/logo.png",
   "versions": [
     {
+      "version": "12.6.0.0",
+      "changelog": "- feat(api): cache the client script with an ETag\n- feat(direct-play): remux through PlaybackInfo and stop preview transcodes\n- feat(preview): respect reduced motion and Data Saver\n- feat(i18n): translate texts on cards and in the settings dialog\n- feat(api): add diagnostics and unavailable trailer admin endpoints\n- feat(direct-play): skip intros, recaps and credits with media segments\n- feat(users): let users choose source, hover delay and turn previews off\n- feat(input): start previews with a touch long-press\n- feat(preview): play previews in the detail page backdrop\n- feat(config): restyle the settings page after Jellyfin Featured\n- fix(preview): stop previews in hidden tabs and recover from undecodable video\n- fix(security): send tokens only on media URLs and check item access\n- perf(preload): batch item requests and cap preloads per page\n",
+      "targetAbi": "12.4.0.0",
+      "sourceUrl": "https://github.com/spkesDE/jellyfin-media-preview-plugin/releases/download/v12.6.0.0/MediaPreview.zip",
+      "checksum": "c37d90692794f92874ec6ccd3b4b9ef9",
+      "timestamp": "2026-11-18 14:58:58"
+    },
+    {
       "version": "12.5.0.0",
       "changelog": "- feat(users): save preview mute and volume per user\n",
       "targetAbi": "12.4.0.0",

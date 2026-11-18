@@ -1,42 +1,41 @@
 # Changelog
 
+## v12.6.0.0 - 2026-11-18
+
+### Features
+
+- feat(api): cache the client script with an ETag
+- feat(direct-play): remux through PlaybackInfo and stop preview transcodes
+- feat(preview): respect reduced motion and Data Saver
+- feat(i18n): translate texts on cards and in the settings dialog
+- feat(api): add diagnostics and unavailable trailer admin endpoints
+- feat(direct-play): skip intros, recaps and credits with media segments
+- feat(users): let users choose source, hover delay and turn previews off
+- feat(input): start previews with a touch long-press
+- feat(preview): play previews in the detail page backdrop
+- feat(config): restyle the settings page after Jellyfin Featured
+
+### Fixes
+
+- fix(preview): stop previews in hidden tabs and recover from undecodable video
+- fix(security): send tokens only on media URLs and check item access
+
+### Performance
+
+- perf(preload): batch item requests and cap preloads per page
+
 ## v12.5.0.0 - 2026-11-16
 
 ### Features
 
 - feat(users): save preview mute and volume per user
 
-### Documentation
-
-- docs: update plugin repository URL in README
-
-### Other
-
-- deps(deps-dev): bump the npm-minor-and-patch group with 5 updates (#36)
-- deps: Bump the nuget-minor-and-patch group with 3 updates (#39)
-- deps(deps-dev): bump typescript from 5.9.3 to 6.0.3 (#37)
-- deps: Bump the nuget-test-minor-and-patch group with 4 updates (#38)
-- deps: Bump the nuget-test-minor-and-patch group with 1 update (#42)
-- deps(deps): bump the npm-minor-and-patch group with 7 updates (#41)
-- deps(deps-dev): bump happy-dom from 20.14.6 to 21.0.4 (#40)
-- deps(deps-dev): bump the npm-minor-and-patch group with 3 updates (#43)
-- deps: Bump the nuget-minor-and-patch group with 3 updates (#44)
-- deps: Bump the nuget-test-minor-and-patch group with 3 updates (#45)
-- deps(deps-dev): bump the npm-minor-and-patch group with 3 updates (#46)
-- deps: Bump the nuget-minor-and-patch group with 3 updates (#47)
-- deps: Bump the nuget-test-minor-and-patch group with 1 update (#50)
-- deps(deps): bump the npm-minor-and-patch group across 1 directory with 10 updates (#51)
-- chore(.gitignore): update .gitignore
 ## v12.4.0.0 - 2026-10-05
 
 ### Features
 
 - feat(preview): add in-progress source override (#35)
 
-### Other
-
-- Add Star History section to README
-- deps(deps): bump the npm-minor-and-patch group with 8 updates (#33)
 ## v12.3.0.0 - 2026-09-30
 
 ### Features
@@ -46,18 +45,13 @@
 ### Fixes
 
 - fix(config): preserve preferred source order across updates
+
 ## v12.2.1.0 - 2026-09-30
 
 ### Fixes
 
-- fix(manifest): Update manifest.json for failed v12.2.0.0 release
-- fix(manifest): Update manifest.json with version 12.2.0.1 changes
 - fix(trickplay): resolve series and season cards to an episode (#31)
-## v12.2.0.1 - 2026-09-29
 
-### Other
-
-- chore: add release-notes.md to .prettierignore
 ## v12.2.0.0 - 2026-09-29
 
 ### Features
@@ -78,20 +72,17 @@
 
 - fix: Refactor star history section in README (#23)
 - fix(preview): ignore overlay images as render hosts, fixes #24
-- fix(build): update image URL to use logo instead of hero in build script and manifest
 - fix(cache): scope preview data to server sessions
 - fix(trailer): stop media when hover ends
 - fix(youtube): align client and server URL parsing
 - fix(config): align backend and frontend defaults
 - fix(config): include component styles in production bundle
-- fix(build): preserve embedded config bundle boundary
 - fix(config): polish source chain drag editor
 - fix(config): align preference chain drag layout
 - fix(config): keep preview setting tabs accessible
 - fix(config): keep drag preview synced with cursor
 - fix(config): keep trickplay performance settings visible
 - fix(config): keep drag fallback inside list
-- fix(build): isolate injected config style bindings
 - fix(preview): cache missing trailer lookups
 - fix: diagnose direct play chain fallbacks
 - fix: prevent unsolicited home card previews
@@ -100,27 +91,7 @@
 - fix: add spacing between keyboard settings grids
 - fix(preview/hover): prevent stale media after pointer leave
 - fix(preview/library): honor library-specific source overrides
-- fix(build): update image URL to use logo instead of hero in build script and manifest
 
-### Build
-
-- build(config): compile scoped styles like Featured
-- build(preview): refresh browser bundle
-
-### Documentation
-
-- docs: Add Star History section to README
-- docs: Add section for more Jellyfin plugins
-
-### Other
-
-- chore: add additional badges to README for license, latest release, Jellyfin version, and build status
-- chore: Update JavaScript Injector manifest URL in README
-- test: add frontend backend and contract safety net
-- style: adopt Prettier formatting
-- deps: Bump Jellyfin to 12.1.0 (#27)
-- deps: Bump xunit.runner.visualstudio from 3.1.5 to 4.0.0 (#29)
-- deps: Bump Newtonsoft.Json from 13.0.3 to 13.0.4
 ## v12.1.1.0 - 2026-09-21
 
 ### Fixes
@@ -128,41 +99,18 @@
 - fix: Refactor star history section in README (#23)
 - fix(preview): ignore overlay images as render hosts, fixes #24
 
-### Documentation
-
-- docs: Add Star History section to README
-- docs: Add section for more Jellyfin plugins
-
-### Other
-
-- chore: add issue templates (#22)
-- chore: label feature issues automatically
-- chore: label support issues automatically
-- chore: label bug issues automatically
-- chore: update manifest and add new logo image
-- chore: update hero image
-- chore: update logo image
-- chore: add additional badges to README for license, latest release, Jellyfin version, and build status
-- chore: Update JavaScript Injector manifest URL in README
 ## v12.1.0.0 - 2026-09-10
 
 ### Fixes
 
 - fix(preview): unify card overlay stacking in Jellyfin 12
 
-### Other
-
-- chore: update version to 12.1.0.0 in project files to keep in sync with jellyfin versioning
 ## v0.4.0.1 - 2026-09-08
 
 ### Fixes
 
 - fix(dependencies): update nanoid to version 3.3.18
-## v0.4.0.0 - 2026-09-08
 
-### Build
-
-- build: upgrade to .NET 10 and Jellyfin 12
 ## v0.3.1.1 - 2026-08-08
 
 ### Fixes
@@ -170,16 +118,6 @@
 - fix(changelog): filter merge commits from release notes
 - fix(navigation): restrict admin link injection to plugin sidebar
 
-### Documentation
-
-- docs: update contribution guidelines
-- docs: update build guide for clarity and structure
-
-### Other
-
-- Update CHANGELOG for v0.3.1.0
-- Update manifest.json
-- Update manifest.json
 ## v0.3.1.0 - 2026-07-31
 
 ### Features
@@ -194,18 +132,12 @@
 - fix(hover): Scope preview teardown to the card rather than the hover host (#19)
 - fix(trailer): Loop hover trailers through the player API instead of a playlist (#20)
 
-### Build
-
-- build: synchronize release versions
-
-### Other
-
-- chore: update nanoid and postcss dependencies to latest versions
 ## v0.3.0.1 - 2026-07-21
 
 ### Fixes
 
 - fix(trailer): keep expand button above card overlay
+
 ## v0.3.0.0 - 2026-07-21
 
 ### Features
@@ -223,29 +155,25 @@
 - fix(trailer): skip unavailable YouTube embeds
 - fix(trailer): read persisted unavailable source ids
 
-### Build
-
-- build(dist): refresh preview bundles
-
-### Refactoring
-
-- refactor(navigation): improve plugin configuration link handling and update navigation entry logic for Jellyfin 12.0
 ## v0.2.4.1 - 2026-07-17
 
 ### Fixes
 
 - fix(config): live preview grid
+
 ## v0.2.4.0 - 2026-07-17
 
 ### Features
 
 - feat(trailer): enhance portrait card expansion with source aspect ratio support
 - feat(appearance): add 'Source / Video ratio' option for portrait card expansion
+
 ## v0.2.3.1 - 2026-07-15
 
 ### Fixes
 
 - fix(appearance): shift wide previews into viewport
+
 ## v0.2.3.0 - 2026-07-15
 
 ### Features
@@ -263,33 +191,18 @@
 - fix(hover): resolve unavailable preview messages
 - fix(config): expand preview card on hover
 
-### Build
-
-- build: align frontend package version
-- build: refresh bundled frontend output
 ## v0.2.2.0 - 2026-06-22
 
 ### Features
 
 - feat(trickplay): preload preview thumbnails
 
-### Build
-
-- build: add plugin catalog image
-
-### Documentation
-
-- docs: simplify README for users
-- docs: clarify contribution welcome note
 ## v0.2.1.0 - 2026-06-16
 
 ### Features
 
 - feat(config): migrate settings UI to Vue
 
-### Build
-
-- build(changelog): order feature entries first
 ## v0.2.0.1 - 2026-06-15
 
 ### Features
@@ -313,27 +226,10 @@
 - fix: validate embedded client bundle
 - fix: streamline CI workflow and update paths in build script
 
-### Build
-
-- build: automate manifest changelog generation with git-cliff
-- build: remove manual manifest changelog override
-- build: align manifest changelog with git-cliff output
-- build: refresh bundled frontend output
-- build: refresh bundled frontend output
-- build: refresh bundled frontend output
-- build: update Jellyfin packages to 10.11.11
-
-### Refactoring
-
-- refactor: simplify auto scrub and trailer helpers
-- refactor: extract metadata overlay styles
-- refactor: unify plugin configuration page layout
-- refactor: unify remaining configuration tabs
-- refactor: enhance build script with modular functions and improved error handling
-
-### Other
+### Performance
 
 - perf: skip library lookups without overrides
+
 ## v0.1.1.0 - 2026-05-24
 
 ### Features
@@ -347,20 +243,4 @@
 - fix: resolve lifecycle type guards
 - fix: restore reliable hover preview lifecycle
 
-### Refactoring
-
-- refactor: rename media preview frontend classes to jmp
-- refactor: split media preview styles into css modules
-- refactor: lazily inject preview dom
-
-### Other
-
-- chore: rebuild media preview bundle
-- chore: minify css in bundled styles
-- chore: move manifest updater into scripts
-## v0.1.0.0 - 2026-05-24
-
-### Other
-
-- Initial Release
 
