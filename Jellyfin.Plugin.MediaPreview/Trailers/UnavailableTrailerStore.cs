@@ -127,6 +127,71 @@ public sealed class UnavailableTrailerStore
         }
     }
 
+    /// <summary>All stored entries for the admin view, newest report first.</summary>
+    public async Task<IReadOnlyList<UnavailableTrailerSnapshot>> GetEntriesAsync(CancellationToken cancellationToken)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            UnavailableTrailerCache cache = await GetCacheAsync(cancellationToken).ConfigureAwait(false);
+            RefreshExpirationAndPrune(cache, DateTimeOffset.UtcNow, GetEntryLifetime());
+            return cache.Entries
+                .OrderByDescending(entry => entry.LastSeenUtc)
+                .Select(entry => new UnavailableTrailerSnapshot(
+                    entry.VideoId,
+                    entry.ErrorCode,
+                    entry.FirstSeenUtc,
+                    entry.LastSeenUtc,
+                    entry.RetryAfterUtc,
+                    entry.ReportCount,
+                    entry.ItemIds.ToArray()))
+                .ToArray();
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <summary>Forgets one video so clients try it again. Returns false when it was not stored.</summary>
+    public async Task<bool> RemoveAsync(string videoId, CancellationToken cancellationToken)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            UnavailableTrailerCache cache = await GetCacheAsync(cancellationToken).ConfigureAwait(false);
+            int removed = cache.Entries.RemoveAll(entry => string.Equals(entry.VideoId, videoId, StringComparison.Ordinal));
+            if (removed > 0)
+            {
+                await SaveAsync(cache, cancellationToken).ConfigureAwait(false);
+            }
+
+            return removed > 0;
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    public async Task ClearAsync(CancellationToken cancellationToken)
+    {
+        await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            UnavailableTrailerCache cache = await GetCacheAsync(cancellationToken).ConfigureAwait(false);
+            if (cache.Entries.Count > 0)
+            {
+                cache.Entries.Clear();
+                await SaveAsync(cache, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
     private async Task<UnavailableTrailerCache> GetCacheAsync(CancellationToken cancellationToken)
     {
         if (_cache is not null)
@@ -298,3 +363,12 @@ public sealed class UnavailableTrailerStore
         public List<string> ItemIds { get; set; } = [];
     }
 }
+
+public sealed record UnavailableTrailerSnapshot(
+    string VideoId,
+    int ErrorCode,
+    DateTimeOffset FirstSeenUtc,
+    DateTimeOffset LastSeenUtc,
+    DateTimeOffset RetryAfterUtc,
+    int ReportCount,
+    IReadOnlyList<string> ItemIds);

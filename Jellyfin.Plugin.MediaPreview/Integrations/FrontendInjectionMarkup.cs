@@ -11,6 +11,8 @@ internal static class FrontendInjectionMarkup
 
     internal static string Strip(string contents) => ScriptMarkerRegex.Replace(contents, string.Empty);
 
+    internal static bool Contains(string contents) => ScriptMarkerRegex.IsMatch(contents);
+
     internal static string BuildScriptTag(string providerAttribute, string injectionMethod)
     {
         string basePath = GetBasePath();

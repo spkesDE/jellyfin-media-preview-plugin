@@ -9,6 +9,8 @@ internal static class FrontendRegistration
 
     internal static string ActiveMethod { get; private set; } = "none";
 
+    internal static DateTimeOffset? LastRegistrationUtc { get; private set; }
+
     internal static bool TryRegisterConfigured(
         FrontendInjectionAvailability availability,
         IApplicationPaths applicationPaths,
@@ -100,6 +102,7 @@ internal static class FrontendRegistration
 
         LastRegistrationSucceeded = succeeded;
         ActiveMethod = activeMethod;
+        LastRegistrationUtc = DateTimeOffset.UtcNow;
         return succeeded;
     }
 

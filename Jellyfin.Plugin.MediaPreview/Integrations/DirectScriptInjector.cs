@@ -29,6 +29,25 @@ internal static class DirectScriptInjector
         }
     }
 
+    /// <summary>Whether jellyfin-web/index.html currently carries a Media Preview loader; null when unreadable.</summary>
+    internal static bool? HasLoader(IApplicationPaths applicationPaths)
+    {
+        if (string.IsNullOrWhiteSpace(applicationPaths.WebPath))
+        {
+            return null;
+        }
+
+        string indexFile = Path.Combine(applicationPaths.WebPath, "index.html");
+        try
+        {
+            return File.Exists(indexFile) ? FrontendInjectionMarkup.Contains(File.ReadAllText(indexFile)) : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     internal static bool TryInject(IApplicationPaths applicationPaths, ILogger logger)
     {
         string? indexFile = GetIndexFile(applicationPaths, logger);

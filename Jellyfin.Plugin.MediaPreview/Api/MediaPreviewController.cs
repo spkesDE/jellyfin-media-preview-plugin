@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Jellyfin.Plugin.MediaPreview.Trailers;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,8 @@ public sealed class MediaPreviewController : ControllerBase
 {
     private const string ScriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.mediapreview.bundle.js";
     private const string ConfigScriptResourcePath = "Jellyfin.Plugin.MediaPreview.dist.config.bundle.js";
+    // Jellyfin's policy name for administrator-only endpoints (Jellyfin.Api.Constants.Policies).
+    private const string AdministratorPolicy = "RequiresElevation";
     private const string LibraryOverridesKey = "libraryPreviewSourceOverrides";
     private const string HasLibraryOverridesKey = "hasLibraryPreviewSourceOverrides";
     private static readonly JsonSerializerOptions RuntimeConfigJsonOptions = new(JsonSerializerDefaults.Web);
@@ -35,17 +38,20 @@ public sealed class MediaPreviewController : ControllerBase
     private readonly UnavailableTrailerStore _unavailableTrailerStore;
     private readonly FrontendInjectionAvailabilityService _frontendInjectionAvailability;
     private readonly IUserManager _userManager;
+    private readonly IApplicationPaths _applicationPaths;
 
     public MediaPreviewController(
         ILogger<MediaPreviewController> logger,
         ILibraryManager libraryManager,
         IUserManager userManager,
+        IApplicationPaths applicationPaths,
         UnavailableTrailerStore unavailableTrailerStore,
         FrontendInjectionAvailabilityService frontendInjectionAvailability)
     {
         _logger = logger;
         _libraryManager = libraryManager;
         _userManager = userManager;
+        _applicationPaths = applicationPaths;
         _unavailableTrailerStore = unavailableTrailerStore;
         _frontendInjectionAvailability = frontendInjectionAvailability;
     }
@@ -176,6 +182,43 @@ public sealed class MediaPreviewController : ControllerBase
         });
     }
 
+    [Authorize(Policy = AdministratorPolicy)]
+    [HttpGet("config/diagnostics")]
+    [ProducesResponseType<DiagnosticsResponse>(StatusCodes.Status200OK)]
+    public ActionResult<DiagnosticsResponse> GetDiagnostics()
+    {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        PluginConfiguration config = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
+        FrontendInjectionAvailability availability = _frontendInjectionAvailability.GetAvailability();
+        return Ok(new DiagnosticsResponse
+        {
+            PluginVersion = Plugin.Instance?.Version?.ToString() ?? "unknown",
+            ConfiguredMethod = config.FrontendInjectionMethod,
+            ActiveMethod = FrontendRegistration.ActiveMethod,
+            LastRegistrationSucceeded = FrontendRegistration.LastRegistrationSucceeded,
+            LastRegistrationUtc = FrontendRegistration.LastRegistrationUtc,
+            PluginDiscoveryComplete = availability.PluginDiscoveryComplete,
+            FileTransformationAvailable = availability.FileTransformation,
+            JavaScriptInjectorAvailable = availability.JavaScriptInjector,
+            DirectInjectionAvailable = availability.Direct,
+            DirectLoaderInIndex = DirectScriptInjector.HasLoader(_applicationPaths),
+            ClientBundle = DescribeBundle(ClientScript),
+            ConfigBundle = DescribeBundle(ConfigScript)
+        });
+    }
+
+    private static BundleDiagnostics DescribeBundle(Lazy<byte[]> bundle)
+    {
+        try
+        {
+            return new BundleDiagnostics { Valid = true, SizeBytes = bundle.Value.Length };
+        }
+        catch (Exception ex)
+        {
+            return new BundleDiagnostics { Valid = false, Error = ex.Message };
+        }
+    }
+
     [Authorize]
     [HttpGet("config/library-overrides")]
     [ProducesResponseType<LibraryOverridesResponse>(StatusCodes.Status200OK)]
@@ -206,6 +249,72 @@ public sealed class MediaPreviewController : ControllerBase
             .GetActiveVideoIdsAsync(cancellationToken)
             .ConfigureAwait(false);
         return Ok(new UnavailableTrailerListResponse { VideoIds = videoIds });
+    }
+
+    [Authorize(Policy = AdministratorPolicy)]
+    [HttpGet("unavailable-trailers/details")]
+    [ProducesResponseType<UnavailableTrailerDetailsResponse>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<UnavailableTrailerDetailsResponse>> GetUnavailableTrailerDetails(
+        CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "no-store, no-cache, must-revalidate";
+        PluginConfiguration config = PluginConfigurationNormalizer.Normalize(Plugin.Instance?.Configuration);
+        IReadOnlyList<UnavailableTrailerSnapshot> entries = await _unavailableTrailerStore
+            .GetEntriesAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return Ok(new UnavailableTrailerDetailsResponse
+        {
+            Enabled = config.UnavailableTrailerCacheEnabled,
+            RetryDays = config.UnavailableTrailerRetryDays,
+            Entries = entries.Select(entry => new UnavailableTrailerDetail
+            {
+                VideoId = entry.VideoId,
+                ErrorCode = entry.ErrorCode,
+                FirstSeenUtc = entry.FirstSeenUtc,
+                LastSeenUtc = entry.LastSeenUtc,
+                RetryAfterUtc = entry.RetryAfterUtc,
+                ReportCount = entry.ReportCount,
+                Items = entry.ItemIds
+                    .Select(itemId => Guid.TryParse(itemId, out Guid id) ? _libraryManager.GetItemById(id) : null)
+                    .OfType<BaseItem>()
+                    .Select(item => new UnavailableTrailerItem
+                    {
+                        Id = item.Id.ToString("N"),
+                        Name = item.Name ?? string.Empty,
+                        Type = item.GetBaseItemKind().ToString(),
+                        ProductionYear = item.ProductionYear
+                    })
+                    .ToArray()
+            }).ToArray()
+        });
+    }
+
+    [Authorize(Policy = AdministratorPolicy)]
+    [HttpDelete("unavailable-trailers/{videoId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ResetUnavailableTrailer(
+        [FromRoute] string videoId,
+        CancellationToken cancellationToken)
+    {
+        if (!YouTubeVideoId.IsValid(videoId))
+        {
+            return BadRequest("The video id is invalid.");
+        }
+
+        bool removed = await _unavailableTrailerStore.RemoveAsync(videoId, cancellationToken).ConfigureAwait(false);
+        return removed ? NoContent() : NotFound();
+    }
+
+    [Authorize(Policy = AdministratorPolicy)]
+    [HttpDelete("unavailable-trailers")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> ResetAllUnavailableTrailers(CancellationToken cancellationToken)
+    {
+        await _unavailableTrailerStore.ClearAsync(cancellationToken).ConfigureAwait(false);
+        return NoContent();
     }
 
     [Authorize]
