@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Jellyfin.Plugin.MediaPreview.Trailers;
@@ -87,11 +88,54 @@ public sealed class MediaPreviewController : ControllerBase
         byte[] configBytes = Encoding.UTF8.GetBytes(
             "window.JellyfinMediaPreviewPluginConfig = " + serializedConfig + ";" + Environment.NewLine);
 
+        // The response only changes with the bundle or the configuration, so it is hashed into
+        // an ETag. Browsers revalidate on every load (no-cache) and get a 304 while unchanged,
+        // instead of downloading the whole bundle again.
+        string etag = BuildScriptEtag(configBytes, scriptBytes);
+        Response.Headers.CacheControl = "no-cache";
+        Response.Headers.Remove("Pragma");
+        Response.Headers.Remove("Expires");
+        Response.Headers.ETag = etag;
+        if (IfNoneMatchContains(Request.Headers.IfNoneMatch, etag))
+        {
+            return StatusCode(StatusCodes.Status304NotModified);
+        }
+
         using MemoryStream scriptBuffer = new MemoryStream();
         scriptBuffer.Write(configBytes, 0, configBytes.Length);
         scriptBuffer.Write(scriptBytes, 0, scriptBytes.Length);
 
         return File(scriptBuffer.ToArray(), "application/javascript; charset=utf-8");
+    }
+
+    internal static string BuildScriptEtag(byte[] configBytes, byte[] scriptBytes)
+    {
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(configBytes);
+        hash.AppendData(scriptBytes);
+        return "\"" + Convert.ToHexString(hash.GetHashAndReset(), 0, 16).ToLowerInvariant() + "\"";
+    }
+
+    internal static bool IfNoneMatchContains(IEnumerable<string?> ifNoneMatchHeaders, string etag)
+    {
+        foreach (string? header in ifNoneMatchHeaders)
+        {
+            if (string.IsNullOrEmpty(header))
+            {
+                continue;
+            }
+
+            foreach (string candidate in header.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+            {
+                string normalized = candidate.StartsWith("W/", StringComparison.Ordinal) ? candidate[2..] : candidate;
+                if (normalized == "*" || string.Equals(normalized, etag, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     [HttpGet("config-script")]
