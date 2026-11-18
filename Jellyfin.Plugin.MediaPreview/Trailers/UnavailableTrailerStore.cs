@@ -43,7 +43,15 @@ public sealed class UnavailableTrailerStore
             UnavailableTrailerCache cache = await GetCacheAsync(cancellationToken).ConfigureAwait(false);
             if (RefreshExpirationAndPrune(cache, DateTimeOffset.UtcNow, GetEntryLifetime()))
             {
-                await SaveAsync(cache, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await SaveAsync(cache, cancellationToken).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // SaveAsync already logged the failure. Pruning only tidies the file, so the
+                    // in-memory list is still correct and is returned to the client.
+                }
             }
 
             return cache.Entries

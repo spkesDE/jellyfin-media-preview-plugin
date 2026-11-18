@@ -18,6 +18,7 @@ export const runtimeState = {
     onFocusOut: (event: FocusEvent) => void;
     onKeyDown: (event: KeyboardEvent) => void;
     onPointerDown: () => void;
+    onVisibilityChange: () => void;
   } | null,
   userActivationEventsBound: false,
   userActivationHandler: null as (() => void) | null,

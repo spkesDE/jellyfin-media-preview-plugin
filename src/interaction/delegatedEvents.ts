@@ -13,7 +13,8 @@ import {
   handleMouseMove,
   handlePointerEnter,
   handlePointerLeave,
-  handlePointerMove
+  handlePointerMove,
+  stopPreviewsForHiddenDocument
 } from './hover';
 
 const KEYBOARD_NAVIGATION_INTENT_MS = 1500;
@@ -181,6 +182,12 @@ export function bindDelegatedHoverEvents(): void {
     runtimeState.keyboardNavigationIntentUntil = 0;
   };
 
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') {
+      stopPreviewsForHiddenDocument();
+    }
+  };
+
   document.addEventListener('pointerover', onPointerOver, true);
   document.addEventListener('pointermove', onPointerMove, true);
   document.addEventListener('pointerout', onPointerOut, true);
@@ -191,6 +198,7 @@ export function bindDelegatedHoverEvents(): void {
   document.addEventListener('focusout', onFocusOut, true);
   document.addEventListener('keydown', onKeyDown, true);
   document.addEventListener('pointerdown', onPointerDown, true);
+  document.addEventListener('visibilitychange', onVisibilityChange);
   runtimeState.delegatedHoverHandlers = {
     onPointerOver,
     onPointerMove,
@@ -201,7 +209,8 @@ export function bindDelegatedHoverEvents(): void {
     onFocusIn,
     onFocusOut,
     onKeyDown,
-    onPointerDown
+    onPointerDown,
+    onVisibilityChange
   };
   runtimeState.delegatedHoverEventsBound = true;
 }
@@ -223,6 +232,7 @@ export function unbindDelegatedHoverEvents(): void {
   document.removeEventListener('focusout', handlers.onFocusOut, true);
   document.removeEventListener('keydown', handlers.onKeyDown, true);
   document.removeEventListener('pointerdown', handlers.onPointerDown, true);
+  document.removeEventListener('visibilitychange', handlers.onVisibilityChange);
   runtimeState.delegatedHoverHandlers = null;
   runtimeState.delegatedHoverEventsBound = false;
   runtimeState.keyboardNavigationIntentUntil = 0;

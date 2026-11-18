@@ -142,6 +142,7 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   const videoElement = state.trailerMedia as HTMLVideoElement;
   videoElement.onerror = null;
   videoElement.onloadedmetadata = null;
+  videoElement.onloadeddata = null;
   videoElement.ontimeupdate = null;
   videoElement.onplay = null;
   videoElement.onpause = null;
@@ -376,6 +377,21 @@ export function applyTrailerPreview(
       clearTrailerMedia(state);
       hideMetadataOverlay(state);
       options?.onUnavailable?.();
+    };
+
+    // Chrome plays the audio track of an MP4 whose video codec it cannot decode (for example
+    // HEVC without hardware support) and raises no error, so the preview stays black. A loaded
+    // frame without dimensions is treated like a decode failure to reach the next fallback.
+    mediaElement.onloadeddata = () => {
+      if (mediaElement.videoWidth === 0 && mediaElement.videoHeight === 0) {
+        debugLog('Video preview loaded without a decodable picture.', {
+          itemId: preview.itemId,
+          source: preview.source,
+          provider: trailer.provider,
+          fallbackApplied: mediaElement.dataset.jmpFallbackApplied === 'true'
+        });
+        mediaElement.onerror?.(new Event('error'));
+      }
     };
 
     mediaElement.onerror = () => {

@@ -588,6 +588,31 @@ export function resetPointerTracking(card: HTMLElement, reason?: string): void {
   restoreCard(card);
 }
 
+/**
+ * Ends every hover or keyboard preview when the tab is hidden. Switching tabs often
+ * fires no pointerleave, so playing media (and its audio) would otherwise keep running
+ * in the background. The expanded trailer is left alone: the viewer opened it on purpose.
+ */
+export function stopPreviewsForHiddenDocument(): void {
+  document.querySelectorAll(`[${STATE_ATTR}="true"]`).forEach((card) => {
+    if (!(card instanceof HTMLElement)) {
+      return;
+    }
+
+    const state = getOrCreateCardState(card);
+    // The video element stays attached after a preview ends, so only a playing one counts.
+    const mediaPlaying =
+      state.trailerMedia instanceof HTMLIFrameElement ||
+      (state.trailerMedia instanceof HTMLVideoElement && !state.trailerMedia.paused);
+    if (!state.previewActive && !state.hoverTimer && !mediaPlaying) {
+      return;
+    }
+
+    state.focusInside = false;
+    resetPointerTracking(card, 'document-hidden');
+  });
+}
+
 export function handleFocusEnter(card: HTMLElement): void {
   if (!config.enabled || !config.keyboardPreviewEnabled || runtimeState.expandedTrailerSession) {
     return;

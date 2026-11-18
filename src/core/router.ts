@@ -19,7 +19,8 @@ export function bindRouteEvents(): void {
   window.addEventListener('hashchange', scheduleFullScan, { passive: true });
   window.addEventListener('popstate', scheduleFullScan, { passive: true });
   document.addEventListener('viewshow', scheduleFullScan as EventListener, { passive: true });
-  document.addEventListener('pageshow', scheduleFullScan as EventListener, { passive: true });
+  // pageshow is dispatched on window, not document (fires on bfcache restores).
+  window.addEventListener('pageshow', scheduleFullScan as EventListener, { passive: true });
   runtimeState.routeEventHandler = scheduleFullScan;
   runtimeState.routeEventsBound = true;
 
@@ -46,7 +47,7 @@ export function unbindRouteEvents(): void {
     window.removeEventListener('hashchange', runtimeState.routeEventHandler);
     window.removeEventListener('popstate', runtimeState.routeEventHandler);
     document.removeEventListener('viewshow', runtimeState.routeEventHandler as EventListener);
-    document.removeEventListener('pageshow', runtimeState.routeEventHandler as EventListener);
+    window.removeEventListener('pageshow', runtimeState.routeEventHandler as EventListener);
   }
 
   runtimeState.routeEventHandler = null;
