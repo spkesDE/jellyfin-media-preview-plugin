@@ -195,6 +195,8 @@ internal static class PluginConfigurationNormalizer
             KeyboardArrowScrubEnabled = source.KeyboardArrowScrubEnabled,
             KeyboardArrowStepPercent = Clamp(source.KeyboardArrowStepPercent, 1, 100, 8),
             KeyboardEscapeClosesPreview = source.KeyboardEscapeClosesPreview,
+            TouchPreviewEnabled = source.TouchPreviewEnabled,
+            TouchLongPressMs = Clamp(source.TouchLongPressMs, 250, 1500, 450),
             HoverCountdownEnabled = source.HoverCountdownEnabled,
             HoverCountdownPosition = NormalizeChoice(source.HoverCountdownPosition, ValidTrailerExpandButtonPositions, "top-right"),
             TrickplayWidth = Math.Max(1, source.TrickplayWidth),

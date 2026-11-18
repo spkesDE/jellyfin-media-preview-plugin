@@ -111,3 +111,10 @@
     animation-duration: 2.5s;
   }
 }
+
+/* Touch previews: a long-press on a card must not open the iOS callout or select text. */
+.jmp-touch-previews [data-media-preview-bound='true'] {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}

@@ -5,6 +5,7 @@ import { bindUserActivationEvents, unbindUserActivationEvents } from './interact
 import { bindRouteEvents, unbindRouteEvents } from './core/router';
 import { bindDelegatedHoverEvents, unbindDelegatedHoverEvents } from './interaction/delegatedEvents';
 import { bindCards, stopAllPreviews } from './interaction/hover';
+import { bindTouchEvents, unbindTouchEvents } from './interaction/touch';
 import {
   cancelAdminNavigationRefresh,
   removeUserSettingsEntries,
@@ -52,6 +53,7 @@ export function destroy(): void {
   cancelScheduledScan();
   cancelAdminNavigationRefresh();
   unbindDelegatedHoverEvents();
+  unbindTouchEvents();
   unbindRouteEvents();
   unbindUserActivationEvents();
   destroyCardBindings();
@@ -82,6 +84,7 @@ export function start(): void {
   bindUserActivationEvents();
   bindRouteEvents();
   bindDelegatedHoverEvents();
+  bindTouchEvents();
   bindCards(document);
   scheduleAdminNavigationRefresh();
   observePageChanges();

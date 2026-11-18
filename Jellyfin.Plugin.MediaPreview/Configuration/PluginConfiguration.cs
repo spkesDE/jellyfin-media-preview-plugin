@@ -28,6 +28,10 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public bool KeyboardEscapeClosesPreview { get; set; } = true;
 
+    public bool TouchPreviewEnabled { get; set; } = false;
+
+    public int TouchLongPressMs { get; set; } = 450;
+
     public int TrickplayWidth { get; set; } = 320;
 
     public bool TrickplayPreloadEnabled { get; set; } = false;

@@ -76,6 +76,8 @@ export interface PluginConfig {
   keyboardArrowScrubEnabled: boolean;
   keyboardArrowStepPercent: number;
   keyboardEscapeClosesPreview: boolean;
+  touchPreviewEnabled: boolean;
+  touchLongPressMs: number;
   hoverCountdownEnabled: boolean;
   hoverCountdownPosition: TrailerExpandButtonPosition;
   trickplayWidth: number;

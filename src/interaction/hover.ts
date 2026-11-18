@@ -235,9 +235,10 @@ function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean 
 function scheduleHoverActivation(
   card: HTMLElement,
   state: ReturnType<typeof getOrCreateCardState>,
-  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
+  event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number },
+  delayOverrideMs?: number
 ): void {
-  const effectiveDelayMs = getEffectiveHoverDelayMs(state);
+  const effectiveDelayMs = delayOverrideMs ?? getEffectiveHoverDelayMs(state);
   state.hoverIntentAnchorX = event.clientX;
   state.hoverIntentAnchorY = event.clientY ?? null;
   clearHoverActivationTimer(state);
@@ -577,6 +578,57 @@ export function handlePointerLeave(card: HTMLElement, event: PointerEvent | { po
   }
 
   restoreCard(card);
+}
+
+/**
+ * Starts a preview after a touch long-press. The card counts as "entered" until
+ * stopTouchPreview, so the preview keeps running after the finger lifts.
+ * Returns false when previews are off for this card.
+ */
+export function startTouchPreview(card: HTMLElement, clientX: number, clientY: number): boolean {
+  if (
+    !config.enabled ||
+    !config.touchPreviewEnabled ||
+    config.userPreviewEnabled === false ||
+    runtimeState.expandedTrailerSession
+  ) {
+    return false;
+  }
+
+  const state = getOrCreateCardState(card);
+  if (!ensurePreviewHost(card, state)) {
+    return false;
+  }
+
+  if (state.pointerInside && (state.previewActive || state.hoverTimer)) {
+    // Already running: a second long-press only scrubs.
+    return true;
+  }
+
+  clearLeaveHold(state);
+  state.pointerInside = true;
+  restoreCard(card);
+  hideUnavailableMessage(state);
+  debugCardSummary(card, 'Touch long-press started a preview.');
+  // The long-press itself was the wait, so the hover delay is skipped.
+  scheduleHoverActivation(card, state, { pointerType: 'mouse', clientX, clientY }, 0);
+  return true;
+}
+
+/** Scrubs a running Trickplay preview with a finger moving across the card. */
+export function scrubTouchPreview(card: HTMLElement, clientX: number): void {
+  const state = getOrCreateCardState(card);
+  if (!state.previewActive || isVideoPreviewSource(state.activePreviewSource)) {
+    return;
+  }
+
+  // The finger takes over from automatic motion.
+  clearAutoScrub(state);
+  schedulePreviewUpdate(card, getRelativePercent(card, { clientX }));
+}
+
+export function stopTouchPreview(card: HTMLElement): void {
+  resetPointerTracking(card, 'touch-ended');
 }
 
 export function resetPointerTracking(card: HTMLElement, reason?: string): void {

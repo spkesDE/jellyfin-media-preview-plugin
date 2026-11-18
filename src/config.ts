@@ -90,6 +90,8 @@ const standaloneFallbackConfig: PluginConfig = {
   keyboardArrowScrubEnabled: true,
   keyboardArrowStepPercent: 8,
   keyboardEscapeClosesPreview: true,
+  touchPreviewEnabled: false,
+  touchLongPressMs: 450,
   hoverCountdownEnabled: false,
   hoverCountdownPosition: 'top-right',
   trickplayWidth: 320,
@@ -277,6 +279,8 @@ export function normalizeConfig(): void {
   config.keyboardArrowScrubEnabled = config.keyboardArrowScrubEnabled !== false;
   config.keyboardArrowStepPercent = clamp(numberOrFallback(config.keyboardArrowStepPercent, 8), 1, 100);
   config.keyboardEscapeClosesPreview = config.keyboardEscapeClosesPreview !== false;
+  config.touchPreviewEnabled = config.touchPreviewEnabled === true;
+  config.touchLongPressMs = clamp(numberOrFallback(config.touchLongPressMs, 450), 250, 1500);
   config.metadataOverlayEnabled = config.metadataOverlayEnabled === true;
   config.metadataOverlayShowTitle = config.metadataOverlayShowTitle !== false;
   config.metadataOverlayShowYear = config.metadataOverlayShowYear !== false;
