@@ -18,7 +18,11 @@ Jellyfin Media Preview adds previews directly to cards in Jellyfin Web.
 - Choose different preview sources for in-progress items, libraries, movies, series, episodes, and other videos.
 - Set the fallback order when the preferred preview is unavailable.
 - Adjust hover behavior, card layout, backdrops, metadata, and playback controls.
-- Use experimental keyboard and remote navigation on supported web-based clients.
+- Start previews with the keyboard or a remote, or with a long-press on phones and tablets (experimental).
+- Play a trailer or the item itself in the backdrop of an item's detail page (experimental).
+- Skip intros and recaps with Jellyfin's media segments, and remux instead of transcoding when the browser can decode the video.
+- Let users turn previews off or pick their own source, hover delay, mute and volume.
+- Shown in the user's Jellyfin language (English, German, French, Spanish, Italian, Dutch, Portuguese); the settings page is available in English and German.
 
 > [!NOTE]
 > Previews only appear in Jellyfin Web and clients that use the Jellyfin Web interface. Native apps with their own library screens cannot show them.
@@ -60,7 +64,7 @@ The default `Automatic` mode checks which helpers are installed, enabled, suppor
 2. **JavaScript Injector**
 3. **Direct injection** into `jellyfin-web/index.html`
 
-If one method cannot register, Automatic continues with the next available method. The explicit choices under `Advanced -> Frontend Injection Method` are disabled and marked unavailable when their helper or required file access is missing.
+If one method cannot register, Automatic continues with the next available method. The explicit choices under `Advanced -> Loader and diagnostics -> Injection method` are disabled and marked unavailable when their helper or required file access is missing.
 
 Direct injection is idempotent: Media Preview replaces an existing Media Preview loader instead of adding duplicates. When a helper takes over successfully, the directly injected loader is removed from `index.html`.
 
@@ -82,9 +86,19 @@ Direct injection is idempotent: Media Preview replaces an existing Media Preview
 
 ### User settings
 
-Users can open **Media Preview** from the user menu or their `Settings` page to set preview audio and volume. The Mute button and volume slider on a preview change the same setting.
+Users can open **Media Preview** from the user menu or their `Settings` page to turn previews off, choose their own preview source and hover delay, and set preview audio and volume. The Mute button and volume slider on a preview change the same setting.
 
-Under `Users`, administrators decide whether this is saved per user on the server. When it is off, the choice only lasts until the page is reloaded.
+Under `Users`, administrators decide whether users may change these settings. A user's source choice ranks below the In Progress rule and above library and type rules. When per-user settings are off, everyone uses the server settings and mute or volume changes only last until the page is reloaded.
+
+### Touch and detail pages
+
+Under `Keyboard / Touch`, **Touch** lets phones and tablets start a preview with a long-press on a card image. Moving the finger sideways while holding scrubs Trickplay, and the preview keeps playing until you touch somewhere else. While it is on, the long-press on a card image no longer opens Jellyfin's multi-select.
+
+Under `Trailer & Video`, **Detail page** plays a trailer or the item itself in the backdrop of an item's detail page. It starts muted, pauses when the backdrop scrolls out of view, and steps aside when Jellyfin plays the item's theme video.
+
+### Accessibility and data use
+
+Media Preview follows the browser's reduced motion setting: Auto-Scrub falls back to pointer scrubbing, fades are turned off, and detail page previews do not start. With Data Saver or a very slow connection, only Trickplay images are used.
 
 ## Preview sources
 
@@ -92,7 +106,7 @@ Under `Users`, administrators decide whether this is saved per user on the serve
 
 **Trailers** can use local files or supported remote and YouTube links already known to Jellyfin. Trailer audio is optional and may stay muted until the browser has received user input.
 
-**Direct Play** previews the media item itself. The start point, speed, duration, and optional transcode fallback can be changed in the plugin settings.
+**Direct Play** previews the media item itself. The start point, speed, duration, and optional transcode fallback can be changed in the plugin settings. When the browser can decode the video but not the container (for example H.264 in MKV), Jellyfin remuxes it instead of transcoding. With media segments (Jellyfin 10.10 or later), a preview never starts inside an intro or recap and ends before the credits. Only one preview transcode runs per browser at a time.
 
 The optional **In Progress** rule has the highest priority. It matches items with a saved playback position (but not unwatched Next Up episodes), and Direct Play starts at that saved position.
 
@@ -100,7 +114,7 @@ The optional **In Progress** rule has the highest priority. It matches items wit
 > Use a `Prefer` mode to try other sources when the first choice is unavailable. Fallback sources can be reordered or disabled under `Advanced`.
 
 > [!WARNING]
-> Some YouTube videos block embedded playback because they are private, removed, restricted, or not allowed to play outside YouTube.
+> Some YouTube videos block embedded playback because they are private, removed, restricted, or not allowed to play outside YouTube. Media Preview remembers these server-wide; `Trailer & Video -> Unavailable trailers` lists them with their items and lets you reset one or all.
 
 ## Troubleshooting
 
@@ -111,9 +125,10 @@ If previews do not appear:
 3. Check that the title has data for the selected preview source.
 4. Try a `Prefer` mode to allow another source as a fallback.
 5. Keep the injection method on `Automatic`.
-6. Open `Advanced -> Frontend Injection Method` and check which explicit methods are available.
+6. Open `Advanced -> Loader and diagnostics -> Injection method` and check which explicit methods are available.
 7. For direct injection, confirm that the Jellyfin service account can write to `jellyfin-web/index.html`.
-8. Turn on debug logging under `Advanced` and check the browser console and Jellyfin server log.
+8. Open `Advanced -> Loader and diagnostics -> Diagnostics` to see which injection method is active, when the loader was registered, and whether the embedded bundles are intact.
+9. Turn on debug logging under `Advanced` and check the browser console and Jellyfin server log.
 
 If it works in a browser but not in a TV app, that app probably uses its own library interface.
 
