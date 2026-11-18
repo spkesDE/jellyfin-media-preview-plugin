@@ -121,6 +121,9 @@ const standaloneFallbackConfig: PluginConfig = {
   previewTransitionDurationMs: 180,
   youTubeCropStrength: 'medium',
   trailerExpandButtonEnabled: true,
+  detailPreviewEnabled: false,
+  detailPreviewSource: 'prefer-trailer',
+  detailPreviewDelayMs: 1500,
   trailerExpandButtonPosition: 'top-right',
   metadataOverlayEnabled: false,
   metadataOverlayPosition: 'bottom-left',
@@ -329,6 +332,11 @@ export function normalizeConfig(): void {
   config.showNoPreviewMessage = config.showNoPreviewMessage === true;
   config.hoverCountdownEnabled = config.hoverCountdownEnabled === true;
   config.trailerExpandButtonEnabled = config.trailerExpandButtonEnabled !== false;
+  config.detailPreviewEnabled = config.detailPreviewEnabled === true;
+  if (!['prefer-trailer', 'trailer', 'direct-play', 'prefer-direct-play'].includes(config.detailPreviewSource)) {
+    config.detailPreviewSource = 'prefer-trailer';
+  }
+  config.detailPreviewDelayMs = clamp(numberOrFallback(config.detailPreviewDelayMs, 1500), 0, 10000);
 }
 
 export function normalizeLibraryPreviewSourceOverrides(

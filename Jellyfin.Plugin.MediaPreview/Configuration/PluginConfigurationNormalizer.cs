@@ -105,6 +105,14 @@ internal static class PluginConfigurationNormalizer
         "strong"
     };
 
+    private static readonly HashSet<string> ValidDetailPreviewSources = new(StringComparer.Ordinal)
+    {
+        "prefer-trailer",
+        "trailer",
+        "direct-play",
+        "prefer-direct-play"
+    };
+
     private static readonly HashSet<string> ValidTrailerExpandButtonPositions = new(StringComparer.Ordinal)
     {
         "top-left",
@@ -226,7 +234,10 @@ internal static class PluginConfigurationNormalizer
             PreviewTransitionDurationMs = Math.Max(0, source.PreviewTransitionDurationMs),
             YouTubeCropStrength = NormalizeChoice(source.YouTubeCropStrength, ValidYouTubeCropStrengths, "medium"),
             TrailerExpandButtonEnabled = source.TrailerExpandButtonEnabled,
-            TrailerExpandButtonPosition = NormalizeChoice(source.TrailerExpandButtonPosition, ValidTrailerExpandButtonPositions, "top-right")
+            TrailerExpandButtonPosition = NormalizeChoice(source.TrailerExpandButtonPosition, ValidTrailerExpandButtonPositions, "top-right"),
+            DetailPreviewEnabled = source.DetailPreviewEnabled,
+            DetailPreviewSource = NormalizeChoice(source.DetailPreviewSource, ValidDetailPreviewSources, "prefer-trailer"),
+            DetailPreviewDelayMs = Clamp(source.DetailPreviewDelayMs, 0, 10000, 1500)
         };
 
         if (normalized.AutoScrubMaxDelayMs < normalized.AutoScrubMinDelayMs)

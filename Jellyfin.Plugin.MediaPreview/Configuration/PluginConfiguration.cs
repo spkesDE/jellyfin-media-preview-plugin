@@ -161,5 +161,11 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public bool TrailerExpandButtonEnabled { get; set; } = true;
 
+    public bool DetailPreviewEnabled { get; set; } = false;
+
+    public string DetailPreviewSource { get; set; } = "prefer-trailer";
+
+    public int DetailPreviewDelayMs { get; set; } = 1500;
+
     public string TrailerExpandButtonPosition { get; set; } = "top-right";
 }

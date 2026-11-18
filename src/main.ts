@@ -6,6 +6,7 @@ import { bindRouteEvents, unbindRouteEvents } from './core/router';
 import { bindDelegatedHoverEvents, unbindDelegatedHoverEvents } from './interaction/delegatedEvents';
 import { bindCards, stopAllPreviews } from './interaction/hover';
 import { bindTouchEvents, unbindTouchEvents } from './interaction/touch';
+import { bindDetailPreview, stopDetailPreview, unbindDetailPreview } from './detailPreview/detailPreview';
 import {
   cancelAdminNavigationRefresh,
   removeUserSettingsEntries,
@@ -37,6 +38,7 @@ function handleUserPreferencesChanged(event: Event): void {
     applyEffectivePreferences(response);
     if (config.userPreviewEnabled === false) {
       stopAllPreviews('user-preview-disabled');
+      stopDetailPreview();
     }
   }
 }
@@ -54,6 +56,7 @@ export function destroy(): void {
   cancelAdminNavigationRefresh();
   unbindDelegatedHoverEvents();
   unbindTouchEvents();
+  unbindDetailPreview();
   unbindRouteEvents();
   unbindUserActivationEvents();
   destroyCardBindings();
@@ -88,6 +91,7 @@ export function start(): void {
   bindCards(document);
   scheduleAdminNavigationRefresh();
   observePageChanges();
+  bindDetailPreview();
   log('Media Preview initialized.');
 }
 

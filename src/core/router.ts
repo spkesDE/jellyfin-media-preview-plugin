@@ -2,6 +2,7 @@ import { scheduleAdminNavigationRefresh } from '../admin/navigation';
 import { syncCurrentUserPreferences } from '../userPreferences/api';
 import { scheduleScan } from './observer';
 import { runtimeState } from '../runtime';
+import { syncDetailPreview } from '../detailPreview/detailPreview';
 
 type HistoryMethodName = 'pushState' | 'replaceState';
 
@@ -12,6 +13,7 @@ export function bindRouteEvents(): void {
 
   const scheduleFullScan = () => {
     scheduleScan(document);
+    syncDetailPreview();
     scheduleAdminNavigationRefresh();
     void syncCurrentUserPreferences();
   };

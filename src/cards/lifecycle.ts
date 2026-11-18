@@ -24,6 +24,7 @@ import mediaPreviewHoverStyles from '../styles/mediaPreviewHover.css';
 import mediaPreviewMetadataStyles from '../styles/mediaPreviewMetadata.css';
 import mediaPreviewTrailerStyles from '../styles/mediaPreviewTrailer.css';
 import mediaPreviewExpandedTrailerStyles from '../styles/mediaPreviewExpandedTrailer.css';
+import mediaPreviewDetailStyles from '../styles/mediaPreviewDetail.css';
 import type { CardState } from '../types/state';
 
 const mediaPreviewStyles = [
@@ -31,7 +32,8 @@ const mediaPreviewStyles = [
   mediaPreviewHoverStyles,
   mediaPreviewMetadataStyles,
   mediaPreviewTrailerStyles,
-  mediaPreviewExpandedTrailerStyles
+  mediaPreviewExpandedTrailerStyles,
+  mediaPreviewDetailStyles
 ].join('\n');
 
 function restoreManagedHostStyles(state: CardState): void {
