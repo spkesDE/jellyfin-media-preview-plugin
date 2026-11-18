@@ -1,91 +1,119 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { ContentTypePreviewSource, PreviewChainSource } from '../../types/config';
+import { t } from '../i18n';
 import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
-import ConfigCheckbox from '../components/ConfigCheckbox.vue';
+import ConfigGrid from '../components/ConfigGrid.vue';
+import ConfigListHeader from '../components/ConfigListHeader.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
+import ConfigSection from '../components/ConfigSection.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
+import ConfigSwitch from '../components/ConfigSwitch.vue';
 import type { ConfigPreviewFallbackSource } from '../libs/types';
 
 const store = useConfigStore();
-const positionOptions: SelectOption[] = [
-  { value: 'top-left', label: 'Top Left' },
-  { value: 'top-right', label: 'Top Right' },
-  { value: 'bottom-left', label: 'Bottom Left' },
-  { value: 'bottom-right', label: 'Bottom Right' }
-];
-const defaultSourceOptions: SelectOption[] = [
-  { value: 'trickplay', label: 'Only Trickplay' },
-  { value: 'direct-play', label: 'Only Direct Play' },
-  { value: 'trailer', label: 'Only Trailer' },
-  { value: 'prefer-trickplay', label: 'Prefer Trickplay' },
-  { value: 'prefer-trailer', label: 'Prefer Trailer' },
-  { value: 'prefer-direct-play', label: 'Prefer Direct Play' }
-];
-const inheritedSourceOptions: SelectOption[] = [{ value: 'inherit', label: 'Use Default' }, ...defaultSourceOptions];
-const librarySourceOptions: SelectOption[] = [
-  { value: 'inherit', label: 'Use Type / Default Chain' },
-  ...defaultSourceOptions
-];
+const positionOptions = computed<SelectOption[]>(() => [
+  { value: 'top-left', label: t('position.topLeft') },
+  { value: 'top-right', label: t('position.topRight') },
+  { value: 'bottom-left', label: t('position.bottomLeft') },
+  { value: 'bottom-right', label: t('position.bottomRight') }
+]);
+const defaultSourceOptions = computed<SelectOption[]>(() => [
+  { value: 'trickplay', label: t('source.onlyTrickplay') },
+  { value: 'direct-play', label: t('source.onlyDirectPlay') },
+  { value: 'trailer', label: t('source.onlyTrailer') },
+  { value: 'prefer-trickplay', label: t('source.preferTrickplay') },
+  { value: 'prefer-trailer', label: t('source.preferTrailer') },
+  { value: 'prefer-direct-play', label: t('source.preferDirectPlay') }
+]);
+const inheritedSourceOptions = computed<SelectOption[]>(() => [
+  { value: 'inherit', label: t('source.useDefault') },
+  ...defaultSourceOptions.value
+]);
+const librarySourceOptions = computed<SelectOption[]>(() => [
+  { value: 'inherit', label: t('source.useTypeOrDefault') },
+  ...defaultSourceOptions.value
+]);
 
-const sourceDescriptions: Partial<Record<ContentTypePreviewSource, string>> = {
-  inherit: 'Continue to the next rule: library → media type → default.',
-  trickplay: 'Only Trickplay: use Jellyfin scrub images. No video fallback.',
-  'direct-play': 'Only Direct Play: play the media item itself, then use the optional bounded transcode fallback.',
-  trailer: 'Only Trailer: local trailer → supported remote or YouTube trailer. No other source fallback.'
-};
-
-const sourceLabels: Record<PreviewChainSource, string> = {
-  trickplay: 'Trickplay',
-  'local-trailer': 'local trailer',
-  'remote-trailer': 'supported remote or YouTube trailer',
-  'direct-play': 'Direct Play → optional transcode'
-};
-
-function describePreferred(primary: PreviewChainSource, fallbacks: ConfigPreviewFallbackSource[]): string {
-  const chain = [primary, ...fallbacks.filter((entry) => entry.Enabled).map((entry) => entry.Source)];
-  return chain.map((source) => sourceLabels[source]).join(' → ');
+function chainLabel(source: PreviewChainSource): string {
+  return {
+    trickplay: t('chain.trickplay'),
+    'local-trailer': t('chain.localTrailer'),
+    'remote-trailer': t('chain.remoteTrailer'),
+    'direct-play': t('chain.directPlay')
+  }[source];
 }
 
-function describeConfigured(chain: ConfigPreviewFallbackSource[]): string {
-  return chain
-    .filter((entry) => entry.Enabled)
-    .map((entry) => sourceLabels[entry.Source])
-    .join(' → ');
+function describeChain(primary: PreviewChainSource | null, fallbacks: ConfigPreviewFallbackSource[]): string {
+  const chain = [
+    ...(primary ? [primary] : []),
+    ...fallbacks.filter((entry) => entry.Enabled).map((entry) => entry.Source)
+  ];
+  return chain.map(chainLabel).join(' → ');
 }
 
 function describeSource(value: unknown): string {
   const source = String(value || 'inherit') as ContentTypePreviewSource;
-  if (source === 'prefer-trailer') {
-    return `Prefer Trailer: ${describeConfigured(store.config.PreferTrailerFallbacks)}.`;
+  switch (source) {
+    case 'prefer-trailer':
+      return `${t('source.preferTrailer')}: ${describeChain(null, store.config.PreferTrailerFallbacks)}.`;
+    case 'prefer-trickplay':
+      return `${t('source.preferTrickplay')}: ${describeChain('trickplay', store.config.PreferTrickplayFallbacks)}.`;
+    case 'prefer-direct-play':
+      return `${t('source.preferDirectPlay')}: ${describeChain('direct-play', store.config.PreferDirectPlayFallbacks)}.`;
+    case 'trickplay':
+      return t('source.describeTrickplay');
+    case 'direct-play':
+      return t('source.describeDirectPlay');
+    case 'trailer':
+      return t('source.describeTrailer');
+    default:
+      return t('source.describeInherit');
   }
-  if (source === 'prefer-trickplay') {
-    return `Prefer Trickplay: ${describePreferred('trickplay', store.config.PreferTrickplayFallbacks)}.`;
-  }
-  if (source === 'prefer-direct-play') {
-    return `Prefer Direct Play: ${describePreferred('direct-play', store.config.PreferDirectPlayFallbacks)}.`;
-  }
-  return sourceDescriptions[source] || sourceDescriptions.inherit || '';
+}
+
+function sourceName(value: unknown): string {
+  return [...inheritedSourceOptions.value].find((option) => option.value === value)?.label ?? String(value || '');
 }
 
 function formatCollectionType(value?: string): string {
-  return (
-    {
-      movies: 'Movies',
-      tvshows: 'TV Shows',
-      musicvideos: 'Music Videos',
-      homevideos: 'Home Videos',
-      mixed: 'Mixed',
-      boxsets: 'Collections'
-    }[String(value || '').toLowerCase()] ||
-    value ||
-    'Library'
-  );
+  const key = String(value || '').toLowerCase();
+  const labels: Record<string, string> = {
+    movies: t('library.movies'),
+    tvshows: t('library.tvshows'),
+    musicvideos: t('library.musicvideos'),
+    homevideos: t('library.homevideos'),
+    mixed: t('library.mixed'),
+    boxsets: t('library.boxsets')
+  };
+  return labels[key] || value || t('library.generic');
 }
 
 function updateLibraryOverride(libraryId: string, value: string): void {
   store.setLibraryOverride(libraryId, value as ContentTypePreviewSource);
 }
+
+const ruleCount = computed(
+  () =>
+    store.libraries.value.filter((library) => store.getLibraryOverride(library.Id) !== 'inherit').length +
+    [
+      store.config.InProgressPreviewSource,
+      store.config.MoviePreviewSource,
+      store.config.SeriesPreviewSource,
+      store.config.EpisodePreviewSource,
+      store.config.VideoPreviewSource
+    ].filter((value) => value !== 'inherit').length
+);
+
+const summary = computed(() =>
+  [
+    store.config.Enabled ? t('common.enabled') : t('common.disabled'),
+    t('general.summaryDelay', { ms: Number(store.config.HoverDelayMs) || 0 }),
+    sourceName(store.config.PreviewSource),
+    ruleCount.value === 1 ? t('general.summaryRuleOne') : t('general.summaryRules', { count: ruleCount.value })
+  ].join(' · ')
+);
 </script>
 
 <template>
@@ -96,127 +124,132 @@ function updateLibraryOverride(libraryId: string, value: string): void {
     role="tabpanel"
     aria-labelledby="mediaPreviewTab-general"
   >
-    <div class="jmp-generalGrid">
-      <ConfigCard title="Basics" help="Primary on/off switches and what happens when a preview starts or ends.">
-        <ConfigCheckbox v-model="store.config.Enabled" label="Enable Hover Preview" />
-        <ConfigNumber v-model="store.config.HoverDelayMs" label="Hover Delay (ms)" :min="0" :step="50" />
-        <p class="jmp-note">The optional countdown uses this same hover delay.</p>
-        <ConfigCheckbox v-model="store.config.ShowNoPreviewMessage" label='Show "No Preview Available" Message' />
-        <ConfigCheckbox v-model="store.config.RestoreOnLeave" label="Restore Poster On Mouse Leave" />
+    <ConfigListHeader :title="t('general.title')" :help-text="t('general.help')" :summary="summary">
+      <template #actions>
+        <label class="jmp-headerSwitch">
+          <span>{{ t('common.enabled') }}</span>
+          <ConfigSwitch v-model="store.config.Enabled" :label="t('general.enable')" hide-label />
+        </label>
+      </template>
+    </ConfigListHeader>
 
-        <div class="jmp-blockDivider">
-          <p class="jmp-subsectionTitle">Hover Behavior</p>
-          <p class="jmp-subsectionHelp">Tune how deliberate a hover must be before a preview starts.</p>
-          <ConfigCheckbox v-model="store.config.HoverIntentEnabled" label="Enable Hover Intent" />
-          <p class="jmp-note jmp-note-tight">
-            Helps prevent accidental preview starts while you are just sweeping across posters.
-          </p>
+    <div class="jmp-generalGrid">
+      <ConfigCard :title="t('general.hoverTitle')">
+        <ConfigSection :title="t('general.timingSection')">
+          <ConfigGrid>
+            <ConfigNumber v-model="store.config.HoverDelayMs" :label="t('general.hoverDelay')" :min="0" :step="50" />
+            <ConfigNumber
+              v-model="store.config.HoverCooldownMs"
+              :label="t('general.hoverCooldown')"
+              :help-text="t('general.hoverCooldownHelp')"
+              :min="0"
+              :step="50"
+            />
+          </ConfigGrid>
+        </ConfigSection>
+
+        <ConfigSection :title="t('general.intentSection')" :help-text="t('general.intentHelp')">
+          <ConfigSwitch v-model="store.config.HoverIntentEnabled" :label="t('general.intentEnable')" />
           <ConfigNumber
             v-if="store.config.HoverIntentEnabled"
             v-model="store.config.HoverIntentThresholdPx"
-            label="Hover Intent Movement Threshold (px)"
+            :label="t('general.intentThreshold')"
             :min="0"
             :step="1"
           />
-          <p class="jmp-note">
-            When enabled, the hover delay restarts if the pointer keeps moving too far across the card. This helps avoid
-            accidental preview starts while you are just passing over items.
-          </p>
-          <ConfigNumber v-model="store.config.HoverCooldownMs" label="Hover Cooldown (ms)" :min="0" :step="50" />
-          <p class="jmp-note">Adds a short re-entry cooldown per card before another preview may start again.</p>
-          <ConfigCheckbox v-model="store.config.HoverCountdownEnabled" label="Show Hover Countdown" />
+        </ConfigSection>
+
+        <ConfigSection :title="t('general.feedbackSection')">
+          <ConfigSwitch
+            v-model="store.config.HoverCountdownEnabled"
+            :label="t('general.countdown')"
+            :help-text="t('general.countdownHelp')"
+          />
           <ConfigSelect
             v-if="store.config.HoverCountdownEnabled"
             v-model="store.config.HoverCountdownPosition"
-            label="Countdown Position"
+            :label="t('general.countdownPosition')"
             :options="positionOptions"
           />
-        </div>
+          <ConfigSwitch v-model="store.config.ShowNoPreviewMessage" :label="t('general.noPreviewMessage')" />
+          <ConfigSwitch v-model="store.config.RestoreOnLeave" :label="t('general.restoreOnLeave')" />
+        </ConfigSection>
       </ConfigCard>
 
       <div class="jmp-generalSelectionGrid">
-        <ConfigCard
-          class="jmp-selectionIntro"
-          title="Preview Selection"
-          help="Rules are evaluated from highest to lowest priority. Leave a rule on inherit to continue down the chain."
-        />
+        <ConfigCard class="jmp-selectionIntro" :title="t('rules.title')" :help="t('rules.help')" />
 
         <ConfigCard
-          title="In Progress Rule"
-          badge="Priority 1"
-          help="Overrides the rules below for an item with a saved playback position. Next Up episodes without their own progress are not included."
+          :title="t('rules.inProgressTitle')"
+          :badge="t('rules.priority', { n: 1 })"
+          :help="t('rules.inProgressHelp')"
         >
           <ConfigSelect
             v-model="store.config.InProgressPreviewSource"
-            label="In Progress Items"
+            :label="t('rules.inProgressLabel')"
             :help-text="describeSource(store.config.InProgressPreviewSource)"
             :options="inheritedSourceOptions"
           />
-          <p class="jmp-note">Direct Play starts at the saved playback position when this rule is active.</p>
         </ConfigCard>
 
         <ConfigCard
-          title="Library Rule"
-          badge="Priority 2"
-          help='After the in-progress rule, everything in a configured library uses this rule. "Use Type / Default Chain" falls through.'
+          :title="t('rules.libraryTitle')"
+          :badge="t('rules.priority', { n: 2 })"
+          :help="t('rules.libraryHelp')"
         >
-          <ConfigSelect
-            v-for="library in store.libraries.value"
-            :key="library.Id"
-            :model-value="store.getLibraryOverride(library.Id)"
-            :label="`${library.Name} (${formatCollectionType(library.CollectionType)})`"
-            :help-text="describeSource(store.getLibraryOverride(library.Id))"
-            :options="librarySourceOptions"
-            @update:model-value="updateLibraryOverride(library.Id, $event)"
-          />
-          <p v-if="!store.libraries.value.length" class="jmp-note">
-            No accessible libraries were returned for the current user.
-          </p>
+          <ConfigGrid v-if="store.libraries.value.length">
+            <ConfigSelect
+              v-for="library in store.libraries.value"
+              :key="library.Id"
+              :model-value="store.getLibraryOverride(library.Id)"
+              :label="`${library.Name} (${formatCollectionType(library.CollectionType)})`"
+              :help-text="describeSource(store.getLibraryOverride(library.Id))"
+              :options="librarySourceOptions"
+              @update:model-value="updateLibraryOverride(library.Id, $event)"
+            />
+          </ConfigGrid>
+          <p v-else class="jmp-note">{{ t('rules.noLibraries') }}</p>
         </ConfigCard>
 
-        <ConfigCard
-          title="Type Rule"
-          badge="Priority 3"
-          help="Used only when the current library has no explicit rule."
-        >
-          <div class="jmp-compactGrid">
+        <ConfigCard :title="t('rules.typeTitle')" :badge="t('rules.priority', { n: 3 })" :help="t('rules.typeHelp')">
+          <ConfigGrid>
             <ConfigSelect
               v-model="store.config.MoviePreviewSource"
-              label="Movies"
+              :label="t('rules.movies')"
               :help-text="describeSource(store.config.MoviePreviewSource)"
               :options="inheritedSourceOptions"
             />
             <ConfigSelect
               v-model="store.config.SeriesPreviewSource"
-              label="Series"
+              :label="t('rules.series')"
               :help-text="describeSource(store.config.SeriesPreviewSource)"
               :options="inheritedSourceOptions"
             />
             <ConfigSelect
               v-model="store.config.EpisodePreviewSource"
-              label="Episodes"
+              :label="t('rules.episodes')"
               :help-text="describeSource(store.config.EpisodePreviewSource)"
               :options="inheritedSourceOptions"
             />
             <ConfigSelect
               v-model="store.config.VideoPreviewSource"
-              label="Other Videos"
+              :label="t('rules.otherVideos')"
               :help-text="describeSource(store.config.VideoPreviewSource)"
               :options="inheritedSourceOptions"
             />
-          </div>
+          </ConfigGrid>
         </ConfigCard>
 
         <ConfigCard
           class="jmp-selectionFallback"
-          title="Default Fallback"
-          badge="Priority 4"
+          :title="t('rules.defaultTitle')"
+          :badge="t('rules.priority', { n: 4 })"
           badge-tone="muted"
-          help="Used only when neither a library rule nor a type rule matches."
+          :help="t('rules.defaultHelp')"
         >
           <ConfigSelect
             v-model="store.config.PreviewSource"
-            label="Default Preview Mode"
+            :label="t('rules.defaultLabel')"
             :help-text="describeSource(store.config.PreviewSource)"
             :options="defaultSourceOptions"
           />

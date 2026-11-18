@@ -1,10 +1,24 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { t } from '../i18n';
 import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
-import ConfigCheckbox from '../components/ConfigCheckbox.vue';
+import ConfigGrid from '../components/ConfigGrid.vue';
+import ConfigListHeader from '../components/ConfigListHeader.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
+import ConfigSection from '../components/ConfigSection.vue';
+import ConfigSwitch from '../components/ConfigSwitch.vue';
 
 const store = useConfigStore();
+
+const summary = computed(() =>
+  [
+    store.config.KeyboardPreviewEnabled ? t('input.summaryKeyboardOn') : t('input.summaryKeyboardOff'),
+    store.config.TouchPreviewEnabled
+      ? t('input.summaryTouchOn', { ms: Number(store.config.TouchLongPressMs) || 0 })
+      : t('input.summaryTouchOff')
+  ].join(' · ')
+);
 </script>
 
 <template>
@@ -15,45 +29,55 @@ const store = useConfigStore();
     role="tabpanel"
     aria-labelledby="mediaPreviewTab-keyboard"
   >
+    <ConfigListHeader :title="t('input.title')" :help-text="t('input.help')" :summary="summary" />
+
     <div class="jmp-subgrid">
-      <ConfigCard
-        title="Activation"
-        badge="Work in progress"
-        badge-tone="wip"
-        help="Experimental focus-based navigation. Behavior may still vary between Jellyfin views and clients."
-      >
-        <ConfigCheckbox v-model="store.config.KeyboardPreviewEnabled" label="Enable Keyboard Preview" />
+      <ConfigCard :title="t('input.keyboardTitle')">
+        <ConfigSection :title="t('input.activationSection')" :help-text="t('input.keyboardHelp')">
+          <ConfigSwitch v-model="store.config.KeyboardPreviewEnabled" :label="t('input.keyboardEnable')" />
+          <ConfigGrid v-if="store.config.KeyboardPreviewEnabled">
+            <ConfigNumber
+              v-model="store.config.KeyboardPreviewDelayMs"
+              :label="t('input.keyboardDelay')"
+              :min="0"
+              :step="50"
+            />
+            <ConfigNumber
+              v-model="store.config.KeyboardPreviewStartPercent"
+              :label="t('input.keyboardStart')"
+              :min="0"
+              :max="100"
+              :step="1"
+            />
+          </ConfigGrid>
+        </ConfigSection>
+        <ConfigSection v-if="store.config.KeyboardPreviewEnabled" :title="t('input.navigationSection')">
+          <ConfigSwitch v-model="store.config.KeyboardArrowScrubEnabled" :label="t('input.arrowScrub')" />
+          <ConfigNumber
+            v-if="store.config.KeyboardArrowScrubEnabled"
+            v-model="store.config.KeyboardArrowStepPercent"
+            :label="t('input.arrowStep')"
+            :min="1"
+            :max="100"
+            :step="1"
+          />
+          <ConfigSwitch v-model="store.config.KeyboardEscapeClosesPreview" :label="t('input.escape')" />
+        </ConfigSection>
       </ConfigCard>
-    </div>
 
-    <div v-if="store.config.KeyboardPreviewEnabled" class="jmp-subgrid">
-      <ConfigCard title="Activation Timing" help="Decide when a focused card should start its preview.">
-        <ConfigNumber
-          v-model="store.config.KeyboardPreviewDelayMs"
-          label="Keyboard Preview Delay (ms)"
-          :min="0"
-          :step="50"
-        />
-        <ConfigNumber
-          v-model="store.config.KeyboardPreviewStartPercent"
-          label="Keyboard Start Position (%)"
-          :min="0"
-          :max="100"
-          :step="1"
-        />
-      </ConfigCard>
-
-      <ConfigCard title="Navigation" help="Control how previews react once the card is focused.">
-        <ConfigCheckbox v-model="store.config.KeyboardArrowScrubEnabled" label="Enable Arrow-Key Scrubbing" />
-        <ConfigNumber
-          v-if="store.config.KeyboardArrowScrubEnabled"
-          v-model="store.config.KeyboardArrowStepPercent"
-          label="Arrow-Key Step (%)"
-          :min="1"
-          :max="100"
-          :step="1"
-        />
-        <ConfigCheckbox v-model="store.config.KeyboardEscapeClosesPreview" label="Escape Closes Preview" />
+      <ConfigCard :title="t('input.touchTitle')" :badge="t('common.experimental')" badge-tone="wip">
+        <ConfigSection :title="t('input.activationSection')" :help-text="t('input.touchHelp')">
+          <ConfigSwitch v-model="store.config.TouchPreviewEnabled" :label="t('input.touchEnable')" />
+          <ConfigNumber
+            v-if="store.config.TouchPreviewEnabled"
+            v-model="store.config.TouchLongPressMs"
+            :label="t('input.longPress')"
+            :min="250"
+            :max="1500"
+            :step="50"
+          />
+          <p v-if="store.config.TouchPreviewEnabled" class="jmp-note">{{ t('input.touchMultiSelect') }}</p>
+        </ConfigSection>
       </ConfigCard>
     </div>
   </section>

@@ -1,17 +1,44 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { t } from '../i18n';
 import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
-import ConfigCheckbox from '../components/ConfigCheckbox.vue';
+import ConfigGrid from '../components/ConfigGrid.vue';
+import ConfigListHeader from '../components/ConfigListHeader.vue';
 import ConfigNumber from '../components/ConfigNumber.vue';
+import ConfigSection from '../components/ConfigSection.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
+import ConfigSwitch from '../components/ConfigSwitch.vue';
+import UnavailableTrailersPanel from '../components/UnavailableTrailersPanel.vue';
 
 const store = useConfigStore();
-const cropOptions: SelectOption[] = [
-  { value: 'off', label: 'Off' },
-  { value: 'light', label: 'Light' },
-  { value: 'medium', label: 'Medium' },
-  { value: 'strong', label: 'Strong' }
-];
+const detailSourceOptions = computed<SelectOption[]>(() => [
+  { value: 'prefer-trailer', label: t('trailer.detailSourcePreferTrailer') },
+  { value: 'trailer', label: t('trailer.detailSourceTrailer') },
+  { value: 'prefer-direct-play', label: t('trailer.detailSourcePreferDirect') },
+  { value: 'direct-play', label: t('trailer.detailSourceDirect') }
+]);
+const cropOptions = computed<SelectOption[]>(() => [
+  { value: 'off', label: t('trailer.cropOff') },
+  { value: 'light', label: t('trailer.cropLight') },
+  { value: 'medium', label: t('trailer.cropMedium') },
+  { value: 'strong', label: t('trailer.cropStrong') }
+]);
+
+const directOff = computed(() => !store.config.DirectPlayPreviewEnabled);
+
+const summary = computed(() =>
+  [
+    store.config.TrailerAudioEnabled
+      ? t('trailer.summaryAudio', { percent: Number(store.config.TrailerVolumePercent) || 0 })
+      : t('trailer.summaryMuted'),
+    store.config.DirectPlayPreviewEnabled ? t('trailer.summaryDirectPlay') : null,
+    store.config.DirectPlayPreviewEnabled && store.config.DirectPlayRemuxEnabled ? t('trailer.summaryRemux') : null,
+    store.config.DetailPreviewEnabled ? t('trailer.summaryDetail') : null
+  ]
+    .filter(Boolean)
+    .join(' · ')
+);
 </script>
 
 <template>
@@ -22,117 +49,147 @@ const cropOptions: SelectOption[] = [
     role="tabpanel"
     aria-labelledby="mediaPreviewTab-trailer"
   >
-    <div class="jmp-subgrid">
-      <ConfigCard
-        title="Playback"
-        help="These options apply whenever trailer playback is used directly or as a fallback source."
-      >
-        <ConfigCheckbox v-model="store.config.TrailerAudioEnabled" label="Enable Trailer Audio When Allowed" />
-        <p class="jmp-note">
-          Browsers often block unmuted autoplay until the page has received user interaction once. Until then, trailers
-          may still start muted.
-        </p>
-        <ConfigNumber
-          v-if="store.config.TrailerAudioEnabled"
-          v-model="store.config.TrailerVolumePercent"
-          label="Trailer Volume (%)"
-          :min="0"
-          :max="100"
-          :step="1"
-        />
-      </ConfigCard>
+    <ConfigListHeader :title="t('trailer.title')" :help-text="t('trailer.help')" :summary="summary" />
 
-      <ConfigCard
-        title="Direct Play Preview"
-        help="Control how the media item itself is previewed when Prefer Trailer cannot find a playable trailer."
-      >
-        <ConfigCheckbox v-model="store.config.DirectPlayPreviewEnabled" label="Enable Direct Play Preview" />
-        <ConfigNumber
-          v-model="store.config.DirectPlayStartPercent"
-          label="Skip Into Item (%)"
-          :min="0"
-          :max="90"
-          :step="1"
-          :disabled="!store.config.DirectPlayPreviewEnabled"
-        />
-        <ConfigNumber
-          v-model="store.config.DirectPlayPlaybackRate"
-          label="Playback Speed"
-          :min="0.5"
-          :max="2"
-          :step="0.25"
-          :disabled="!store.config.DirectPlayPreviewEnabled"
-        />
-        <ConfigNumber
-          v-model="store.config.DirectPlayPreviewDurationSeconds"
-          label="Preview Duration (seconds, 0 = unlimited)"
-          :min="0"
-          :max="300"
-          :step="1"
-          :disabled="!store.config.DirectPlayPreviewEnabled"
-        />
-        <p class="jmp-note">
-          The start point is capped so the configured preview window still fits before the item ends. Direct Play
-          previews stay muted and pause when the preview duration is reached.
-        </p>
-      </ConfigCard>
+    <div class="jmp-columns">
+      <div class="jmp-column">
+        <ConfigCard :title="t('trailer.playbackTitle')">
+          <ConfigSection :title="t('trailer.audioSection')" :help-text="t('trailer.audioHelp')">
+            <ConfigSwitch v-model="store.config.TrailerAudioEnabled" :label="t('trailer.audio')" />
+            <ConfigNumber
+              v-if="store.config.TrailerAudioEnabled"
+              v-model="store.config.TrailerVolumePercent"
+              :label="t('trailer.volume')"
+              :min="0"
+              :max="100"
+              :step="1"
+            />
+          </ConfigSection>
+          <ConfigSection :title="t('trailer.embedSection')">
+            <ConfigSelect
+              v-model="store.config.YouTubeCropStrength"
+              :label="t('trailer.crop')"
+              :help-text="t('trailer.cropHelp')"
+              :options="cropOptions"
+            />
+          </ConfigSection>
+        </ConfigCard>
 
-      <ConfigCard
-        title="Direct Play Transcode Fallback"
-        help="Use a bounded Jellyfin transcode only when the browser cannot play the original media directly."
-      >
-        <ConfigCheckbox
-          v-model="store.config.DirectPlayTranscodeFallbackEnabled"
-          label="Enable Transcode Fallback"
-          :disabled="!store.config.DirectPlayPreviewEnabled"
-        />
-        <ConfigNumber
-          v-model="store.config.DirectPlayTranscodeMaxHeight"
-          label="Maximum Transcode Height (px)"
-          :min="240"
-          :max="2160"
-          :step="120"
-          :disabled="!store.config.DirectPlayPreviewEnabled || !store.config.DirectPlayTranscodeFallbackEnabled"
-        />
-        <ConfigNumber
-          v-model="store.config.DirectPlayTranscodeVideoBitrateKbps"
-          label="Maximum Video Bitrate (Kbps)"
-          :min="250"
-          :max="20000"
-          :step="250"
-          :disabled="!store.config.DirectPlayPreviewEnabled || !store.config.DirectPlayTranscodeFallbackEnabled"
-        />
-        <p class="jmp-note">
-          Disable this to skip Direct Play previews when the source container is not browser-compatible or direct
-          playback fails.
-        </p>
-      </ConfigCard>
+        <ConfigCard :title="t('trailer.directTitle')" :help="t('trailer.directHelp')">
+          <ConfigSection :title="t('trailer.directSection')">
+            <ConfigSwitch v-model="store.config.DirectPlayPreviewEnabled" :label="t('trailer.directEnable')" />
+            <ConfigGrid :columns="3">
+              <ConfigNumber
+                v-model="store.config.DirectPlayStartPercent"
+                :label="t('trailer.startPercent')"
+                :help-text="t('trailer.startPercentHelp')"
+                :min="0"
+                :max="90"
+                :step="1"
+                :disabled="directOff"
+              />
+              <ConfigNumber
+                v-model="store.config.DirectPlayPlaybackRate"
+                :label="t('trailer.speed')"
+                :min="0.5"
+                :max="2"
+                :step="0.25"
+                :disabled="directOff"
+              />
+              <ConfigNumber
+                v-model="store.config.DirectPlayPreviewDurationSeconds"
+                :label="t('trailer.duration')"
+                :zero-label="t('common.unlimited')"
+                :min="0"
+                :max="300"
+                :step="1"
+                :disabled="directOff"
+              />
+            </ConfigGrid>
+            <ConfigSwitch
+              v-model="store.config.DirectPlaySkipSegmentsEnabled"
+              :label="t('trailer.skipSegments')"
+              :help-text="t('trailer.skipSegmentsHelp')"
+              :disabled="directOff"
+            />
+          </ConfigSection>
 
-      <ConfigCard title="Embed Framing" help="Adjust how remote trailer embeds sit inside the card.">
-        <ConfigSelect v-model="store.config.YouTubeCropStrength" label="YouTube Crop Strength" :options="cropOptions" />
-        <p class="jmp-note">
-          Crop strength slightly enlarges YouTube embeds to push overlays and branding further out of frame.
-        </p>
-      </ConfigCard>
+          <ConfigSection :title="t('trailer.serverSection')" :help-text="t('trailer.serverHelp')">
+            <ConfigSwitch
+              v-model="store.config.DirectPlayRemuxEnabled"
+              :label="t('trailer.remux')"
+              :help-text="t('trailer.remuxHelp')"
+              :disabled="directOff"
+            />
+            <ConfigSwitch
+              v-model="store.config.DirectPlayTranscodeFallbackEnabled"
+              :label="t('trailer.transcode')"
+              :help-text="t('trailer.transcodeHelp')"
+              :disabled="directOff"
+            />
+            <ConfigGrid v-if="store.config.DirectPlayTranscodeFallbackEnabled">
+              <ConfigNumber
+                v-model="store.config.DirectPlayTranscodeMaxHeight"
+                :label="t('trailer.maxHeight')"
+                :min="240"
+                :max="2160"
+                :step="120"
+                :disabled="directOff"
+              />
+              <ConfigNumber
+                v-model="store.config.DirectPlayTranscodeVideoBitrateKbps"
+                :label="t('trailer.maxBitrate')"
+                :min="250"
+                :max="20000"
+                :step="250"
+                :disabled="directOff"
+              />
+            </ConfigGrid>
+          </ConfigSection>
+        </ConfigCard>
+      </div>
+      <div class="jmp-column">
+        <ConfigCard :title="t('trailer.detailTitle')" :badge="t('common.experimental')" badge-tone="wip">
+          <ConfigSection :title="t('trailer.detailSection')" :help-text="t('trailer.detailHelp')">
+            <ConfigSwitch v-model="store.config.DetailPreviewEnabled" :label="t('trailer.detailEnable')" />
+            <ConfigGrid v-if="store.config.DetailPreviewEnabled">
+              <ConfigSelect
+                v-model="store.config.DetailPreviewSource"
+                :label="t('trailer.detailSource')"
+                :options="detailSourceOptions"
+              />
+              <ConfigNumber
+                v-model="store.config.DetailPreviewDelayMs"
+                :label="t('trailer.detailDelay')"
+                :min="0"
+                :max="10000"
+                :step="250"
+              />
+            </ConfigGrid>
+          </ConfigSection>
+        </ConfigCard>
 
-      <ConfigCard title="Unavailable Trailers" help="Control when failed YouTube embeds should be tested again.">
-        <ConfigCheckbox v-model="store.config.UnavailableTrailerCacheEnabled" label="Remember Unavailable Trailers" />
-        <ConfigNumber
-          v-if="store.config.UnavailableTrailerCacheEnabled"
-          v-model="store.config.UnavailableTrailerRetryDays"
-          label="Retry Unavailable Trailers After (days)"
-          :min="1"
-          :max="365"
-          :step="1"
-        />
-        <p v-if="store.config.UnavailableTrailerCacheEnabled" class="jmp-note">
-          YouTube errors 100, 101, and 150 are skipped server-wide until this interval has elapsed. Changing the
-          interval also updates existing entries on their next access.
-        </p>
-        <p v-else class="jmp-note">
-          Failed embeds still fall back during the current browser session, but they are not remembered across reloads.
-        </p>
-      </ConfigCard>
+        <ConfigCard :title="t('trailer.unavailableTitle')">
+          <ConfigSection :title="t('trailer.unavailableSection')" :help-text="t('trailer.unavailableHelp')">
+            <ConfigSwitch
+              v-model="store.config.UnavailableTrailerCacheEnabled"
+              :label="t('trailer.unavailableEnable')"
+            />
+            <ConfigNumber
+              v-if="store.config.UnavailableTrailerCacheEnabled"
+              v-model="store.config.UnavailableTrailerRetryDays"
+              :label="t('trailer.retryDays')"
+              :min="1"
+              :max="365"
+              :step="1"
+            />
+            <p v-else class="jmp-note">{{ t('trailer.unavailableOff') }}</p>
+          </ConfigSection>
+          <ConfigSection :title="t('trailer.unavailableListSection')">
+            <UnavailableTrailersPanel />
+          </ConfigSection>
+        </ConfigCard>
+      </div>
     </div>
   </section>
 </template>

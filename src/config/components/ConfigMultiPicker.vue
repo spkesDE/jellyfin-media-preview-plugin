@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { t } from '../i18n';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue';
 import ConfigHelpTooltip from './ConfigHelpTooltip.vue';
 import type { SelectOption } from './ConfigSelect.vue';
@@ -29,7 +30,7 @@ const selectedLabels = computed(() =>
     .filter((value): value is string => Boolean(value))
 );
 const selectionText = computed(() => {
-  if (!selectedLabels.value.length) return 'Select options';
+  if (!selectedLabels.value.length) return t('picker.select');
   if (selectedLabels.value.length <= 2) return selectedLabels.value.join(', ');
   return `${selectedLabels.value[0]} +${selectedLabels.value.length - 1}`;
 });
@@ -151,7 +152,13 @@ onBeforeUnmount(() => {
       >
         <div class="jmp-multiPickerSearchWrap">
           <span class="material-icons" aria-hidden="true">search</span>
-          <input v-model="query" class="jmp-multiPickerSearch" type="search" placeholder="Search" autofocus />
+          <input
+            v-model="query"
+            class="jmp-multiPickerSearch"
+            type="search"
+            :placeholder="t('picker.search')"
+            autofocus
+          />
         </div>
         <div v-if="filteredOptions.length" class="jmp-multiPickerOptions">
           <button
@@ -170,7 +177,7 @@ onBeforeUnmount(() => {
             <span>{{ option.label }}</span>
           </button>
         </div>
-        <p v-else class="jmp-multiPickerEmpty">{{ emptyText || 'No options' }}</p>
+        <p v-else class="jmp-multiPickerEmpty">{{ emptyText || t('picker.empty') }}</p>
         <footer class="jmp-multiPickerFooter">
           <span>{{ modelValue.length }} selected</span>
           <div>
@@ -182,7 +189,9 @@ onBeforeUnmount(() => {
             >
               Clear
             </button>
-            <button type="button" class="jmp-multiPickerFooterButton is-primary" @click="close">Done</button>
+            <button type="button" class="jmp-multiPickerFooterButton is-primary" @click="close">
+              {{ t('picker.done') }}
+            </button>
           </div>
         </footer>
       </div>

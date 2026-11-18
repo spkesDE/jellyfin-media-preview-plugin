@@ -1,23 +1,17 @@
 <script setup lang="ts">
-defineProps<{ label: string; modelValue?: unknown; disabled?: boolean }>();
+import ConfigSwitch from './ConfigSwitch.vue';
+
+/** Kept for existing call sites; every on/off setting is shown as a switch, like in Jellyfin Featured. */
+defineProps<{ label: string; modelValue?: unknown; disabled?: boolean; helpText?: string }>();
 const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
 </script>
 
 <template>
-  <div class="checkboxContainer">
-    <label class="emby-checkbox-label">
-      <input
-        class="emby-checkbox"
-        type="checkbox"
-        :checked="modelValue === true"
-        :disabled="disabled"
-        @change="emit('update:modelValue', ($event.target as HTMLInputElement).checked)"
-      />
-      <span class="checkboxLabel">{{ label }}</span>
-      <span class="checkboxOutline">
-        <span class="material-icons checkboxIcon checkboxIcon-checked check" aria-hidden="true"></span>
-        <span class="material-icons checkboxIcon checkboxIcon-unchecked" aria-hidden="true"></span>
-      </span>
-    </label>
-  </div>
+  <ConfigSwitch
+    :label="label"
+    :model-value="modelValue"
+    :disabled="disabled"
+    :help-text="helpText"
+    @update:model-value="emit('update:modelValue', $event)"
+  />
 </template>

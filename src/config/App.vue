@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, provide } from 'vue';
 import ConfigToolbar from './components/ConfigToolbar.vue';
 import { configStoreKey, createConfigStore } from './libs/store';
+import { t } from './i18n';
 import AdvancedTab from './tabs/AdvancedTab.vue';
 import AppearanceTab from './tabs/AppearanceTab.vue';
 import GeneralTab from './tabs/GeneralTab.vue';
@@ -42,16 +43,11 @@ onBeforeUnmount(() => {
   <div class="content-primary">
     <form class="jmp-configForm" @submit.prevent="store.saveConfig">
       <div class="sectionTitleContainer flex align-items-center">
-        <h2 class="sectionTitle">Media Preview</h2>
+        <h2 class="sectionTitle">{{ t('app.title') }}</h2>
       </div>
 
       <div class="verticalSection verticalSection-extrabottompadding jmp-intro">
-        <p>
-          Adds hover previews to Jellyfin cards with Trickplay, trailers, library and type rules, keyboard support, and
-          optional metadata overlays. Media Preview uses File Transformation or JavaScript Injector when available and
-          can fall back to direct injection when Jellyfin Web is writable. Preview playback still depends on the data
-          Jellyfin already exposes.
-        </p>
+        <p>{{ t('app.intro') }}</p>
       </div>
 
       <ConfigToolbar />

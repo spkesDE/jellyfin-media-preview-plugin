@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useConfigStore } from '../libs/store';
+import { t } from '../i18n';
 
 const props = defineProps<{ kind: 'portrait' | 'backdrop' }>();
 const store = useConfigStore();
@@ -11,7 +12,11 @@ const mode = computed(() =>
   props.kind === 'portrait' ? store.config.PortraitCardPreviewMode : store.config.BackdropCardPreviewMode
 );
 const modeLabel = computed(() =>
-  mode.value === 'stretch' ? 'Stretch / Fill' : mode.value === 'cover' ? 'Cover' : 'Contain'
+  mode.value === 'stretch'
+    ? t('appearance.modeStretch')
+    : mode.value === 'cover'
+      ? t('appearance.modeCover')
+      : t('appearance.modeContain')
 );
 const cardClass = computed(() => `jmp-appearanceCard-${props.kind}`);
 const portraitExpansionClass = computed(() => {
@@ -95,7 +100,7 @@ watch(
 <template>
   <div class="jmp-appearancePreviewItem">
     <div class="jmp-appearancePreviewLabel">
-      <span>{{ kind === 'portrait' ? 'Portrait card' : 'Backdrop card' }}</span>
+      <span>{{ kind === 'portrait' ? t('appearance.portraitCard') : t('appearance.backdropCard') }}</span>
       <span class="jmp-badge jmp-badge-muted">{{ previewLabel }}</span>
     </div>
     <div

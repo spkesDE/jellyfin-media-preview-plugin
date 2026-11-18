@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import Draggable from 'vuedraggable';
+import { t } from '../i18n';
 import type { PreviewChainSource } from '../../types/config';
 import type { ConfigPreviewFallbackSource } from '../libs/types';
 
@@ -13,12 +15,12 @@ const props = withDefaults(
 );
 const model = defineModel<ConfigPreviewFallbackSource[]>({ required: true });
 
-const sourceLabels: Record<PreviewChainSource, string> = {
-  trickplay: 'Trickplay',
-  'local-trailer': 'Local Trailer',
-  'remote-trailer': 'Remote / YouTube Trailer',
-  'direct-play': 'Direct Play'
-};
+const sourceLabels = computed<Record<PreviewChainSource, string>>(() => ({
+  trickplay: t('chain.trickplay'),
+  'local-trailer': t('chain.localTrailerShort'),
+  'remote-trailer': t('chain.remoteTrailerShort'),
+  'direct-play': t('chain.directPlayShort')
+}));
 
 function move(index: number, offset: number): void {
   const target = index + offset;
@@ -43,7 +45,7 @@ function move(index: number, offset: number): void {
           </svg>
         </span>
         <span class="jmp-preferenceLabel">{{ sourceLabels[props.primary] }}</span>
-        <span class="jmp-preferenceState">Fixed · always on</span>
+        <span class="jmp-preferenceState">{{ t('chain.fixed') }}</span>
       </li>
     </ol>
     <Draggable
@@ -62,7 +64,7 @@ function move(index: number, offset: number): void {
     >
       <template #item="{ element, index }: { element: ConfigPreviewFallbackSource; index: number }">
         <li class="jmp-preferenceItem" :class="{ 'is-disabled': !element.Enabled }">
-          <button class="jmp-dragHandle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+          <button class="jmp-dragHandle" type="button" :title="t('chain.drag')" :aria-label="t('chain.drag')">
             <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
               <path
                 d="M11 18a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0-6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0-6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm6 12a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0-6a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm0-6a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"
@@ -71,11 +73,18 @@ function move(index: number, offset: number): void {
           </button>
           <span class="jmp-preferenceLabel">{{ sourceLabels[element.Source] }}</span>
           <div class="jmp-preferenceActions">
-            <label class="jmp-preferenceSwitch" :title="element.Enabled ? 'Disable fallback' : 'Enable fallback'">
+            <label
+              class="jmp-preferenceSwitch"
+              :title="element.Enabled ? t('chain.disableFallback') : t('chain.enableFallback')"
+            >
               <input
                 v-model="element.Enabled"
                 type="checkbox"
-                :aria-label="`${element.Enabled ? 'Disable' : 'Enable'} ${sourceLabels[element.Source]}`"
+                :aria-label="
+                  t(element.Enabled ? 'chain.disableNamed' : 'chain.enableNamed', {
+                    name: sourceLabels[element.Source]
+                  })
+                "
               />
               <span class="jmp-preferenceSwitchTrack" aria-hidden="true"></span>
             </label>
@@ -84,7 +93,7 @@ function move(index: number, offset: number): void {
                 type="button"
                 class="jmp-preferenceMoveButton"
                 :disabled="index === 0"
-                :aria-label="`Move ${sourceLabels[element.Source]} up`"
+                :aria-label="t('chain.moveUp', { name: sourceLabels[element.Source] })"
                 @click="move(index, -1)"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">
@@ -95,7 +104,7 @@ function move(index: number, offset: number): void {
                 type="button"
                 class="jmp-preferenceMoveButton"
                 :disabled="index === model.length - 1"
-                :aria-label="`Move ${sourceLabels[element.Source]} down`"
+                :aria-label="t('chain.moveDown', { name: sourceLabels[element.Source] })"
                 @click="move(index, 1)"
               >
                 <svg aria-hidden="true" viewBox="0 0 24 24" focusable="false">

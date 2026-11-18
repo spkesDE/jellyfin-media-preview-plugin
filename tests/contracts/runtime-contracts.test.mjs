@@ -60,31 +60,37 @@ test('prefer-trickplay reads its configured fallback chain', async () => {
 });
 
 test('Direct Play is selectable at every preview rule level', async () => {
-  const [constants, source, settings, backend] = await Promise.all([
+  const [constants, source, settings, locale, backend] = await Promise.all([
     read('src/constants.ts'),
     read('src/preview/source.ts'),
     read('src/config/tabs/GeneralTab.vue'),
+    read('src/config/locales/en.ts'),
     read('Jellyfin.Plugin.MediaPreview/Configuration/PluginConfigurationNormalizer.cs')
   ]);
 
   assert.match(constants, /VALID_PREVIEW_SOURCES[\s\S]*PREVIEW_SOURCE_DIRECT_PLAY/);
   assert.match(source, /source === PREVIEW_SOURCE_DIRECT_PLAY[\s\S]*getDirectPlayPreview/);
-  assert.match(settings, /value: 'direct-play', label: 'Only Direct Play'/);
-  assert.match(settings, /value: 'prefer-direct-play', label: 'Prefer Direct Play'/);
+  // Labels are translated; the options must point at the Direct Play texts.
+  assert.match(settings, /value: 'direct-play', label: t\('source\.onlyDirectPlay'\)/);
+  assert.match(settings, /value: 'prefer-direct-play', label: t\('source\.preferDirectPlay'\)/);
+  assert.match(locale, /'source\.onlyDirectPlay': 'Only Direct Play'/);
+  assert.match(locale, /'source\.preferDirectPlay': 'Prefer Direct Play'/);
   assert.match(settings, /ConfigHelpTooltip|help-text/);
   assert.match(backend, /ValidContentTypePreviewSources[\s\S]*"direct-play"/);
 });
 
 test('advanced source chains expose local and remote trailers separately', async () => {
-  const [advanced, source, trailer] = await Promise.all([
+  const [advanced, trickplay, source, trailer] = await Promise.all([
     read('src/config/tabs/AdvancedTab.vue'),
+    read('src/config/tabs/TrickplayTab.vue'),
     read('src/preview/source.ts'),
     read('src/preview/trailer.ts')
   ]);
 
   assert.match(advanced, /primary="local-trailer"[\s\S]*:fixed-primary="false"/);
-  assert.match(advanced, /Preferred Source Chains/);
-  assert.match(advanced, /title="Performance"/);
+  assert.match(advanced, /t\('advanced\.chainsTitle'\)/);
+  // The preferred Trickplay width moved next to the other Trickplay settings.
+  assert.match(trickplay, /v-model="store\.config\.TrickplayWidth"/);
   assert.doesNotMatch(advanced, /v-if="store\.canUseTrickplay\.value"/);
   assert.match(source, /'local-trailer'[\s\S]*getTrailerPreview\(itemId, 'local'\)/);
   assert.match(source, /'remote-trailer'[\s\S]*getTrailerPreview\(itemId, 'remote'\)/);
@@ -92,8 +98,9 @@ test('advanced source chains expose local and remote trailers separately', async
 });
 
 test('overlay controls are configured together in Appearance', async () => {
-  const [appearance, trailerSettings, renderer, youtube] = await Promise.all([
+  const [appearance, locale, trailerSettings, renderer, youtube] = await Promise.all([
     read('src/config/tabs/AppearanceTab.vue'),
+    read('src/config/locales/en.ts'),
     read('src/config/tabs/TrailerTab.vue'),
     read('src/preview/renderTrailer.ts'),
     read('src/trailerOverlay/youtube.ts')
@@ -101,7 +108,8 @@ test('overlay controls are configured together in Appearance', async () => {
 
   assert.match(appearance, /VideoControlSources[\s\S]*AudioControlSources/);
   assert.match(appearance, /TrailerExpandButtonEnabled[\s\S]*TrailerExpandButtonPosition/);
-  assert.match(appearance, /Local Trailer[\s\S]*Remote \/ YouTube Trailer[\s\S]*Direct Play/);
+  assert.match(appearance, /chain\.localTrailerShort[\s\S]*chain\.remoteTrailerShort[\s\S]*chain\.directPlayShort/);
+  assert.match(locale, /'chain\.remoteTrailerShort': 'Online trailer'/);
   assert.doesNotMatch(trailerSettings, /TrailerExpandButtonEnabled|TrailerExpandButtonPosition/);
   assert.match(renderer, /config\.videoControlSources\.includes\(mediaControlSource\)/);
   assert.match(renderer, /config\.audioControlSources\.includes\(mediaControlSource\)/);

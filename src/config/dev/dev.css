@@ -55,3 +55,15 @@ select {
 .sectionTitle {
   margin-top: 0;
 }
+
+/* Jellyfin Web positions the arrow over the select; it must not take space in the layout. */
+.selectContainer {
+  position: relative;
+}
+
+.selectArrowContainer {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  pointer-events: none;
+}

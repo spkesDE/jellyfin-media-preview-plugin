@@ -25,7 +25,46 @@ type DevAudioPreferences = {
   trailerAudioEnabled: boolean | null;
   trailerVolumePercent: number | null;
   rememberAudioChanges: boolean | null;
+  previewEnabled?: boolean | null;
+  previewSource?: string | null;
+  hoverDelayMs?: number | null;
 };
+
+let devUnavailableTrailers = [
+  {
+    videoId: 'dQw4w9WgXcQ',
+    errorCode: 150,
+    lastSeenUtc: '2026-11-10T18:00:00Z',
+    retryAfterUtc: '2026-12-10T18:00:00Z',
+    reportCount: 3,
+    items: [{ id: 'preview-movie', name: 'Development Movie', type: 'Movie', productionYear: 2026 }]
+  },
+  {
+    videoId: 'aaaaaaaaaaa',
+    errorCode: 100,
+    lastSeenUtc: '2026-11-02T09:30:00Z',
+    retryAfterUtc: '2026-12-02T09:30:00Z',
+    reportCount: 1,
+    items: []
+  }
+];
+
+function devDiagnostics() {
+  return {
+    pluginVersion: '12.5.0.0',
+    configuredMethod: (pluginConfig as Record<string, unknown>).FrontendInjectionMethod ?? 'automatic',
+    activeMethod: 'file-transformation',
+    lastRegistrationSucceeded: true,
+    lastRegistrationUtc: new Date(Date.now() - 3_600_000).toISOString(),
+    pluginDiscoveryComplete: true,
+    fileTransformationAvailable: true,
+    javaScriptInjectorAvailable: false,
+    directInjectionAvailable: true,
+    directLoaderInIndex: false,
+    clientBundle: { valid: true, sizeBytes: 147_000 },
+    configBundle: { valid: true, sizeBytes: 425_000 }
+  };
+}
 
 const devPreferences = new Map<string, DevAudioPreferences>();
 
@@ -40,7 +79,10 @@ function devPreferencesResponse(userId: string) {
   const defaults = {
     trailerAudioEnabled: settings.TrailerAudioEnabled === true,
     trailerVolumePercent: Number(settings.TrailerVolumePercent ?? 35),
-    rememberAudioChanges: enabled
+    rememberAudioChanges: enabled,
+    previewEnabled: true,
+    previewSource: 'inherit',
+    hoverDelayMs: Number(settings.HoverDelayMs ?? 300)
   };
   return {
     enabled,
@@ -50,7 +92,10 @@ function devPreferencesResponse(userId: string) {
       ? {
           trailerAudioEnabled: stored.trailerAudioEnabled ?? defaults.trailerAudioEnabled,
           trailerVolumePercent: stored.trailerVolumePercent ?? defaults.trailerVolumePercent,
-          rememberAudioChanges: stored.rememberAudioChanges ?? true
+          rememberAudioChanges: stored.rememberAudioChanges ?? true,
+          previewEnabled: stored.previewEnabled ?? true,
+          previewSource: stored.previewSource ?? 'inherit',
+          hoverDelayMs: stored.hoverDelayMs ?? defaults.hoverDelayMs
         }
       : defaults
   };
@@ -94,6 +139,19 @@ export function installJellyfinDevMocks(): void {
     ajax: async ({ url, type, data }) => {
       if (url.includes('media-preview/preferences')) {
         return handleDevPreferences(url, type, data);
+      }
+
+      if (url === 'media-preview/config/diagnostics') {
+        return devDiagnostics();
+      }
+
+      if (url.startsWith('media-preview/unavailable-trailers')) {
+        if (type === 'DELETE') {
+          const videoId = url.split('/')[2];
+          devUnavailableTrailers = videoId ? devUnavailableTrailers.filter((entry) => entry.videoId !== videoId) : [];
+          return null;
+        }
+        return { enabled: true, retryDays: 30, entries: devUnavailableTrailers };
       }
 
       if (url === 'Users') {

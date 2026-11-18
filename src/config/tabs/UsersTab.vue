@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { openUserPreferencesDialog } from '../../userPreferences/dialog';
+import { t } from '../i18n';
 import ConfigActionMenu, { type ConfigMenuAction } from '../components/ConfigActionMenu.vue';
 import ConfigCard from '../components/ConfigCard.vue';
 import ConfigListHeader from '../components/ConfigListHeader.vue';
+import ConfigSection from '../components/ConfigSection.vue';
 import ConfigSwitch from '../components/ConfigSwitch.vue';
 import { loadUsers } from '../libs/jellyfinApi';
 import { useConfigStore } from '../libs/store';
@@ -34,9 +36,11 @@ watch(
 );
 
 const summary = computed(() => {
-  if (usersState.value === 'error') return 'Could not load users.';
-  if (usersState.value !== 'loaded') return '';
-  return users.value.length === 1 ? '1 user' : `${users.value.length} users`;
+  const state = store.config.UserAudioPreferencesEnabled ? t('users.summaryOn') : t('users.summaryOff');
+  if (usersState.value === 'error') return `${state} · ${t('users.loadError')}`;
+  if (usersState.value !== 'loaded') return state;
+  const count = users.value.length === 1 ? t('users.countOne') : t('users.count', { count: users.value.length });
+  return `${state} · ${count}`;
 });
 
 const profileActions = computed((): ConfigMenuAction[] =>
@@ -63,12 +67,12 @@ function openUserProfile(userId: string): void {
     role="tabpanel"
     aria-labelledby="mediaPreviewTab-users"
   >
-    <ConfigListHeader title="User Settings" :summary="summary">
+    <ConfigListHeader :title="t('users.title')" :help-text="t('users.help')" :summary="summary">
       <template #actions>
         <ConfigActionMenu
           v-if="users.length && store.config.UserAudioPreferencesEnabled"
-          label="Open User Profile"
-          trigger-text="Open User Profile"
+          :label="t('users.openProfile')"
+          :trigger-text="t('users.openProfile')"
           trigger-icon="manage_accounts"
           :actions="profileActions"
           @select="openUserProfile"
@@ -77,19 +81,14 @@ function openUserProfile(userId: string): void {
     </ConfigListHeader>
 
     <div class="jmp-subgrid">
-      <ConfigCard>
-        <ConfigSwitch
-          v-model="store.config.UserAudioPreferencesEnabled"
-          label="Save Mute and Volume per User"
-          class="jmp-userSwitch"
-        />
+      <ConfigCard :title="t('users.cardTitle')">
+        <ConfigSection :title="t('users.permissionSection')">
+          <ConfigSwitch v-model="store.config.UserAudioPreferencesEnabled" :label="t('users.allow')" />
+          <p class="jmp-note">
+            {{ store.config.UserAudioPreferencesEnabled ? t('users.allowOnHelp') : t('users.allowOffHelp') }}
+          </p>
+        </ConfigSection>
       </ConfigCard>
     </div>
   </section>
 </template>
-
-<style scoped>
-.jmp-userSwitch {
-  margin-bottom: 0.75rem;
-}
-</style>

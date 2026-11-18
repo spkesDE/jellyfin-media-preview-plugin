@@ -56,3 +56,22 @@ export async function loadUsers(): Promise<ConfigUser[]> {
     }))
     .sort((left, right) => left.Name.localeCompare(right.Name));
 }
+
+/** Sends a non-GET request with the admin's session; resolves with parsed JSON or null. */
+export async function sendRequest(method: 'POST' | 'DELETE', path: string): Promise<unknown> {
+  const apiClient = getGlobalApiClient();
+  const url = apiClient?.getUrl?.(path) ?? null;
+  if (!apiClient || !url) {
+    throw new Error('ApiClient is not available.');
+  }
+
+  if (apiClient.ajax) {
+    return apiClient.ajax({ type: method, url });
+  }
+
+  const response = await fetch(url, { method, credentials: 'same-origin' });
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
+  }
+  return response.status === 204 ? null : response.json();
+}

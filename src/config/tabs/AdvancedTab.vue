@@ -1,35 +1,54 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { t } from '../i18n';
 import { useConfigStore } from '../libs/store';
 import ConfigCard from '../components/ConfigCard.vue';
-import ConfigCheckbox from '../components/ConfigCheckbox.vue';
-import ConfigNumber from '../components/ConfigNumber.vue';
+import ConfigListHeader from '../components/ConfigListHeader.vue';
+import ConfigSection from '../components/ConfigSection.vue';
 import ConfigSelect, { type SelectOption } from '../components/ConfigSelect.vue';
+import ConfigSwitch from '../components/ConfigSwitch.vue';
+import DiagnosticsPanel from '../components/DiagnosticsPanel.vue';
 import PreferenceChainEditor from '../components/PreferenceChainEditor.vue';
 
 const store = useConfigStore();
+
+function optionLabel(label: string, available: boolean): string {
+  return available ? label : t('advanced.unavailable', { label });
+}
+
 const frontendInjectionOptions = computed<SelectOption[]>(() => [
-  { value: 'automatic', label: 'Automatic (File Transformation → JavaScript Injector → Direct)' },
+  { value: 'automatic', label: t('advanced.injectionAutomatic') },
   {
     value: 'file-transformation',
-    label: optionLabel('File Transformation only', store.injectionMethodsAvailable.value['file-transformation']),
+    label: optionLabel(
+      t('advanced.injectionFileTransformation'),
+      store.injectionMethodsAvailable.value['file-transformation']
+    ),
     disabled: !store.injectionMethodsAvailable.value['file-transformation']
   },
   {
     value: 'javascript-injector',
-    label: optionLabel('JavaScript Injector only', store.injectionMethodsAvailable.value['javascript-injector']),
+    label: optionLabel(
+      t('advanced.injectionJavaScriptInjector'),
+      store.injectionMethodsAvailable.value['javascript-injector']
+    ),
     disabled: !store.injectionMethodsAvailable.value['javascript-injector']
   },
   {
     value: 'direct',
-    label: optionLabel('Direct injection', store.injectionMethodsAvailable.value.direct),
+    label: optionLabel(t('advanced.injectionDirect'), store.injectionMethodsAvailable.value.direct),
     disabled: !store.injectionMethodsAvailable.value.direct
   }
 ]);
 
-function optionLabel(label: string, available: boolean): string {
-  return available ? label : `${label} (unavailable)`;
-}
+const summary = computed(() =>
+  [
+    frontendInjectionOptions.value.find((option) => option.value === store.config.FrontendInjectionMethod)?.label,
+    store.config.Debug ? t('advanced.summaryDebug') : null
+  ]
+    .filter(Boolean)
+    .join(' · ')
+);
 </script>
 
 <template>
@@ -40,55 +59,56 @@ function optionLabel(label: string, available: boolean): string {
     role="tabpanel"
     aria-labelledby="mediaPreviewTab-advanced"
   >
+    <ConfigListHeader :title="t('advanced.title')" :help-text="t('advanced.help')" :summary="summary" />
+
     <div class="jmp-subgrid">
       <ConfigCard
         class="jmp-advancedPreferenceCard"
-        title="Preferred Source Chains"
-        help="Drag sources into the preferred order and disable any fallback you do not want. Prefer Trailer is fully sortable; Trickplay and Direct Play stay fixed at the top of their own chains."
+        :title="t('advanced.chainsTitle')"
+        :help="t('advanced.chainsHelp')"
       >
         <div class="jmp-preferenceGrid">
           <PreferenceChainEditor
             v-model="store.config.PreferTrailerFallbacks"
-            title="Prefer Trailer"
+            :title="t('source.preferTrailer')"
             primary="local-trailer"
             :fixed-primary="false"
           />
           <PreferenceChainEditor
             v-model="store.config.PreferTrickplayFallbacks"
-            title="Prefer Trickplay"
+            :title="t('source.preferTrickplay')"
             primary="trickplay"
           />
           <PreferenceChainEditor
             v-model="store.config.PreferDirectPlayFallbacks"
-            title="Prefer Direct Play"
+            :title="t('source.preferDirectPlay')"
             primary="direct-play"
           />
         </div>
       </ConfigCard>
 
-      <ConfigCard
-        title="Frontend Injection"
-        help="Automatic selects the first available method in the order shown and falls back to direct injection when Jellyfin Web is writable. Restart Jellyfin after changing this setting."
-      >
-        <ConfigSelect
-          v-model="store.config.FrontendInjectionMethod"
-          label="Frontend Injection Method"
-          :options="frontendInjectionOptions"
-        />
-      </ConfigCard>
-
-      <ConfigCard
-        title="Performance"
-        help="Normally you can leave this alone unless you need to steer which Trickplay width Jellyfin should prefer."
-      >
-        <ConfigNumber v-model="store.config.TrickplayWidth" label="Preferred Trickplay Width" :min="1" :step="1" />
-      </ConfigCard>
-
-      <ConfigCard
-        title="Diagnostics"
-        help="Use this when you need to inspect matching, preview resolution, or rendering behavior in the browser console."
-      >
-        <ConfigCheckbox v-model="store.config.Debug" label="Enable Debug Logging" />
+      <ConfigCard class="jmp-splitCard jmp-advancedPreferenceCard" :title="t('advanced.loaderTitle')">
+        <div class="jmp-splitColumn">
+          <ConfigSection :title="t('advanced.injectionSection')" :help-text="t('advanced.injectionHelp')">
+            <ConfigSelect
+              v-model="store.config.FrontendInjectionMethod"
+              :label="t('advanced.injectionLabel')"
+              :options="frontendInjectionOptions"
+            />
+          </ConfigSection>
+          <ConfigSection :title="t('advanced.loggingSection')">
+            <ConfigSwitch
+              v-model="store.config.Debug"
+              :label="t('advanced.debug')"
+              :help-text="t('advanced.debugHelp')"
+            />
+          </ConfigSection>
+        </div>
+        <div class="jmp-splitColumn">
+          <ConfigSection :title="t('advanced.diagnosticsSection')" :help-text="t('advanced.diagnosticsHelp')">
+            <DiagnosticsPanel />
+          </ConfigSection>
+        </div>
       </ConfigCard>
     </div>
   </section>

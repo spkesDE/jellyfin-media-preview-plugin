@@ -1,14 +1,44 @@
+/*
+ * Shared look with Jellyfin Featured: its config.css is taken over as is (renamed to this page),
+ * followed by the rules only Media Preview needs. Keep the first part in step with Featured.
+ */
+
 #MediaPreviewConfigPage {
-  --jmp-theme-primary: var(--jf-palette-primary-main, var(--theme-primary-color, #00a4dc));
+  /* Jellyfin's palette with Featured's fallbacks, so both plugin pages look the same in every theme. */
+  --jmp-theme-primary: var(--jf-palette-primary-main, var(--theme-primary-color, var(--primary-accent-color, #00a4dc)));
   --jmp-theme-primary-dark: var(--jf-palette-primary-dark, var(--jmp-theme-primary));
   --jmp-theme-primary-contrast: var(--jf-palette-primary-contrastText, #fff);
+  --jmp-theme-background: var(--jf-palette-background-default, #101010);
   --jmp-theme-paper: var(--jf-palette-background-paper, #202020);
-  --jmp-theme-divider: var(--jf-palette-divider, rgba(255, 255, 255, 0.12));
-  --jmp-theme-action-hover: var(--jf-palette-action-hover, rgba(255, 255, 255, 0.08));
+  --jmp-theme-appbar: var(--jf-palette-AppBar-defaultBg, var(--jmp-theme-paper));
+  --jmp-theme-text-primary: var(--jf-palette-text-primary, #fff);
+  --jmp-theme-text-secondary: var(--jf-palette-text-secondary, var(--jmp-theme-text-primary));
+  --jmp-theme-divider: var(--jf-palette-divider, rgb(255 255 255 / 0.14));
+  --jmp-theme-action-hover: var(--jf-palette-action-hover, rgb(255 255 255 / 0.08));
+  --jmp-theme-action-focus: var(--jf-palette-action-focus, rgb(255 255 255 / 0.12));
+  --jmp-theme-contained: var(--jf-palette-Button-inheritContainedBg, rgb(255 255 255 / 0.2));
+  --jmp-theme-error: var(--jf-palette-error-main, #d32f2f);
   --jmp-theme-error-light: var(--jf-palette-error-light, #ffb4ab);
   --jmp-theme-radius: var(--jf-card-borderRadius, 0.25rem);
-  --jmp-theme-text-primary: var(--jf-palette-text-primary, #fff);
-  --jmp-theme-action-focus: var(--jf-palette-action-focus, rgba(255, 255, 255, 0.18));
+  --jmp-config-control-padding: 0.55rem 0.9rem;
+  --jmp-config-control-transition:
+    background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+  --jmp-config-card-background: var(--jmp-theme-paper);
+  --jmp-config-nested-background: var(--jmp-theme-action-hover);
+  --jmp-config-pill-radius: 999px;
+  --jmp-controls-reveal-transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#MediaPreviewConfigPage .ec-configLabelRow,
+#MediaPreviewConfigPage .jmp-numberLabelRow {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+  width: fit-content;
+}
+
+#MediaPreviewConfigPage .jmp-configForm {
+  box-sizing: border-box;
 }
 
 #MediaPreviewConfigPage .jmp-configForm,
@@ -19,13 +49,6 @@
   max-width: none !important;
 }
 
-#MediaPreviewConfigPage .ec-configLabelRow {
-  align-items: center;
-  display: flex;
-  gap: 0.4rem;
-  width: fit-content;
-}
-
 #MediaPreviewConfigPage .jmp-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -34,10 +57,10 @@
 }
 
 #MediaPreviewConfigPage .jmp-section {
-  padding: 1rem 1rem 0.25rem;
+  padding: 1rem;
   border-radius: 0.75rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--jmp-config-card-background);
+  border: 1px solid var(--jmp-theme-divider);
   margin-bottom: 1rem;
 }
 
@@ -48,6 +71,10 @@
   margin-bottom: 0;
 }
 
+#MediaPreviewConfigPage .jmp-section-plain > .jmp-subsection {
+  margin-bottom: 1rem;
+}
+
 #MediaPreviewConfigPage .jmp-section h3 {
   margin: 0 0 0.25rem;
 }
@@ -55,68 +82,27 @@
 #MediaPreviewConfigPage .jmp-toolbar {
   display: flex;
   align-items: center;
+  background: var(--jmp-theme-background);
+  border-bottom: 1px solid var(--jmp-theme-divider);
   gap: 1rem;
   margin-bottom: 1rem;
   flex-wrap: wrap;
-}
-
-#MediaPreviewConfigPage .jmp-subgrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
-}
-
-#MediaPreviewConfigPage .jmp-subgrid + .jmp-subgrid {
-  margin-top: 1.5rem;
-}
-
-#MediaPreviewConfigPage .jmp-generalGrid {
-  display: grid;
-  grid-template-columns: minmax(340px, 0.95fr) minmax(520px, 1.35fr);
-  gap: 1.5rem;
-  align-items: start;
-}
-
-#MediaPreviewConfigPage .jmp-generalSelectionGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.5rem;
-}
-
-#MediaPreviewConfigPage .jmp-selectionIntro {
-  grid-column: 1 / -1;
-}
-
-#MediaPreviewConfigPage .jmp-preferenceGrid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.8rem;
-  margin-bottom: 0.8rem;
-}
-
-#MediaPreviewConfigPage .jmp-advancedPreferenceCard {
-  grid-column: 1 / -1;
-}
-
-#MediaPreviewConfigPage .jmp-blockDivider {
-  margin: 1.1rem 0 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.5rem 0;
 }
 
 #MediaPreviewConfigPage .jmp-subsection {
   min-width: 0;
-  padding: 1rem 1rem 0.25rem;
+  padding: 1rem;
   border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--jmp-config-card-background);
+  border: 1px solid var(--jmp-theme-divider);
 }
 
 #MediaPreviewConfigPage .jmp-subsectionTitle {
   margin: 0 0 0.2rem;
   font-size: 1rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.96);
+  color: var(--jmp-theme-text-primary);
 }
 
 #MediaPreviewConfigPage .jmp-titleRow {
@@ -137,10 +123,10 @@
   justify-content: center;
   flex: 0 0 auto;
   padding: 0.28rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid rgba(0, 164, 220, 0.34);
-  background: rgba(0, 164, 220, 0.14);
-  color: rgba(226, 247, 255, 0.98);
+  border-radius: var(--jmp-config-pill-radius);
+  border: 1px solid var(--jmp-theme-primary);
+  background: var(--jmp-theme-primary);
+  color: var(--jmp-theme-primary-contrast);
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1;
@@ -150,9 +136,9 @@
 }
 
 #MediaPreviewConfigPage .jmp-badge-muted {
-  border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.78);
+  border-color: var(--jmp-theme-divider);
+  background: var(--jmp-theme-action-hover);
+  color: var(--jmp-theme-text-secondary);
 }
 
 #MediaPreviewConfigPage .jmp-badge-wip {
@@ -166,6 +152,217 @@
   opacity: 0.75;
   font-size: 0.9em;
   line-height: 1.35;
+}
+
+#MediaPreviewConfigPage .jmp-cardHeader-actions {
+  display: grid;
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+#MediaPreviewConfigPage .jmp-cardHeader-actions .jmp-subsectionHelp {
+  margin-bottom: 0;
+}
+
+@media (max-width: 600px) {
+  #MediaPreviewConfigPage .jmp-cardHeader-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+#MediaPreviewConfigPage .jmp-note {
+  margin: 0.4rem 0 0;
+  opacity: 0.75;
+  font-size: 0.9em;
+}
+
+#MediaPreviewConfigPage .jmp-intro {
+  max-width: none;
+  margin-bottom: 1.25rem;
+}
+
+#MediaPreviewConfigPage .jmp-tabBar {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  min-width: 0;
+  gap: 0.65rem;
+  margin-bottom: 0;
+}
+
+#MediaPreviewConfigPage .jmp-tabButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border: 1px solid var(--jmp-theme-divider);
+  border-radius: var(--jmp-config-pill-radius);
+  background: var(--jmp-theme-action-hover);
+  color: var(--jmp-theme-text-secondary);
+  padding: var(--jmp-config-control-padding);
+  font-size: 0.92em;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--jmp-config-control-transition);
+}
+
+#MediaPreviewConfigPage .jmp-tabButton:hover {
+  background: var(--jmp-theme-action-focus);
+  color: var(--jmp-theme-text-primary);
+  transform: translateY(-1px);
+}
+
+#MediaPreviewConfigPage .jmp-tabButton.is-active {
+  background: var(--jmp-theme-primary);
+  border-color: var(--jmp-theme-primary);
+  color: var(--jmp-theme-primary-contrast);
+}
+
+#MediaPreviewConfigPage .jmp-tabButton .jmp-badge {
+  margin: 0;
+  box-sizing: border-box;
+  width: auto;
+  height: 1.1rem;
+  padding: 0 0.4rem;
+  font-size: 0.62rem;
+  line-height: normal;
+  text-indent: 0.02em;
+}
+
+#MediaPreviewConfigPage .jmp-saveButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  margin-left: auto;
+  min-width: 0;
+  height: auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding: var(--jmp-config-control-padding);
+  border: 1px solid var(--jmp-theme-divider);
+  border-radius: var(--jmp-config-pill-radius);
+  background: var(--jmp-theme-action-hover);
+  color: var(--jmp-theme-text-secondary);
+  box-shadow: none !important;
+  box-shadow: none;
+  font: inherit;
+  font-size: 0.92em;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  text-transform: none;
+  text-decoration: none;
+  transition: var(--jmp-config-control-transition);
+}
+
+#MediaPreviewConfigPage .jmp-saveButton span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+#MediaPreviewConfigPage .jmp-saveButton:hover,
+#MediaPreviewConfigPage .jmp-saveButton:focus {
+  background: var(--jmp-theme-action-focus);
+  color: var(--jmp-theme-text-primary);
+  transform: translateY(-1px);
+}
+
+#MediaPreviewConfigPage .jmp-saveButton.is-dirty {
+  background: var(--jmp-theme-primary);
+  border-color: var(--jmp-theme-primary);
+  color: var(--jmp-theme-primary-contrast);
+}
+
+#MediaPreviewConfigPage .jmp-saveButton.is-dirty:hover,
+#MediaPreviewConfigPage .jmp-saveButton.is-dirty:focus {
+  background: var(--jmp-theme-primary-dark);
+}
+
+#MediaPreviewConfigPage .jmp-saveButton.is-saved {
+  background: #1f9d5a;
+  border-color: rgba(31, 157, 90, 0.42);
+  color: #ffffff;
+}
+
+#MediaPreviewConfigPage .jmp-saveButton.is-saved:hover,
+#MediaPreviewConfigPage .jmp-saveButton.is-saved:focus {
+  background: #29ad67;
+}
+
+@media (max-width: 1100px) {
+  #MediaPreviewConfigPage .jmp-toolbar {
+    align-items: stretch;
+  }
+
+  #MediaPreviewConfigPage .jmp-tabBar {
+    flex-basis: 100%;
+  }
+
+  #MediaPreviewConfigPage .jmp-saveButton {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* ---- Media Preview only ---- */
+
+#MediaPreviewConfigPage .ec-configLabelRow {
+  align-items: center;
+  display: flex;
+  gap: 0.4rem;
+  width: fit-content;
+}
+
+#MediaPreviewConfigPage .jmp-subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
+}
+
+#MediaPreviewConfigPage .jmp-subgrid + .jmp-subgrid {
+  margin-top: 1.5rem;
+}
+
+#MediaPreviewConfigPage .jmp-generalGrid {
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(480px, 1.4fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Rule cards stack, so their selects stay wide enough for labels like "Use type or default rule". */
+#MediaPreviewConfigPage .jmp-generalSelectionGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+#MediaPreviewConfigPage .jmp-selectionIntro {
+  grid-column: 1 / -1;
+}
+
+#MediaPreviewConfigPage .jmp-preferenceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+#MediaPreviewConfigPage .jmp-advancedPreferenceCard {
+  grid-column: 1 / -1;
+}
+
+#MediaPreviewConfigPage .jmp-blockDivider {
+  margin: 1.1rem 0 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--jmp-theme-divider);
 }
 
 #MediaPreviewConfigPage .jmp-help {
@@ -182,13 +379,6 @@
   display: none !important;
 }
 
-#MediaPreviewConfigPage .jmp-note {
-  margin-top: -0.5rem;
-  margin-bottom: 1rem;
-  opacity: 0.75;
-  font-size: 0.9em;
-}
-
 #MediaPreviewConfigPage .jmp-note-tight {
   margin-top: -0.2rem;
 }
@@ -200,7 +390,7 @@
 
 #MediaPreviewConfigPage .jmp-flowStep {
   padding-top: 0.95rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--jmp-theme-divider);
 }
 
 #MediaPreviewConfigPage .jmp-flowStep:first-of-type {
@@ -228,131 +418,6 @@
   gap: 0.85rem 1rem;
 }
 
-#MediaPreviewConfigPage .jmp-intro {
-  max-width: none;
-  margin-bottom: 1.25rem;
-}
-
-#MediaPreviewConfigPage .jmp-tabBar {
-  display: flex;
-  flex-wrap: wrap;
-  flex: 1 1 auto;
-  min-width: 0;
-  gap: 0.65rem;
-  margin-bottom: 0;
-}
-
-#MediaPreviewConfigPage .jmp-tabButton {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.84);
-  padding: 0.55rem 0.9rem;
-  font-size: 0.92em;
-  line-height: 1;
-  cursor: pointer;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
-}
-
-#MediaPreviewConfigPage .jmp-tabButton:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.95);
-  transform: translateY(-1px);
-}
-
-#MediaPreviewConfigPage .jmp-tabButton.is-active {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.98);
-}
-
-#MediaPreviewConfigPage .jmp-tabButton .jmp-badge {
-  margin: 0;
-  box-sizing: border-box;
-  width: auto;
-  height: 1.1rem;
-  padding: 0 0.4rem;
-  font-size: 0.62rem;
-  line-height: normal;
-  text-indent: 0.02em;
-}
-
-#MediaPreviewConfigPage .jmp-saveButton {
-  appearance: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  margin-left: auto;
-  min-width: 0;
-  height: auto;
-  margin-top: 0;
-  margin-bottom: 0;
-  padding: 0.55rem 0.9rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.84);
-  box-shadow: none !important;
-  box-shadow: none;
-  font: inherit;
-  font-size: 0.92em;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-  text-transform: none;
-  text-decoration: none;
-  transition:
-    background 0.18s ease,
-    border-color 0.18s ease,
-    color 0.18s ease,
-    transform 0.18s ease;
-}
-
-#MediaPreviewConfigPage .jmp-saveButton span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-#MediaPreviewConfigPage .jmp-saveButton:hover,
-#MediaPreviewConfigPage .jmp-saveButton:focus {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.95);
-  transform: translateY(-1px);
-}
-
-#MediaPreviewConfigPage .jmp-saveButton.is-dirty {
-  background: #00a4dc;
-  border-color: rgba(0, 164, 220, 0.42);
-  color: #ffffff;
-}
-
-#MediaPreviewConfigPage .jmp-saveButton.is-dirty:hover,
-#MediaPreviewConfigPage .jmp-saveButton.is-dirty:focus {
-  background: #18b3ea;
-}
-
-#MediaPreviewConfigPage .jmp-saveButton.is-saved {
-  background: #1f9d5a;
-  border-color: rgba(31, 157, 90, 0.42);
-  color: #ffffff;
-}
-
-#MediaPreviewConfigPage .jmp-saveButton.is-saved:hover,
-#MediaPreviewConfigPage .jmp-saveButton.is-saved:focus {
-  background: #29ad67;
-}
-
 #MediaPreviewConfigPage .jmp-pillRow {
   display: flex;
   flex-wrap: wrap;
@@ -367,8 +432,8 @@
   gap: 0.35rem;
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--jmp-theme-action-hover);
+  border: 1px solid var(--jmp-theme-divider);
   font-size: 0.88em;
   line-height: 1;
 }
@@ -389,8 +454,8 @@
   margin-bottom: 1rem;
   padding: 0.85rem 0.95rem;
   border-radius: 0.9rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--jmp-theme-action-hover);
+  border: 1px solid var(--jmp-theme-divider);
 }
 
 #MediaPreviewConfigPage .jmp-modeGlyph {
@@ -618,19 +683,6 @@
     grid-column: auto;
   }
 
-  #MediaPreviewConfigPage .jmp-toolbar {
-    align-items: stretch;
-  }
-
-  #MediaPreviewConfigPage .jmp-tabBar {
-    flex-basis: 100%;
-  }
-
-  #MediaPreviewConfigPage .jmp-saveButton {
-    width: 100%;
-    margin-left: 0;
-  }
-
   #MediaPreviewConfigPage .jmp-compactGrid {
     grid-template-columns: 1fr;
   }
@@ -638,4 +690,115 @@
   #MediaPreviewConfigPage .jmp-preferenceGrid {
     grid-template-columns: 1fr;
   }
+}
+
+#MediaPreviewConfigPage .jmp-actionButton {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--jmp-theme-divider);
+  border-radius: 999px;
+  background: var(--jmp-theme-action-hover);
+  color: var(--jmp-theme-text-primary);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+#MediaPreviewConfigPage .jmp-actionButton:hover,
+#MediaPreviewConfigPage .jmp-actionButton:focus-visible {
+  background: var(--jmp-theme-action-focus);
+}
+
+#MediaPreviewConfigPage .jmp-actionButton:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+#MediaPreviewConfigPage .jmp-headerSwitch {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 0.6rem;
+}
+
+#MediaPreviewConfigPage .jmp-headerSwitch > span {
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+#MediaPreviewConfigPage .jmp-switchGrid {
+  display: grid;
+  gap: 0 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 600px) {
+  #MediaPreviewConfigPage .jmp-switchGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Space between a card's title and its first group of settings. */
+#MediaPreviewConfigPage .jmp-cardHeader:not(.jmp-cardHeader-actions) {
+  margin-bottom: 0.85rem;
+}
+
+#MediaPreviewConfigPage .jmp-cardHeader:not(.jmp-cardHeader-actions) .jmp-subsectionHelp {
+  margin-bottom: 0;
+}
+
+/* Card surface for custom blocks such as the collapsible groups (Featured: .featured-configCard). */
+#MediaPreviewConfigPage .jmp-configCard {
+  background: var(--jmp-config-card-background);
+  border: 1px solid var(--jmp-theme-divider);
+  border-radius: 0.9rem;
+}
+
+/* Two independent card columns (main + aside, as in Featured), so a short card never leaves
+   a gap next to a tall one the way rows of a grid do. */
+#MediaPreviewConfigPage .jmp-columns {
+  align-items: start;
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#MediaPreviewConfigPage .jmp-column {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+}
+
+/* A wide card whose content sits in two columns (loader settings next to diagnostics). */
+#MediaPreviewConfigPage .jmp-splitCard {
+  display: grid;
+  gap: 0 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#MediaPreviewConfigPage .jmp-splitCard > .jmp-cardHeader {
+  grid-column: 1 / -1;
+}
+
+#MediaPreviewConfigPage .jmp-splitColumn {
+  align-content: start;
+  display: grid;
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  #MediaPreviewConfigPage .jmp-columns,
+  #MediaPreviewConfigPage .jmp-splitCard {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* The tab bar does not stick, so it takes the page's own background. Jellyfin's palette color
+   differs from many themes' page color and showed up as a darker band behind the tabs. */
+#MediaPreviewConfigPage .jmp-toolbar {
+  background: transparent;
 }
