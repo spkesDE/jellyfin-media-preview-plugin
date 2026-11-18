@@ -107,3 +107,71 @@ export function putJson<T>(
     return response.json() as Promise<T>;
   });
 }
+
+export function postJsonForResult<T>(
+  path: string,
+  body: unknown,
+  query?: Record<string, string | number | boolean | null | undefined>
+): Promise<T> {
+  const apiClient = getGlobalApiClient();
+  const url = buildApiUrl(path, query, { includeAccessToken: false });
+  if (!apiClient || !url) {
+    return Promise.reject(new Error('ApiClient is not available.'));
+  }
+
+  const serializedBody = JSON.stringify(body);
+  if (typeof apiClient.ajax === 'function') {
+    return Promise.resolve(
+      apiClient.ajax({
+        type: 'POST',
+        url,
+        contentType: 'application/json',
+        data: serializedBody,
+        dataType: 'json'
+      }) as Promise<T> | T
+    );
+  }
+
+  return fetch(url, {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {
+      ...getAuthHeaders(apiClient),
+      'Content-Type': 'application/json'
+    },
+    body: serializedBody
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
+  });
+}
+
+export function deleteRequest(
+  path: string,
+  query?: Record<string, string | number | boolean | null | undefined>
+): Promise<void> {
+  const apiClient = getGlobalApiClient();
+  const url = buildApiUrl(path, query, { includeAccessToken: false });
+  if (!apiClient || !url) {
+    return Promise.reject(new Error('ApiClient is not available.'));
+  }
+
+  if (typeof apiClient.ajax === 'function') {
+    return Promise.resolve(apiClient.ajax({ type: 'DELETE', url })).then(() => undefined);
+  }
+
+  return fetch(url, {
+    method: 'DELETE',
+    credentials: 'same-origin',
+    // keepalive lets the stop request finish when the page is being left.
+    keepalive: true,
+    headers: getAuthHeaders(apiClient)
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Request failed with status ${response.status}`);
+    }
+  });
+}

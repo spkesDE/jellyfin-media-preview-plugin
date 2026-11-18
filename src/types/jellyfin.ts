@@ -8,6 +8,17 @@ export interface JellyfinMediaSource {
   Id?: string;
   Container?: string;
   MediaStreams?: JellyfinMediaStream[];
+  SupportsDirectPlay?: boolean;
+  SupportsDirectStream?: boolean;
+  SupportsTranscoding?: boolean;
+  TranscodingUrl?: string | null;
+  TranscodingSubProtocol?: string | null;
+}
+
+export interface JellyfinPlaybackInfoResponse {
+  MediaSources?: JellyfinMediaSource[];
+  PlaySessionId?: string | null;
+  ErrorCode?: string | null;
 }
 
 export interface JellyfinRemoteTrailer {
@@ -58,7 +69,7 @@ export interface JellyfinCurrentUser {
 }
 
 export interface JellyfinAjaxRequest {
-  type: 'GET' | 'POST' | 'PUT';
+  type: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;
   dataType?: 'json';
   contentType?: 'application/json';
@@ -74,6 +85,7 @@ export interface JellyfinServerInfo {
 
 export interface JellyfinApiClient {
   accessToken?: (() => string | undefined) | string;
+  deviceId?: () => string | null | undefined;
   _serverInfo?: JellyfinServerInfo;
   _serverAddress?: string;
   getCurrentUserId?: () => string | null | undefined;

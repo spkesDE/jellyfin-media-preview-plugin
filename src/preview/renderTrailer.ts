@@ -28,6 +28,7 @@ import {
 import { collapseExpandedTrailer } from '../trailerOverlay/expandedTrailer';
 import { markYouTubeTrailerUnavailable, markVideoTrailerUnavailable } from './trailer';
 import { markDirectPlayUnavailable } from './directPlay';
+import { releaseVideoSource, setVideoSource } from './transcodeSessions';
 import type { VideoPreview } from '../types/preview';
 import type { MediaControlSource } from '../types/config';
 import type { CardState } from '../types/state';
@@ -151,7 +152,9 @@ export function clearTrailerMedia(state: CardState | null | undefined): void {
   videoElement.playbackRate = 1;
   videoElement.defaultPlaybackRate = 1;
   videoElement.loop = true;
+  releaseVideoSource(videoElement);
   videoElement.removeAttribute('src');
+  delete videoElement.dataset.jmpSourceUrl;
   delete videoElement.dataset.jmpFallbackApplied;
   delete videoElement.dataset.jmpPreviewStartSeconds;
   videoElement.load();
@@ -407,7 +410,7 @@ export function applyTrailerPreview(
         });
         mediaElement.dataset.jmpFallbackApplied = 'true';
         mediaElement.dataset.jmpPreviewStartSeconds = '0';
-        mediaElement.src = trailer.fallbackSrc;
+        setVideoSource(mediaElement, trailer.fallbackSrc);
         mediaElement.load();
         mediaElement.defaultPlaybackRate = playbackRate;
         mediaElement.playbackRate = playbackRate;
@@ -459,9 +462,12 @@ export function applyTrailerPreview(
       }
     };
 
-    if (trailer.src && mediaElement.src !== trailer.src) {
+    if (trailer.src && mediaElement.dataset.jmpSourceUrl !== trailer.src) {
       mediaElement.dataset.jmpFallbackApplied = 'false';
-      mediaElement.src = trailer.src;
+      // The element's src can carry an added play session id, so the requested URL is kept
+      // separately to tell whether this preview is already loaded.
+      mediaElement.dataset.jmpSourceUrl = trailer.src;
+      setVideoSource(mediaElement, trailer.src);
       mediaElement.load();
       state.trailerPlaybackStartedAt = Date.now();
     }

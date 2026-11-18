@@ -55,6 +55,7 @@ export interface PluginConfig {
   directPlayStartPercent: number;
   directPlayPlaybackRate: number;
   directPlayPreviewDurationSeconds: number;
+  directPlayRemuxEnabled: boolean;
   directPlayTranscodeFallbackEnabled: boolean;
   directPlayTranscodeMaxHeight: number;
   directPlayTranscodeVideoBitrateKbps: number;

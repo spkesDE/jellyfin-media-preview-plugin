@@ -21,6 +21,7 @@ import { clearTrickplayPreloads } from './preview/preload';
 import { clearUnavailableTrailerCacheState } from './preview/trailer';
 import { clearDirectPlayFallbackState } from './preview/directPlay';
 import { clearLibraryPreviewSourceOverrideState } from './preview/libraryOverrides';
+import { clearTranscodeSessionState } from './preview/transcodeSessions';
 import {
   applyEffectivePreferences,
   clearUserPreferenceState,
@@ -54,6 +55,8 @@ export function destroy(): void {
   clearUnavailableTrailerCacheState();
   clearDirectPlayFallbackState();
   clearLibraryPreviewSourceOverrideState();
+  window.removeEventListener('pagehide', clearTranscodeSessionState);
+  clearTranscodeSessionState();
   document.removeEventListener(USER_PREFERENCES_CHANGED_EVENT, handleUserPreferencesChanged);
   removeUserSettingsEntries();
   clearUserPreferenceState();
@@ -68,6 +71,7 @@ export function start(): void {
   }
 
   ensureInjectedStyles();
+  window.addEventListener('pagehide', clearTranscodeSessionState);
   document.addEventListener(USER_PREFERENCES_CHANGED_EVENT, handleUserPreferencesChanged);
   void syncCurrentUserPreferences();
   bindUserActivationEvents();

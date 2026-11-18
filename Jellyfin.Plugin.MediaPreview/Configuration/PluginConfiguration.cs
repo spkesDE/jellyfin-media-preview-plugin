@@ -99,6 +99,7 @@ public sealed class PluginConfiguration : BasePluginConfiguration
 
     public int DirectPlayPreviewDurationSeconds { get; set; } = 15;
 
+    public bool DirectPlayRemuxEnabled { get; set; } = true;
     public bool DirectPlayTranscodeFallbackEnabled { get; set; } = true;
 
     public int DirectPlayTranscodeMaxHeight { get; set; } = 480;

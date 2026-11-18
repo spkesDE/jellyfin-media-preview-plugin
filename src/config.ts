@@ -72,6 +72,7 @@ const standaloneFallbackConfig: PluginConfig = {
   directPlayStartPercent: 20,
   directPlayPlaybackRate: 1.5,
   directPlayPreviewDurationSeconds: 15,
+  directPlayRemuxEnabled: true,
   directPlayTranscodeFallbackEnabled: true,
   directPlayTranscodeMaxHeight: 480,
   directPlayTranscodeVideoBitrateKbps: 1500,
@@ -295,6 +296,7 @@ export function normalizeConfig(): void {
     0,
     300
   );
+  config.directPlayRemuxEnabled = config.directPlayRemuxEnabled !== false;
   config.directPlayTranscodeFallbackEnabled = config.directPlayTranscodeFallbackEnabled !== false;
   config.directPlayTranscodeMaxHeight = clamp(numberOrFallback(config.directPlayTranscodeMaxHeight, 480), 240, 2160);
   config.directPlayTranscodeVideoBitrateKbps = clamp(
