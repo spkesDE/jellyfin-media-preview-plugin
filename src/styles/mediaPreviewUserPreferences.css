@@ -5,6 +5,9 @@
   --jmp-prefs-text: var(--jf-palette-text-primary, #fff);
   --jmp-prefs-divider: var(--jf-palette-divider, rgb(255 255 255 / 0.14));
   --jmp-prefs-hover: var(--jf-palette-action-hover, rgb(255 255 255 / 0.08));
+  --jmp-prefs-focus: var(--jf-palette-action-focus, rgb(255 255 255 / 0.12));
+  --jmp-prefs-text-secondary: var(--jf-palette-text-secondary, rgb(255 255 255 / 0.7));
+  --jmp-prefs-primary-contrast: var(--jf-palette-primary-contrastText, #fff);
   --jmp-prefs-error: var(--jf-palette-error-light, #ffb4ab);
   --jmp-prefs-radius: var(--jf-card-borderRadius, 0.25rem);
   align-items: center;
@@ -33,7 +36,7 @@
   max-height: calc(100vh - 2rem);
   max-width: calc(100vw - 2rem);
   overflow: hidden;
-  width: 26rem;
+  width: 46rem;
 }
 
 .jmp-prefs-header {
@@ -82,18 +85,110 @@
 }
 
 .jmp-prefs-content {
+  display: grid;
   flex: 1 1 auto;
+  gap: 1.25rem 2rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   min-height: 0;
   overflow: auto;
-  padding: 0.5rem 1.25rem 1rem;
+  padding: 1.25rem 1.5rem 1.5rem;
 }
 
-.jmp-prefs-dialog .checkboxContainer {
-  margin: 0.75rem 0;
+.jmp-prefs-section {
+  align-content: start;
+  border: 0;
+  display: grid;
+  margin: 0;
+  min-width: 0;
+  padding: 0;
 }
 
-.jmp-prefs-dialog .jmp-prefs-remember {
-  margin-top: 1.25rem;
+.jmp-prefs-sectionTitle {
+  color: var(--jmp-prefs-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.6rem;
+  padding: 0;
+  text-transform: uppercase;
+}
+
+.jmp-prefs-sectionBody {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.jmp-prefs-switchRow {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  min-height: 2.4rem;
+}
+
+.jmp-prefs-switchLabel {
+  line-height: 1.35;
+}
+
+.jmp-prefs-switch {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 1.25rem;
+  position: relative;
+  width: 2.25rem;
+}
+
+.jmp-prefs-switchInput {
+  cursor: pointer;
+  height: 100%;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  position: absolute;
+  width: 100%;
+  z-index: 1;
+}
+
+.jmp-prefs-switchTrack {
+  background: var(--jmp-prefs-focus);
+  border-radius: 999px;
+  inset: 0;
+  position: absolute;
+  transition: background 0.16s ease;
+}
+
+.jmp-prefs-switchTrack::after {
+  background: var(--jmp-prefs-text);
+  border-radius: 50%;
+  content: '';
+  height: 0.95rem;
+  left: 0.15rem;
+  position: absolute;
+  top: 0.15rem;
+  transition: transform 0.16s ease;
+  width: 0.95rem;
+}
+
+.jmp-prefs-switchInput:checked + .jmp-prefs-switchTrack {
+  background: var(--jmp-prefs-primary);
+}
+
+.jmp-prefs-switchInput:checked + .jmp-prefs-switchTrack::after {
+  background: var(--jmp-prefs-primary-contrast);
+  transform: translateX(1rem);
+}
+
+.jmp-prefs-switchInput:focus-visible + .jmp-prefs-switchTrack {
+  outline: 2px solid var(--jmp-prefs-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jmp-prefs-switchTrack,
+  .jmp-prefs-switchTrack::after {
+    transition: none;
+  }
 }
 
 .jmp-prefs-volume {
@@ -170,5 +265,35 @@
 @media (prefers-reduced-motion: reduce) {
   .jmp-prefs-spinner {
     animation-duration: 2.5s;
+  }
+}
+
+.jmp-prefs-dialog .jmp-prefs-field {
+  margin: 0;
+}
+
+.jmp-prefs-dialog .jmp-prefs-field.is-disabled {
+  opacity: 0.5;
+}
+
+/* Phones: one column, and the dialog takes the whole screen. */
+@media (max-width: 720px) {
+  .jmp-prefs-content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .jmp-prefs-backdrop {
+    padding: 0;
+  }
+
+  .jmp-prefs-dialog {
+    border: 0;
+    border-radius: 0;
+    height: 100dvh;
+    max-height: none;
+    max-width: none;
+    width: 100%;
   }
 }

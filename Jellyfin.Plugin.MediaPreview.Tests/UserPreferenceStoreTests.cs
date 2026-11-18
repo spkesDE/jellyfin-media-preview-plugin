@@ -32,6 +32,50 @@ public sealed class UserPreferenceStoreTests : IDisposable
     }
 
     [Fact]
+    public void PreviewSettingsAreValidatedAndKeptByAudioUpdates()
+    {
+        Guid userId = Guid.NewGuid();
+        UserPreferenceStore store = CreateStore();
+        store.Set(userId, new UserPreferences
+        {
+            PreviewEnabled = false,
+            PreviewSource = "prefer-trailer",
+            HoverDelayMs = 99999
+        });
+        store.Update(userId, current => current.WithAudio(true, 40));
+
+        UserPreferences loaded = CreateStore().Get(userId);
+        Assert.False(loaded.PreviewEnabled);
+        Assert.Equal("prefer-trailer", loaded.PreviewSource);
+        Assert.Equal(UserPreferences.MaximumHoverDelayMs, loaded.HoverDelayMs);
+        Assert.Equal(40, loaded.TrailerVolumePercent);
+
+        store.Set(userId, new UserPreferences { PreviewSource = "<script>" });
+        Assert.Null(store.Get(userId).PreviewSource);
+    }
+
+    [Fact]
+    public void PreviewSettingsFallBackToServerDefaults()
+    {
+        PluginConfiguration config = new() { HoverDelayMs = 450 };
+
+        EffectiveUserPreferences unset = EffectiveUserPreferences.Resolve(config, new UserPreferences());
+        Assert.True(unset.PreviewEnabled);
+        Assert.Equal("inherit", unset.PreviewSource);
+        Assert.Equal(450, unset.HoverDelayMs);
+
+        EffectiveUserPreferences set = EffectiveUserPreferences.Resolve(
+            config,
+            new UserPreferences { PreviewEnabled = false, PreviewSource = "trickplay", HoverDelayMs = 100 });
+        Assert.False(set.PreviewEnabled);
+        Assert.Equal("trickplay", set.PreviewSource);
+        Assert.Equal(100, set.HoverDelayMs);
+
+        config.UserAudioPreferencesEnabled = false;
+        Assert.True(EffectiveUserPreferences.Resolve(config, new UserPreferences { PreviewEnabled = false }).PreviewEnabled);
+    }
+
+    [Fact]
     public void EmptyPreferencesRemoveTheUser()
     {
         Guid userId = Guid.NewGuid();

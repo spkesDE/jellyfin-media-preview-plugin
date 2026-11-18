@@ -30,6 +30,7 @@ describe('user audio preferences', () => {
   const originalAudio = config.trailerAudioEnabled;
   const originalVolume = config.trailerVolumePercent;
   const originalEnabled = config.userAudioPreferencesEnabled;
+  const originalHoverDelay = config.hoverDelayMs;
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -42,6 +43,9 @@ describe('user audio preferences', () => {
     config.trailerAudioEnabled = originalAudio;
     config.trailerVolumePercent = originalVolume;
     config.userAudioPreferencesEnabled = originalEnabled;
+    config.hoverDelayMs = originalHoverDelay;
+    config.userPreviewEnabled = true;
+    config.userPreviewSource = 'inherit';
     delete window.ApiClient;
     window.localStorage.clear();
   });
@@ -65,26 +69,81 @@ describe('user audio preferences', () => {
     });
     const values = { trailerAudioEnabled: false, trailerVolumePercent: 35, rememberAudioChanges: true };
 
+    const untouchedPreview = { previewEnabled: null, previewSource: null, hoverDelayMs: null };
     expect(toExplicitPreferences(current, values)).toEqual({
+      ...untouchedPreview,
       trailerAudioEnabled: false,
       trailerVolumePercent: null,
       rememberAudioChanges: null
     });
     expect(toExplicitPreferences(current, { ...values, trailerAudioEnabled: true })).toEqual({
+      ...untouchedPreview,
       trailerAudioEnabled: true,
       trailerVolumePercent: null,
       rememberAudioChanges: null
     });
     expect(toExplicitPreferences(current, { ...values, trailerVolumePercent: 140 })).toEqual({
+      ...untouchedPreview,
       trailerAudioEnabled: false,
       trailerVolumePercent: 100,
       rememberAudioChanges: null
     });
     expect(toExplicitPreferences(current, { ...values, rememberAudioChanges: false })).toEqual({
+      ...untouchedPreview,
       trailerAudioEnabled: false,
       trailerVolumePercent: null,
       rememberAudioChanges: false
     });
+  });
+
+  it('stores preview choices only when they differ from what is in effect', () => {
+    const current = response({
+      preferences: { trailerAudioEnabled: null, trailerVolumePercent: null, rememberAudioChanges: null },
+      effective: {
+        trailerAudioEnabled: false,
+        trailerVolumePercent: 35,
+        rememberAudioChanges: true,
+        previewEnabled: true,
+        previewSource: 'inherit',
+        hoverDelayMs: 300
+      }
+    });
+    const values = {
+      trailerAudioEnabled: false,
+      trailerVolumePercent: 35,
+      rememberAudioChanges: true,
+      previewEnabled: false,
+      previewSource: 'prefer-trailer',
+      hoverDelayMs: 9000
+    };
+
+    expect(toExplicitPreferences(current, values)).toMatchObject({
+      previewEnabled: false,
+      previewSource: 'prefer-trailer',
+      hoverDelayMs: 5000
+    });
+    expect(
+      toExplicitPreferences(current, { ...values, previewEnabled: true, previewSource: 'inherit', hoverDelayMs: 300 })
+    ).toMatchObject({ previewEnabled: null, previewSource: null, hoverDelayMs: null });
+  });
+
+  it('applies the preview choices to the runtime config', () => {
+    applyEffectivePreferences(
+      response({
+        effective: {
+          trailerAudioEnabled: false,
+          trailerVolumePercent: 35,
+          rememberAudioChanges: true,
+          previewEnabled: false,
+          previewSource: 'trickplay',
+          hoverDelayMs: 900
+        }
+      })
+    );
+
+    expect(config.userPreviewEnabled).toBe(false);
+    expect(config.userPreviewSource).toBe('trickplay');
+    expect(config.hoverDelayMs).toBe(900);
   });
 
   it('applies the effective preferences to the runtime config', () => {

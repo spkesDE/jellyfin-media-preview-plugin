@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Jellyfin.Plugin.MediaPreview.Users;
 
 /// <summary>
-/// Persists per-user Media Preview settings (currently preview audio) in a small JSON file.
+/// Persists per-user Media Preview settings (preview audio, source, hover delay, on/off) in a small JSON file.
 /// Values that are <c>null</c> follow the server-wide defaults from the plugin configuration.
 /// </summary>
 public sealed class UserPreferenceStore
@@ -165,30 +165,68 @@ public sealed class UserPreferences
     [JsonPropertyName("rememberAudioChanges")]
     public bool? RememberAudioChanges { get; set; }
 
+    /// <summary>Whether this user sees previews at all; <c>null</c> means yes.</summary>
+    [JsonPropertyName("previewEnabled")]
+    public bool? PreviewEnabled { get; set; }
+
+    /// <summary>
+    /// The user's preferred source (for example <c>trickplay</c> or <c>prefer-trailer</c>);
+    /// <c>null</c> or <c>inherit</c> follows the administrator's rules.
+    /// </summary>
+    [JsonPropertyName("previewSource")]
+    public string? PreviewSource { get; set; }
+
+    [JsonPropertyName("hoverDelayMs")]
+    public int? HoverDelayMs { get; set; }
+
+    internal const int MaximumHoverDelayMs = 5000;
+
+    internal static readonly HashSet<string> AllowedPreviewSources = new(StringComparer.Ordinal)
+    {
+        "trickplay",
+        "trailer",
+        "direct-play",
+        "prefer-trickplay",
+        "prefer-trailer",
+        "prefer-direct-play"
+    };
+
     internal UserPreferences Copy() => new()
     {
         TrailerAudioEnabled = TrailerAudioEnabled,
         TrailerVolumePercent = TrailerVolumePercent,
-        RememberAudioChanges = RememberAudioChanges
+        RememberAudioChanges = RememberAudioChanges,
+        PreviewEnabled = PreviewEnabled,
+        PreviewSource = PreviewSource,
+        HoverDelayMs = HoverDelayMs
     };
 
     internal UserPreferences Normalize() => new()
     {
         TrailerAudioEnabled = TrailerAudioEnabled,
         TrailerVolumePercent = TrailerVolumePercent.HasValue ? Math.Clamp(TrailerVolumePercent.Value, 0, 100) : null,
-        RememberAudioChanges = RememberAudioChanges
+        RememberAudioChanges = RememberAudioChanges,
+        PreviewEnabled = PreviewEnabled,
+        PreviewSource = PreviewSource is not null && AllowedPreviewSources.Contains(PreviewSource) ? PreviewSource : null,
+        HoverDelayMs = HoverDelayMs.HasValue ? Math.Clamp(HoverDelayMs.Value, 0, MaximumHoverDelayMs) : null
     };
 
     internal bool IsEmpty()
-        => !TrailerAudioEnabled.HasValue && !TrailerVolumePercent.HasValue && !RememberAudioChanges.HasValue;
+        => !TrailerAudioEnabled.HasValue
+            && !TrailerVolumePercent.HasValue
+            && !RememberAudioChanges.HasValue
+            && !PreviewEnabled.HasValue
+            && PreviewSource is null
+            && !HoverDelayMs.HasValue;
 
     /// <summary>Returns a copy with the given audio values replaced; <c>null</c> keeps the stored value.</summary>
-    internal UserPreferences WithAudio(bool? trailerAudioEnabled, int? trailerVolumePercent) => new()
+    internal UserPreferences WithAudio(bool? trailerAudioEnabled, int? trailerVolumePercent)
     {
-        TrailerAudioEnabled = trailerAudioEnabled ?? TrailerAudioEnabled,
-        TrailerVolumePercent = trailerVolumePercent ?? TrailerVolumePercent,
-        RememberAudioChanges = RememberAudioChanges
-    };
+        UserPreferences copy = Copy();
+        copy.TrailerAudioEnabled = trailerAudioEnabled ?? TrailerAudioEnabled;
+        copy.TrailerVolumePercent = trailerVolumePercent ?? TrailerVolumePercent;
+        return copy;
+    }
 }
 
 public sealed class EffectiveUserPreferences
@@ -202,11 +240,23 @@ public sealed class EffectiveUserPreferences
     [JsonPropertyName("rememberAudioChanges")]
     public bool RememberAudioChanges { get; init; }
 
+    [JsonPropertyName("previewEnabled")]
+    public bool PreviewEnabled { get; init; } = true;
+
+    [JsonPropertyName("previewSource")]
+    public string PreviewSource { get; init; } = "inherit";
+
+    [JsonPropertyName("hoverDelayMs")]
+    public int HoverDelayMs { get; init; }
+
     internal static EffectiveUserPreferences FromDefaults(PluginConfiguration config) => new()
     {
         TrailerAudioEnabled = config.TrailerAudioEnabled,
         TrailerVolumePercent = config.TrailerVolumePercent,
-        RememberAudioChanges = config.UserAudioPreferencesEnabled
+        RememberAudioChanges = config.UserAudioPreferencesEnabled,
+        PreviewEnabled = true,
+        PreviewSource = "inherit",
+        HoverDelayMs = config.HoverDelayMs
     };
 
     /// <summary>
@@ -224,7 +274,10 @@ public sealed class EffectiveUserPreferences
         {
             TrailerAudioEnabled = preferences.TrailerAudioEnabled ?? config.TrailerAudioEnabled,
             TrailerVolumePercent = preferences.TrailerVolumePercent ?? config.TrailerVolumePercent,
-            RememberAudioChanges = preferences.RememberAudioChanges ?? true
+            RememberAudioChanges = preferences.RememberAudioChanges ?? true,
+            PreviewEnabled = preferences.PreviewEnabled ?? true,
+            PreviewSource = preferences.PreviewSource ?? "inherit",
+            HoverDelayMs = preferences.HoverDelayMs ?? config.HoverDelayMs
         };
     }
 }

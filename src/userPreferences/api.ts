@@ -13,6 +13,9 @@ export interface UserAudioPreferences {
   trailerAudioEnabled: boolean | null;
   trailerVolumePercent: number | null;
   rememberAudioChanges: boolean | null;
+  previewEnabled?: boolean | null;
+  previewSource?: string | null;
+  hoverDelayMs?: number | null;
 }
 
 export interface EffectiveAudioPreferences {
@@ -20,6 +23,11 @@ export interface EffectiveAudioPreferences {
   trailerVolumePercent: number;
   /** Save mute and volume changes made on a preview automatically. */
   rememberAudioChanges: boolean;
+  /** False when the user turned previews off. */
+  previewEnabled?: boolean;
+  /** `inherit` follows the administrator's source rules. */
+  previewSource?: string;
+  hoverDelayMs?: number;
 }
 
 export interface UserPreferencesResponse {
@@ -139,7 +147,21 @@ export function toExplicitPreferences(
     rememberAudioChanges:
       values.rememberAudioChanges === response.effective.rememberAudioChanges
         ? (response.preferences.rememberAudioChanges ?? null)
-        : values.rememberAudioChanges
+        : values.rememberAudioChanges,
+    previewEnabled:
+      values.previewEnabled === undefined || values.previewEnabled === (response.effective.previewEnabled ?? true)
+        ? (response.preferences.previewEnabled ?? null)
+        : values.previewEnabled,
+    previewSource:
+      values.previewSource === undefined || values.previewSource === (response.effective.previewSource ?? 'inherit')
+        ? (response.preferences.previewSource ?? null)
+        : values.previewSource === 'inherit'
+          ? null
+          : values.previewSource,
+    hoverDelayMs:
+      values.hoverDelayMs === undefined || values.hoverDelayMs === response.effective.hoverDelayMs
+        ? (response.preferences.hoverDelayMs ?? null)
+        : Math.round(Math.max(0, Math.min(5000, Number(values.hoverDelayMs) || 0)))
   };
 }
 
@@ -177,6 +199,11 @@ export function applyEffectivePreferences(response: UserPreferencesResponse): vo
   cacheResponse(currentUserId(), response);
   config.trailerAudioEnabled = response.effective.trailerAudioEnabled;
   config.trailerVolumePercent = response.effective.trailerVolumePercent;
+  config.userPreviewEnabled = response.effective.previewEnabled !== false;
+  config.userPreviewSource = response.effective.previewSource || 'inherit';
+  if (Number.isFinite(response.effective.hoverDelayMs)) {
+    config.hoverDelayMs = Math.max(0, Number(response.effective.hoverDelayMs));
+  }
   if (!response.enabled) {
     const localVolume = readLocalVolume();
     if (localVolume !== null) {

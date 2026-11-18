@@ -39,6 +39,7 @@ import {
   getContentTypePreviewSource,
   getPreviewSourceForItem,
   getPreviewUrl,
+  getUserPreviewSource,
   previewSourceUsesTrickplay
 } from '../preview/source';
 import { clamp } from '../core/dom';
@@ -217,6 +218,11 @@ function getDefaultPreloadPercent(): number {
 function shouldShowTrickplayLoadingIndicator(itemType?: string | null): boolean {
   if (!config.trickplayLoadingIndicatorEnabled) {
     return false;
+  }
+
+  const userSource = getUserPreviewSource();
+  if (userSource !== 'inherit') {
+    return config.inProgressPreviewSource !== 'inherit' || previewSourceUsesTrickplay(userSource);
   }
 
   if (config.hasLibraryPreviewSourceOverrides || config.inProgressPreviewSource !== 'inherit') {
@@ -485,7 +491,12 @@ export function handlePointerEnter(
   card: HTMLElement,
   event: PointerEvent | { pointerType?: string; clientX: number; clientY?: number }
 ): void {
-  if (!config.enabled || event.pointerType !== 'mouse' || runtimeState.expandedTrailerSession) {
+  if (
+    !config.enabled ||
+    config.userPreviewEnabled === false ||
+    event.pointerType !== 'mouse' ||
+    runtimeState.expandedTrailerSession
+  ) {
     return;
   }
 
@@ -590,6 +601,11 @@ export function resetPointerTracking(card: HTMLElement, reason?: string): void {
  * in the background. The expanded trailer is left alone: the viewer opened it on purpose.
  */
 export function stopPreviewsForHiddenDocument(): void {
+  stopAllPreviews('document-hidden');
+}
+
+/** Ends every running hover or keyboard preview (the expanded trailer is left alone). */
+export function stopAllPreviews(reason: string): void {
   document.querySelectorAll(`[${STATE_ATTR}="true"]`).forEach((card) => {
     if (!(card instanceof HTMLElement)) {
       return;
@@ -605,12 +621,17 @@ export function stopPreviewsForHiddenDocument(): void {
     }
 
     state.focusInside = false;
-    resetPointerTracking(card, 'document-hidden');
+    resetPointerTracking(card, reason);
   });
 }
 
 export function handleFocusEnter(card: HTMLElement): void {
-  if (!config.enabled || !config.keyboardPreviewEnabled || runtimeState.expandedTrailerSession) {
+  if (
+    !config.enabled ||
+    config.userPreviewEnabled === false ||
+    !config.keyboardPreviewEnabled ||
+    runtimeState.expandedTrailerSession
+  ) {
     return;
   }
 
@@ -653,7 +674,12 @@ export function handleFocusLeave(card: HTMLElement): void {
 }
 
 export function handleKeyboardPreviewKey(card: HTMLElement, event: KeyboardEvent): void {
-  if (!config.enabled || !config.keyboardPreviewEnabled || runtimeState.expandedTrailerSession) {
+  if (
+    !config.enabled ||
+    config.userPreviewEnabled === false ||
+    !config.keyboardPreviewEnabled ||
+    runtimeState.expandedTrailerSession
+  ) {
     return;
   }
 

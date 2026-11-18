@@ -62,20 +62,85 @@ function createIcon(name: string): HTMLSpanElement {
   return icon;
 }
 
-function createCheckbox(label: string, checked: boolean): { root: HTMLDivElement; input: HTMLInputElement } {
-  const root = createElement('div', 'checkboxContainer');
-  const labelElement = createElement('label', 'emby-checkbox-label');
-  const input = createElement('input', 'emby-checkbox');
+/** An on/off row with the label on the left and a switch on the right. */
+function createSwitch(label: string, checked: boolean): { root: HTMLLabelElement; input: HTMLInputElement } {
+  const root = createElement('label', 'jmp-prefs-switchRow');
+  const input = createElement('input', 'jmp-prefs-switchInput');
   input.type = 'checkbox';
+  input.setAttribute('role', 'switch');
   input.checked = checked;
-  const outline = createElement('span', 'checkboxOutline');
-  outline.append(
-    createElement('span', 'material-icons checkboxIcon checkboxIcon-checked check'),
-    createElement('span', 'material-icons checkboxIcon checkboxIcon-unchecked')
-  );
-  labelElement.append(input, createElement('span', 'checkboxLabel', label), outline);
-  root.appendChild(labelElement);
+  const control = createElement('span', 'jmp-prefs-switch');
+  const track = createElement('span', 'jmp-prefs-switchTrack');
+  track.setAttribute('aria-hidden', 'true');
+  control.append(input, track);
+  root.append(createElement('span', 'jmp-prefs-switchLabel', label), control);
   return { root, input };
+}
+
+/** A titled group of settings. */
+function createSection(title: string): { root: HTMLFieldSetElement; body: HTMLDivElement } {
+  const root = createElement('fieldset', 'jmp-prefs-section');
+  const legend = createElement('legend', 'jmp-prefs-sectionTitle', title);
+  const body = createElement('div', 'jmp-prefs-sectionBody');
+  root.append(legend, body);
+  return { root, body };
+}
+
+function createSelect(
+  label: string,
+  options: Array<{ value: string; label: string }>,
+  value: string
+): { root: HTMLDivElement; select: HTMLSelectElement } {
+  const root = createElement('div', 'selectContainer jmp-prefs-field');
+  const id = `jmp-prefs-select-${Math.random().toString(36).slice(2)}`;
+  const labelElement = createElement('label', 'selectLabel', label);
+  labelElement.htmlFor = id;
+  const select = createElement('select', 'emby-select-withcolor emby-select');
+  select.id = id;
+  options.forEach((option) => {
+    const element = createElement('option', undefined, option.label);
+    element.value = option.value;
+    select.appendChild(element);
+  });
+  select.value = value;
+  root.append(labelElement, select);
+  return { root, select };
+}
+
+function createNumberInput(
+  label: string,
+  value: number,
+  min: number,
+  max: number,
+  step: number
+): { root: HTMLDivElement; input: HTMLInputElement } {
+  const root = createElement('div', 'inputContainer jmp-prefs-field');
+  const id = `jmp-prefs-number-${Math.random().toString(36).slice(2)}`;
+  const labelElement = createElement('label', 'inputLabel inputLabelUnfocused', label);
+  labelElement.htmlFor = id;
+  const input = createElement('input', 'emby-input');
+  input.id = id;
+  input.type = 'number';
+  input.min = String(min);
+  input.max = String(max);
+  input.step = String(step);
+  input.value = String(value);
+  root.append(labelElement, input);
+  return { root, input };
+}
+
+function getSourceOptions(current: string): Array<{ value: string; label: string }> {
+  const options = [
+    { value: 'inherit', label: t('sourceDefault') },
+    { value: 'trickplay', label: t('sourceTrickplay') },
+    { value: 'prefer-trailer', label: t('sourceTrailer') },
+    { value: 'prefer-direct-play', label: t('sourceDirectPlay') }
+  ];
+  // Keep a value set elsewhere (for example an older or admin-chosen source) selectable.
+  if (!options.some((option) => option.value === current)) {
+    options.push({ value: current, label: current });
+  }
+  return options;
 }
 
 function createButton(label: string, className: string, type: 'button' | 'submit' = 'button'): HTMLButtonElement {
@@ -98,8 +163,38 @@ function renderForm(
   status.setAttribute('aria-live', 'polite');
   actions.appendChild(status);
 
-  const audioToggle = createCheckbox(t('playPreviewAudio'), response.effective.trailerAudioEnabled);
-  content.appendChild(audioToggle.root);
+  const previewSection = createSection(t('sectionPreview'));
+  const audioSection = createSection(t('sectionAudio'));
+  content.append(previewSection.root, audioSection.root);
+
+  const previewToggle = createSwitch(t('showPreviews'), response.effective.previewEnabled !== false);
+  previewSection.body.appendChild(previewToggle.root);
+
+  const currentSource = response.effective.previewSource || 'inherit';
+  const sourceSelect = createSelect(t('previewSource'), getSourceOptions(currentSource), currentSource);
+  previewSection.body.appendChild(sourceSelect.root);
+
+  const delayInput = createNumberInput(
+    t('hoverDelay'),
+    Number(response.effective.hoverDelayMs ?? response.defaults.hoverDelayMs ?? 300),
+    0,
+    5000,
+    50
+  );
+  previewSection.body.appendChild(delayInput.root);
+
+  const syncPreviewState = () => {
+    const disabled = !previewToggle.input.checked;
+    sourceSelect.select.disabled = disabled;
+    delayInput.input.disabled = disabled;
+    sourceSelect.root.classList.toggle('is-disabled', disabled);
+    delayInput.root.classList.toggle('is-disabled', disabled);
+  };
+  previewToggle.input.addEventListener('change', syncPreviewState);
+  syncPreviewState();
+
+  const audioToggle = createSwitch(t('playPreviewAudio'), response.effective.trailerAudioEnabled);
+  audioSection.body.appendChild(audioToggle.root);
 
   const volumeRow = createElement('label', 'jmp-prefs-volume');
   const volumeInput = createElement('input');
@@ -111,7 +206,7 @@ function renderForm(
   volumeInput.setAttribute('aria-label', t('previewVolume'));
   const volumeOutput = createElement('output', undefined, `${volumeInput.value}%`);
   volumeRow.append(createIcon('volume_up'), volumeInput, volumeOutput);
-  content.appendChild(volumeRow);
+  audioSection.body.appendChild(volumeRow);
 
   const syncVolumeState = () => {
     volumeOutput.textContent = `${volumeInput.value}%`;
@@ -122,9 +217,8 @@ function renderForm(
   volumeInput.addEventListener('input', syncVolumeState);
   syncVolumeState();
 
-  const rememberToggle = createCheckbox(t('saveAudioChanges'), response.effective.rememberAudioChanges !== false);
-  rememberToggle.root.classList.add('jmp-prefs-remember');
-  content.appendChild(rememberToggle.root);
+  const rememberToggle = createSwitch(t('saveAudioChanges'), response.effective.rememberAudioChanges !== false);
+  audioSection.body.appendChild(rememberToggle.root);
 
   const resetButton = createButton(t('reset'), 'jmp-prefs-reset');
   const saveButton = createButton(t('save'), 'button-submit jmp-prefs-save', 'submit');
@@ -152,14 +246,17 @@ function renderForm(
     const preferences = toExplicitPreferences(response, {
       trailerAudioEnabled: audioToggle.input.checked,
       trailerVolumePercent: Number(volumeInput.value),
-      rememberAudioChanges: rememberToggle.input.checked
+      rememberAudioChanges: rememberToggle.input.checked,
+      previewEnabled: previewToggle.input.checked,
+      previewSource: sourceSelect.select.value,
+      hoverDelayMs: Math.round(Math.max(0, Math.min(5000, Number(delayInput.input.value) || 0)))
     });
     void run(() => saveUserPreferences(preferences, profile?.userId));
   });
 
   form.append(content, actions);
   dialog.appendChild(form);
-  audioToggle.input.focus();
+  previewToggle.input.focus();
 }
 
 /**

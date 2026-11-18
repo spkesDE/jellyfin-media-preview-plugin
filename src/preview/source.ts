@@ -19,7 +19,7 @@ import { getPlaybackProgressForItem } from './progress';
 import { debugLog } from '../core/logger';
 import { isDataSaverActive } from '../core/userEnvironment';
 import type { PreviewResult } from '../types/preview';
-import type { PreviewChainSource, PreviewFallbackSource } from '../types/config';
+import type { ContentTypePreviewSource, PreviewChainSource, PreviewFallbackSource } from '../types/config';
 
 type ResolvedPreviewSource = PreviewChainSource | 'trailer';
 
@@ -86,6 +86,19 @@ export function getInProgressPreviewSource(isInProgress: boolean): string {
   return config.inProgressPreviewSource;
 }
 
+/**
+ * The signed-in user's own source choice. It ranks below the In Progress rule (resuming is
+ * about where the viewer left off) and above the library and type rules.
+ */
+export function getUserPreviewSource(): string {
+  const source = config.userPreviewSource;
+  return source &&
+    source !== PREVIEW_SOURCE_INHERIT &&
+    VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(source as ContentTypePreviewSource)
+    ? source
+    : PREVIEW_SOURCE_INHERIT;
+}
+
 export function getResolvedPreviewSource(
   itemType?: string | null,
   libraryId?: string | null,
@@ -94,6 +107,11 @@ export function getResolvedPreviewSource(
   const inProgressOverride = getInProgressPreviewSource(isInProgress);
   if (inProgressOverride !== PREVIEW_SOURCE_INHERIT) {
     return inProgressOverride;
+  }
+
+  const userSource = getUserPreviewSource();
+  if (userSource !== PREVIEW_SOURCE_INHERIT) {
+    return userSource;
   }
 
   const libraryOverride = getLibraryPreviewSource(libraryId);
@@ -109,13 +127,17 @@ async function getPreviewRuleForItem(itemId: string, itemType?: string | null): 
   const progressPromise = resolveProgress
     ? getPlaybackProgressForItem(itemId)
     : Promise.resolve({ isInProgress: false, positionTicks: 0, positionPercent: null });
-  await ensureLibraryPreviewSourceOverrides();
-  const libraryPromise = config.libraryPreviewSourceOverrides.length
-    ? getLibraryIdForItem(
-        itemId,
-        config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
-      )
-    : Promise.resolve(null);
+  const usesLibraryRules = getUserPreviewSource() === PREVIEW_SOURCE_INHERIT;
+  if (usesLibraryRules) {
+    await ensureLibraryPreviewSourceOverrides();
+  }
+  const libraryPromise =
+    usesLibraryRules && config.libraryPreviewSourceOverrides.length
+      ? getLibraryIdForItem(
+          itemId,
+          config.libraryPreviewSourceOverrides.map((entry) => entry.libraryId)
+        )
+      : Promise.resolve(null);
 
   const [progress, libraryId] = await Promise.all([progressPromise, libraryPromise]);
   const inProgressOverride = getInProgressPreviewSource(progress.isInProgress);

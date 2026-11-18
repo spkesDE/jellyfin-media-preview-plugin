@@ -42,6 +42,10 @@ export interface PluginConfig {
    * itself is fetched after sign-in (see preview/libraryOverrides.ts).
    */
   hasLibraryPreviewSourceOverrides?: boolean;
+  /** Runtime only: set from the signed-in user's settings. False hides all previews. */
+  userPreviewEnabled?: boolean;
+  /** Runtime only: the signed-in user's source choice; `inherit` follows the admin rules. */
+  userPreviewSource?: string;
   preferTrailerFallbacks: PreviewFallbackSource[];
   preferTrickplayFallbacks: PreviewFallbackSource[];
   preferDirectPlayFallbacks: PreviewFallbackSource[];

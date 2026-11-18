@@ -4,7 +4,7 @@ import { ensureInjectedStyles, destroyCardBindings } from './cards/lifecycle';
 import { bindUserActivationEvents, unbindUserActivationEvents } from './interaction/userActivation';
 import { bindRouteEvents, unbindRouteEvents } from './core/router';
 import { bindDelegatedHoverEvents, unbindDelegatedHoverEvents } from './interaction/delegatedEvents';
-import { bindCards } from './interaction/hover';
+import { bindCards, stopAllPreviews } from './interaction/hover';
 import {
   cancelAdminNavigationRefresh,
   removeUserSettingsEntries,
@@ -34,6 +34,9 @@ function handleUserPreferencesChanged(event: Event): void {
   const response = (event as CustomEvent<UserPreferencesResponse>).detail;
   if (response?.effective) {
     applyEffectivePreferences(response);
+    if (config.userPreviewEnabled === false) {
+      stopAllPreviews('user-preview-disabled');
+    }
   }
 }
 

@@ -25,6 +25,7 @@ import {
 } from './constants';
 import { clamp } from './core/dom';
 import type {
+  ContentTypePreviewSource,
   LibraryPreviewSourceOverride,
   MediaControlSource,
   PluginConfig,
@@ -185,6 +186,12 @@ export function normalizeConfig(): void {
     : [];
   config.hasLibraryPreviewSourceOverrides =
     config.hasLibraryPreviewSourceOverrides === true || config.libraryPreviewSourceOverrides.length > 0;
+  config.userPreviewEnabled = config.userPreviewEnabled !== false;
+  config.userPreviewSource =
+    typeof config.userPreviewSource === 'string' &&
+    VALID_CONTENT_TYPE_PREVIEW_SOURCES.has(config.userPreviewSource as ContentTypePreviewSource)
+      ? config.userPreviewSource
+      : PREVIEW_SOURCE_INHERIT;
   config.preferTrailerFallbacks = normalizeFallbackSources(
     config.preferTrailerFallbacks,
     'local-trailer',

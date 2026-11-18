@@ -25,7 +25,16 @@ const en = {
   couldNotLoad: 'Could not load.',
   close: 'Close',
   loading: 'Loading',
-  trailer: 'Trailer'
+  trailer: 'Trailer',
+  showPreviews: 'Show previews',
+  previewSource: 'Preview source',
+  sourceDefault: 'Server default',
+  sourceTrickplay: 'Thumbnails (Trickplay)',
+  sourceTrailer: 'Trailer first',
+  sourceDirectPlay: 'Video first (Direct Play)',
+  hoverDelay: 'Hover delay (ms)',
+  sectionPreview: 'Previews',
+  sectionAudio: 'Sound'
 };
 
 export type TranslationKey = keyof typeof en;
@@ -54,7 +63,16 @@ const translations: Record<string, Translations> = {
     couldNotLoad: 'Laden fehlgeschlagen.',
     close: 'Schließen',
     loading: 'Wird geladen',
-    trailer: 'Trailer'
+    trailer: 'Trailer',
+    showPreviews: 'Vorschauen anzeigen',
+    previewSource: 'Vorschauquelle',
+    sourceDefault: 'Server-Standard',
+    sourceTrickplay: 'Vorschaubilder (Trickplay)',
+    sourceTrailer: 'Trailer zuerst',
+    sourceDirectPlay: 'Video zuerst (Direct Play)',
+    hoverDelay: 'Hover-Verzögerung (ms)',
+    sectionPreview: 'Vorschau',
+    sectionAudio: 'Ton'
   },
   fr: {
     previewVolume: "Volume de l'aperçu",
@@ -77,7 +95,16 @@ const translations: Record<string, Translations> = {
     couldNotLoad: 'Échec du chargement.',
     close: 'Fermer',
     loading: 'Chargement',
-    trailer: 'Bande-annonce'
+    trailer: 'Bande-annonce',
+    showPreviews: 'Afficher les aperçus',
+    previewSource: "Source de l'aperçu",
+    sourceDefault: 'Valeur du serveur',
+    sourceTrickplay: 'Miniatures (Trickplay)',
+    sourceTrailer: "Bande-annonce d'abord",
+    sourceDirectPlay: "Vidéo d'abord (lecture directe)",
+    hoverDelay: 'Délai de survol (ms)',
+    sectionPreview: 'Aperçus',
+    sectionAudio: 'Son'
   },
   es: {
     previewVolume: 'Volumen de la vista previa',
@@ -100,7 +127,16 @@ const translations: Record<string, Translations> = {
     couldNotLoad: 'No se pudo cargar.',
     close: 'Cerrar',
     loading: 'Cargando',
-    trailer: 'Tráiler'
+    trailer: 'Tráiler',
+    showPreviews: 'Mostrar vistas previas',
+    previewSource: 'Fuente de la vista previa',
+    sourceDefault: 'Predeterminado del servidor',
+    sourceTrickplay: 'Miniaturas (Trickplay)',
+    sourceTrailer: 'Tráiler primero',
+    sourceDirectPlay: 'Vídeo primero (reproducción directa)',
+    hoverDelay: 'Retraso al pasar el cursor (ms)',
+    sectionPreview: 'Vistas previas',
+    sectionAudio: 'Sonido'
   },
   it: {
     previewVolume: 'Volume anteprima',
@@ -123,7 +159,16 @@ const translations: Record<string, Translations> = {
     couldNotLoad: 'Impossibile caricare.',
     close: 'Chiudi',
     loading: 'Caricamento',
-    trailer: 'Trailer'
+    trailer: 'Trailer',
+    showPreviews: 'Mostra anteprime',
+    previewSource: 'Sorgente anteprima',
+    sourceDefault: 'Predefinito del server',
+    sourceTrickplay: 'Miniature (Trickplay)',
+    sourceTrailer: 'Prima il trailer',
+    sourceDirectPlay: 'Prima il video (riproduzione diretta)',
+    hoverDelay: 'Ritardo al passaggio del mouse (ms)',
+    sectionPreview: 'Anteprime',
+    sectionAudio: 'Audio'
   },
   nl: {
     previewVolume: 'Voorbeeldvolume',
@@ -146,7 +191,16 @@ const translations: Record<string, Translations> = {
     couldNotLoad: 'Laden mislukt.',
     close: 'Sluiten',
     loading: 'Laden',
-    trailer: 'Trailer'
+    trailer: 'Trailer',
+    showPreviews: 'Voorbeelden tonen',
+    previewSource: 'Voorbeeldbron',
+    sourceDefault: 'Serverstandaard',
+    sourceTrickplay: 'Miniaturen (Trickplay)',
+    sourceTrailer: 'Eerst trailer',
+    sourceDirectPlay: 'Eerst video (Direct Play)',
+    hoverDelay: 'Vertraging bij aanwijzen (ms)',
+    sectionPreview: 'Voorbeelden',
+    sectionAudio: 'Geluid'
   },
   pt: {
     previewVolume: 'Volume da pré-visualização',
@@ -169,7 +223,16 @@ const translations: Record<string, Translations> = {
     couldNotLoad: 'Não foi possível carregar.',
     close: 'Fechar',
     loading: 'Carregando',
-    trailer: 'Trailer'
+    trailer: 'Trailer',
+    showPreviews: 'Mostrar pré-visualizações',
+    previewSource: 'Fonte da pré-visualização',
+    sourceDefault: 'Padrão do servidor',
+    sourceTrickplay: 'Miniaturas (Trickplay)',
+    sourceTrailer: 'Trailer primeiro',
+    sourceDirectPlay: 'Vídeo primeiro (reprodução direta)',
+    hoverDelay: 'Atraso ao passar o cursor (ms)',
+    sectionPreview: 'Pré-visualizações',
+    sectionAudio: 'Som'
   }
 };
 
